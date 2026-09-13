@@ -43,6 +43,15 @@ class Settings(BaseSettings):
     lookback_days: int = 180
     request_delay_seconds: float = 1.5
 
+    # LLM layer (any OpenAI-compatible provider: Mistral, Groq, OpenRouter...)
+    llm_base_url: str = "https://api.mistral.ai/v1"
+    llm_api_key: str = ""
+    llm_model: str = "mistral-small-latest"
+    llm_max_calls_per_run: int = 400
+    llm_rpm: int = 50
+    llm_batch_size: int = 25
+    tavily_api_key: str = ""
+
     public_base_url: str = "http://localhost:8000"
 
     # Salt for author hashing (any stable string; change = all hashes change)

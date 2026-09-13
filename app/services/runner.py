@@ -22,6 +22,7 @@ def _persist_signals(signals, run_id: str, keyword_set_id: str) -> tuple[int, in
                 "keyword_set_id": keyword_set_id,
                 "scraped_at": db.now(),
                 "is_processed": False,
+                "cluster_id": None,
                 # LLM fields — TODO(LLM): filled by app/services/analysis.py
                 "llm_problem_statement": None,
                 "llm_urgency": None,

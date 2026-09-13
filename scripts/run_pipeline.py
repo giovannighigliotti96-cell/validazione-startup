@@ -2,6 +2,7 @@
 CLI entry point used by GitHub Actions (and for local runs).
 
   python -m scripts.run_pipeline scrape [--sources reddit,hackernews] [--sets id1,id2]
+  python -m scripts.run_pipeline analyze          # Gemini: extract -> cluster -> enrich -> funnel
   python -m scripts.run_pipeline funnel
   python -m scripts.run_pipeline all
   python -m scripts.run_pipeline export --out exports/signals.csv [--min-wtp 3]
@@ -18,7 +19,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("command", choices=["scrape", "funnel", "all", "export", "seed"])
+    p.add_argument("command", choices=["scrape", "analyze", "funnel", "all", "export", "seed"])
     p.add_argument("--sources", default=None)
     p.add_argument("--sets", default=None)
     p.add_argument("--out", default="exports/signals.csv")
@@ -40,7 +41,12 @@ def main() -> None:
     if a.command in ("scrape", "all"):
         res = runner.run_all(sets, sources, "github_actions")
         print(json.dumps(res, indent=2, default=str))
-    if a.command in ("funnel", "all"):
+    if a.command in ("analyze", "all"):
+        from app.services import analysis
+
+        res = analysis.run_full_analysis(send_notifications=not a.no_notify)
+        print(json.dumps(res, indent=2, default=str))
+    if a.command == "funnel":
         res = funnel.evaluate_all(send_notifications=not a.no_notify)
         print(json.dumps(res, indent=2, default=str))
     if a.command == "export":

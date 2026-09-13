@@ -8,7 +8,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app import db
 from app.auth import require_cron
-from app.services import funnel, runner
+from app.services import analysis, funnel, runner
 
 router = APIRouter(prefix="/cron", tags=["cron"], dependencies=[Depends(require_cron)])
 
@@ -20,7 +20,7 @@ def cron_scrape(background: BackgroundTasks, sources: str | None = None):
 
     def job():
         runner.run_all(None, src, "cron")
-        funnel.evaluate_all(send_notifications=True)
+        analysis.run_full_analysis()  # includes funnel.evaluate_all
 
     background.add_task(job)
     return {"status": "accepted"}
@@ -31,8 +31,12 @@ def cron_scrape_sync(sources: str | None = None):
     """Blocking variant (for GitHub Actions or when you want the result in the response)."""
     src = sources.split(",") if sources else None
     res = runner.run_all(None, src, "cron")
-    fun = funnel.evaluate_all(send_notifications=True)
-    return {"runs": res, "funnel": fun}
+    return {"runs": res, "analysis": analysis.run_full_analysis()}
+
+
+@router.post("/analyze")
+def cron_analyze():
+    return analysis.run_full_analysis()
 
 
 @router.post("/funnel")

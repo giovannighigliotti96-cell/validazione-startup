@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       command:
-        description: "scrape | funnel | all"
+        description: "scrape | analyze | funnel | all"
         default: "all"
       sources:
         description: "comma-separated sources (empty = all)"
@@ -39,6 +39,10 @@ jobs:
       REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
       REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
       PRODUCTHUNT_TOKEN: ${{ secrets.PRODUCTHUNT_TOKEN }}
+      LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.mistral.ai/v1' }}
+      LLM_MODEL: ${{ vars.LLM_MODEL || 'mistral-small-latest' }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       EMAIL_PROVIDER: smtp
       SMTP_USER: ${{ secrets.SMTP_USER }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}

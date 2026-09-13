@@ -1,5 +1,5 @@
 """Clusters, opportunity scoring, market components, competitors, experiments, funnel stages."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 from app import db
 from app.auth import require_api
@@ -199,14 +199,21 @@ def test_notification():
     return {"status": status, "error": err, "subject": subject}
 
 
-# ------------------------------ LLM placeholder ------------------------------
-@router.post("/analyze")
-def analyze(keyword_set_id: str | None = None):
-    """
-    TODO(LLM): will run analysis.extract_problem on unprocessed signals, then cluster_signals,
-    score_cluster, generate_mom_test_questions, then funnel.evaluate_all().
-    """
-    try:
-        analysis.cluster_signals(keyword_set_id)
-    except analysis.NotImplementedLLM as e:
-        raise HTTPException(501, f"{e} — see app/services/analysis.py")
+# ------------------------------ LLM layer (Gemini) --------------------------
+@router.post("/analyze", status_code=202)
+def analyze(background: BackgroundTasks, keyword_set_id: str | None = None, extract_limit: int | None = None):
+    """Extract -> cluster -> enrich -> funnel, in background (Gemini free-tier budgeted). Watch /clusters and /opportunities."""
+    background.add_task(analysis.run_full_analysis, keyword_set_id, extract_limit, True)
+    return {"status": "accepted"}
+
+
+@router.post("/analyze/sync")
+def analyze_sync(keyword_set_id: str | None = None, extract_limit: int | None = None):
+    return analysis.run_full_analysis(keyword_set_id, extract_limit, True)
+
+
+@router.post("/clusters/{cluster_id}/enrich")
+def enrich(cluster_id: str, force: bool = False):
+    analysis.budget.reset()
+    res = analysis.enrich_cluster(cluster_id, force=force)
+    return {"enrich": res, "funnel": funnel.evaluate(cluster_id)}
