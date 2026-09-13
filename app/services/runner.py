@@ -10,12 +10,36 @@ from app.scrapers import SIDE_SCRAPERS, SIGNAL_SCRAPERS
 log = logging.getLogger("runner")
 
 
+def _unanswered_asks(signals) -> set[str]:
+    """
+    Posts that ask for a tool and whose comments (same batch) never mention a product =
+    demand with no known supply. Strongest cheap gap signal we have.
+    """
+    children: dict[str, list] = {}
+    for s in signals:
+        if s.parent_external_id:
+            children.setdefault(s.parent_external_id, []).append(s)
+    out: set[str] = set()
+    for s in signals:
+        if s.parent_external_id or s.signal_type not in ("post", "story"):
+            continue
+        if not heuristics.analyze(s.text, s.title).asks_for_recommendation:
+            continue
+        replies = children.get(s.external_id, [])
+        if (s.num_comments or 0) == 0 or not any(heuristics.analyze(c.text).mentions_existing_tool for c in replies):
+            out.add(s.external_id)
+    return out
+
+
 def _persist_signals(signals, run_id: str, keyword_set_id: str) -> tuple[int, int]:
     docs: dict[str, dict] = {}
+    unanswered = _unanswered_asks(signals)
     for sig in signals:
         h = heuristics.analyze(sig.text, sig.title)
         d = sig.model_dump()
         d.update(h.as_dict())
+        d["unanswered_ask"] = sig.external_id in unanswered
+        d["attack_vector"] = None
         d.update(
             {
                 "run_id": run_id,

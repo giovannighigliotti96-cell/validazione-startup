@@ -71,19 +71,36 @@ firestore/SCHEMA.md    schema dettagliato
 
 Ogni PATCH/PUT/POST su opportunità, mercato ed esperimenti **rivaluta il funnel** e manda la mail se scatta una fase con `notify=true`.
 
-## Il funnel (soglie = placeholder, da tarare insieme)
+## Il funnel — modalità "cecchino"
+Principio: fasi 2-5 automatiche e severe (il sistema uccide), fasi 6-8 umane (tu decidi). Target: 2-3 cluster/mese arrivano alle interviste.
+
 | # | fase | entra se… | mail |
 |---|---|---|---|
 | 1 | signal_collected | cluster creato | |
-| 2 | problem_clustered | ≥15 segnali, ≥2 fonti, ≥10 autori, WTP medio ≥2 | |
-| 3 | market_sized | componenti TAM/SAM/SOM compilati, SAM ≥ €20M | |
-| 4 | competition_checked | competitor mappati, ≤12, saturazione ≠ red | |
-| 5 | founder_fit_checked | founder_fit ≥3, canale raggiungibile, why-now presente | ✉ |
-| 6 | interviews_done | ≥5 interviste, ≥60% confermano, ≥30% già pagano | |
-| 7 | **presale_validation** | landing ≥100 visite, signup ≥5% | **✉ "VERIFICA CHE PAGHINO"** |
-| 8 | validated | ≥3 paganti, conversione ≥2% | ✉ |
+| 2 | problem_clustered | ≥20 segnali, ≥3 fonti, ≥15 autori distinti, WTP medio ≥3, **attack_vector ∈ {feature_gap, no_solution_exists}**, ≥50% segnali attaccabili | |
+| 3 | market_sized | componenti TAM/SAM/SOM compilati, SAM ≥ €30M, confidenza ≥ medium | |
+| 4 | competition_checked | competitor mappati ≤12, saturazione ≠ red, leader <500 recensioni, check prodotti morti fatto | |
+| 5 | founder_fit_checked | founder_fit ≥4, canale raggiungibile, why-now, barriere regulatory/enterprise/two-sided = false | ✉ |
+| 6 | interviews_done | ≥8 interviste, ≥60% confermano, ≥40% spontanee, ≥40% pagano già, ≥3 costi quantificati | |
+| 7 | **presale_validation** | landing ≥150 visite, signup ≥8% con prezzo visibile | **✉ "VERIFICA CHE PAGHINO"** |
+| 8 | validated | ≥5 paganti, conversione ≥3% | ✉ |
 
-Chiavi di criterio supportate: `app/services/funnel.py::_check`. Le soglie si cambiano su Firestore o con `PATCH /funnel/stages/{key}`.
+**Perché un post singolo non conta**: un cluster passa la fase 2 solo con ≥15 autori distinti su ≥3 fonti. Un problema scritto da una persona resta a fase 1.
+
+**attack_vector** (assegnato dall'LLM a ogni segnale, aggregato per cluster): `no_solution_exists` (usano fogli/manuale/hack) > `feature_gap` (i tool esistenti non fanno X per il segmento Y) ≫ `quality_complaint` (il tool fa X ma male: bug, lentezza, UI — **non** è un'opportunità) · `price_complaint`. È il filtro che separa "QuickBooks è lento" (139 cluster nel primo run, tutti rumore) da un gap reale.
+
+Soglie in `funnel_stages` (Firestore), modificabili con `PATCH /funnel/stages/{key}`. Chiavi supportate: `app/services/funnel.py::_check`.
+
+## Loop interviste (fase 6)
+1. `POST /clusters/{id}/recruiting-pack` → screener per Respondent/User Interviews, reply Reddit, email HN, messaggio LinkedIn + query di ricerca, dove trovare la persona.
+2. Reclutamento: outreach diretto dai segnali (gratis: autori HN con email nel profilo, reply pubblica su Reddit, LinkedIn) + **Respondent.io** per professionisti B2B (~€60-120/intervista). Budget realistico: 8 interviste ≈ €400-800.
+3. Dopo ogni intervista: `POST /clusters/{id}/interviews` `{"notes": "<appunti o trascrizione>", "interviewee_role": "...", "source": "respondent|reddit|linkedin"}` → l'LLM estrae `confirmed_problem`, `spontaneous`, `currently_paying`, `quantified_cost`, citazioni → il funnel si aggiorna da solo.
+
+## Digest e discovery
+- **Digest settimanale** (lunedì 07:00 UTC, o `POST /digest/send`): top 5 cluster, cosa li blocca, azione suggerita. Serve a tarare i filtri: archivia il rumore con `PATCH /opportunities/{id}` `{"is_archived": true, "archive_reason": "..."}`.
+- **Discovery** (1° del mese, o `POST /discover/verticals`): l'LLM propone 5 nuovi verticali con fonti concrete → keyword set creati **disattivati** (`proposed_by: llm`); li attivi con `PATCH /keyword-sets/{id}` `{"is_active": true}`.
+- **Why-now scan** (`POST /discover/why-now`): ricerca news per verticale (regolamenti, deadline, price hike, shutdown) → `why_now_candidates` sul keyword set, usati nello scoring.
+- Set iniziali con why-now regolatorio: `eu_einvoicing_mandate` (fattura elettronica B2B DE/FR/BE/PL 2026-28) e `italia_professionisti`.
 
 ## Autonomia 24/7
 ### A) GitHub Actions (consigliato come motore principale, gratis, nessun server)

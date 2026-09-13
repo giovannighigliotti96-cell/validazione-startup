@@ -39,6 +39,11 @@ def cron_analyze():
     return analysis.run_full_analysis()
 
 
+@router.post("/digest")
+def cron_digest():
+    return {"status": funnel.send_weekly_digest()}
+
+
 @router.post("/funnel")
 def cron_funnel():
     return funnel.evaluate_all(send_notifications=True)

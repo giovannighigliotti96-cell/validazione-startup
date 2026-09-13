@@ -143,3 +143,51 @@ def notify_stage(cluster: dict, opp: dict, stage: dict, evidence: dict | None = 
          "recipient": get_settings().notify_email_to, "subject": subject, "status": status, "error": err, "sent_at": db.now()},
     )
     return status
+
+
+def render_digest_email(d: dict) -> tuple[str, str]:
+    """Weekly digest: top clusters, what blocks them, one suggested action each."""
+    s = get_settings()
+    base = s.public_base_url.rstrip("/")
+    subject = f"📬 Digest settimanale — {d['total_clusters']} cluster, {d['attackable']} attaccabili, {d['new_signals_7d']} nuovi segnali"
+    stage_line = " · ".join(f"{k}: {v}" for k, v in sorted((d.get("stage_counts") or {}).items()))
+    rows = []
+    for r in d["top"]:
+        c, o, m = r["cluster"], r["opp"], r["metrics"]
+        av = m.get("dominant_attack_vector") or "—"
+        av_color = "#15803d" if av in ("feature_gap", "no_solution_exists") else "#b91c1c" if av == "quality_complaint" else "#6b7280"
+        blocking = "<br>".join(escape(v) for v in list(r["blocking"].values())[:3]) or "—"
+        action = {
+            "problem_clustered": "Aggiungi fonti verticali / attendi volume",
+            "market_sized": "Verifica i componenti TAM con una fonte (PUT /market)",
+            "competition_checked": "Controlla G2/Capterra a mano e conferma la saturazione",
+            "founder_fit_checked": "Scrivi il why-now e il canale (PATCH /opportunities)",
+            "interviews_done": "Genera il recruiting pack e fissa 8 interviste",
+            "presale_validation": "Landing con prezzo + payment link",
+            "validated": "Chiedi 5 pagamenti",
+        }.get(r["next_stage"] or "", "—")
+        rows.append(f"""
+        <tr>
+          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top">
+            <b>{escape(c.get('name') or '')}</b><br>
+            <span style="font-size:12px;color:#6b7280">{escape(c.get('vertical') or '')} · {escape(c.get('persona') or '')} · {c.get('signal_count') or 0} segnali / {c.get('distinct_authors') or 0} autori</span><br>
+            <span style="font-size:12px;color:{av_color};font-weight:600">{escape(av)}</span>
+            <span style="font-size:12px;color:#6b7280"> · {_badge(o.get('saturation'))} · SAM {_fmt_eur(o.get('sam_eur'))}</span>
+          </td>
+          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top;font-size:13px"><b>{r['score']}</b><br><span style="color:#6b7280">{escape(r['stage'] or '')}</span></td>
+          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top;font-size:12px;color:#374151">{blocking}</td>
+          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top;font-size:12px">{escape(action)}<br>
+            <a href="{escape(base)}/opportunities/{escape(c.get('id') or '')}" style="color:#1d4ed8">apri</a></td>
+        </tr>""")
+    html = f"""
+<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:760px;margin:0 auto;padding:24px;color:#111827">
+  <p style="margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em">Validazione start-up · digest settimanale</p>
+  <h1 style="margin:0 0 8px;font-size:20px">{d['total_clusters']} cluster · {d['attackable']} con vettore d'attacco · {d['new_signals_7d']} segnali nuovi (7gg)</h1>
+  <p style="margin:0 0 16px;font-size:13px;color:#6b7280">Fasi: {escape(stage_line) or '—'}</p>
+  <table style="width:100%;border-collapse:collapse;font-size:14px">
+    <tr style="font-size:12px;color:#6b7280;text-align:left"><th style="padding:4px 8px">Cluster</th><th style="padding:4px 8px">Score / fase</th><th style="padding:4px 8px">Cosa lo blocca</th><th style="padding:4px 8px">Azione</th></tr>
+    {''.join(rows) or '<tr><td colspan="4" style="padding:12px;color:#6b7280">Nessun cluster ancora.</td></tr>'}
+  </table>
+  <p style="margin:20px 0 0;font-size:12px;color:#9ca3af">Se un cluster in cima è rumore: PATCH /opportunities/{{id}} con is_archived=true e archive_reason — serve a tarare i filtri.</p>
+</div>"""
+    return subject, html

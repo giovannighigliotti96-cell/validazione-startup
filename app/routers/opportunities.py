@@ -1,5 +1,5 @@
 """Clusters, opportunity scoring, market components, competitors, experiments, funnel stages."""
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException
 
 from app import db
 from app.auth import require_api
@@ -217,3 +217,80 @@ def enrich(cluster_id: str, force: bool = False):
     analysis.budget.reset()
     res = analysis.enrich_cluster(cluster_id, force=force)
     return {"enrich": res, "funnel": funnel.evaluate(cluster_id)}
+
+
+# ------------------------------ interviews (closes the loop) ----------------
+@router.post("/clusters/{cluster_id}/interviews", status_code=201)
+def add_interview(cluster_id: str, notes: str = Body(..., embed=True), interviewee_role: str | None = Body(None, embed=True),
+                  source: str | None = Body(None, embed=True), date: str | None = Body(None, embed=True)):
+    """Paste raw interview notes/transcript. The LLM extracts confirmed_problem / spontaneous / currently_paying /
+    quantified_cost / quotes and the funnel is re-evaluated. This is how stage 6 gets its numbers."""
+    if not db.get(db.PROBLEM_CLUSTERS, cluster_id):
+        raise HTTPException(404)
+    analysis.budget.reset()
+    return analysis.ingest_interview_notes(cluster_id, notes, {"interviewee_role": interviewee_role, "source": source, "date": date})
+
+
+@router.get("/clusters/{cluster_id}/interviews")
+def list_interviews(cluster_id: str):
+    sub = db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("interviews")
+    return [db.doc_to_dict(d) for d in sub.stream()]
+
+
+@router.post("/clusters/{cluster_id}/recruiting-pack")
+def make_recruiting_pack(cluster_id: str):
+    """Screener (Respondent/User Interviews), outbound messages (Reddit reply, HN email, LinkedIn), where to find them."""
+    if not db.get(db.PROBLEM_CLUSTERS, cluster_id):
+        raise HTTPException(404)
+    analysis.budget.reset()
+    return analysis.recruiting_pack(cluster_id)
+
+
+@router.get("/clusters/{cluster_id}/recruiting-pack")
+def get_recruiting_pack(cluster_id: str):
+    c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
+    if not c:
+        raise HTTPException(404)
+    return c.get("recruiting_pack") or {"detail": "not generated yet: POST this same path"}
+
+
+# ------------------------------ discovery / merge / digest ------------------
+@router.post("/discover/verticals")
+def discover_verticals():
+    """LLM proposes 5 new vertical keyword sets (created INACTIVE). Review with GET /keyword-sets, activate with PATCH is_active=true."""
+    analysis.budget.reset()
+    return analysis.discover_verticals()
+
+
+@router.post("/discover/why-now")
+def scan_why_now(keyword_set_id: str | None = None):
+    """Tavily news scan per vertical -> why_now_candidates on the keyword set (used by cluster scoring)."""
+    analysis.budget.reset()
+    sets = [keyword_set_id] if keyword_set_id else [k["id"] for k in db.list_all(db.KEYWORD_SETS, is_active=True)]
+    return {ksid: analysis.scan_why_now(ksid) for ksid in sets}
+
+
+@router.post("/clusters/merge")
+def merge_clusters(keyword_set_id: str | None = None):
+    analysis.budget.reset()
+    return analysis.merge_clusters(keyword_set_id)
+
+
+@router.post("/clusters/{keep_id}/merge")
+def merge_into(keep_id: str, merge_ids: list[str] = Body(..., embed=True)):
+    if not db.get(db.PROBLEM_CLUSTERS, keep_id):
+        raise HTTPException(404)
+    return {"moved_signals": analysis.merge_into(keep_id, merge_ids), "funnel": funnel.evaluate(keep_id)}
+
+
+@router.get("/digest")
+def digest_preview():
+    d = funnel.build_digest()
+    return {"summary": {k: v for k, v in d.items() if k != "top"},
+            "top": [{"cluster": r["cluster"]["name"], "id": r["cluster"]["id"], "score": r["score"], "stage": r["stage"],
+                     "attack_vector": r["metrics"].get("dominant_attack_vector"), "blocking": r["blocking"]} for r in d["top"]]}
+
+
+@router.post("/digest/send")
+def digest_send():
+    return {"status": funnel.send_weekly_digest()}

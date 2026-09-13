@@ -18,9 +18,11 @@ import logging
 from typing import Any
 
 from app import db
+from app.config import get_settings
 from app.services import notify
 
 log = logging.getLogger("funnel")
+_RANK = {"low": 0, "medium": 1, "high": 2}
 
 
 # ----------------------------------------------------------------------------
@@ -34,10 +36,18 @@ def _experiment_metrics(cluster_id: str) -> dict[str, Any]:
     def _sum(t: str, key: str) -> float:
         return float(sum((e.get("metrics") or {}).get(key, 0) or 0 for e in done if e.get("type") == t))
 
-    n_int = _sum("interview", "n_interviews")
+    # Interviews: individual records (problem_clusters/{id}/interviews, LLM-extracted) + aggregate experiments
+    ivs = [d.to_dict() or {} for d in db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("interviews").stream()]
+    n_int = len(ivs) + _sum("interview", "n_interviews")
+    confirmed = sum(1 for i in ivs if i.get("confirmed_problem")) + _sum("interview", "n_confirmed_problem")
+    paying = sum(1 for i in ivs if i.get("currently_paying")) + _sum("interview", "n_currently_paying")
+    spontaneous = sum(1 for i in ivs if i.get("spontaneous")) + _sum("interview", "n_spontaneous")
+    quantified = sum(1 for i in ivs if (i.get("quantified_cost") or "").strip()) + _sum("interview", "n_quantified_cost")
     m["interviews"] = n_int
-    m["interview_confirm_rate"] = (_sum("interview", "n_confirmed_problem") / n_int) if n_int else 0.0
-    m["interview_paying_rate"] = (_sum("interview", "n_currently_paying") / n_int) if n_int else 0.0
+    m["interview_confirm_rate"] = (confirmed / n_int) if n_int else 0.0
+    m["interview_paying_rate"] = (paying / n_int) if n_int else 0.0
+    m["interview_spontaneous_rate"] = (spontaneous / n_int) if n_int else 0.0
+    m["interview_quantified_cost_count"] = quantified
 
     visitors = _sum("landing_page", "visitors") + _sum("ads_smoke", "clicks")
     signups = _sum("landing_page", "signups") + _sum("ads_smoke", "signups")
@@ -59,7 +69,14 @@ def collect_metrics(cluster: dict, opp: dict) -> dict[str, Any]:
         "authors": cluster.get("distinct_authors") or 0,
         "heuristic_avg": cluster.get("heuristic_avg") or 0.0,
         "velocity_30d": cluster.get("velocity_30d"),
+        "dominant_attack_vector": cluster.get("dominant_attack_vector"),
+        "attackable_share": cluster.get("attackable_share") or 0.0,
+        "unanswered_asks": cluster.get("unanswered_ask_count") or 0,
         "market_components_complete": bool(opp.get("market_components_complete")),
+        "market_confidence": opp.get("market_confidence"),
+        "leader_reviews": opp.get("leader_reviews"),
+        "dead_products_found": opp.get("dead_products_found"),
+        "barriers": opp.get("barriers") or {},
         "tam_eur": opp.get("tam_eur"),
         "sam_eur": opp.get("sam_eur"),
         "competitors_checked": opp.get("competitor_count") is not None and opp.get("saturation") is not None,
@@ -114,6 +131,17 @@ def _check(key: str, threshold: Any, m: dict[str, Any]) -> tuple[bool, str]:
         "min_landing_signup_rate": lambda: ge("landing_signup_rate"),
         "min_presale_paid": lambda: ge("presale_paid"),
         "min_presale_conversion": lambda: ge("presale_conversion"),
+        "min_presale_revenue_eur": lambda: ge("presale_revenue_eur"),
+        # --- precision filters ---
+        "attack_vector_in": lambda: (m.get("dominant_attack_vector") in (threshold or []), f"attack_vector={m.get('dominant_attack_vector')} (in {threshold})"),
+        "min_attackable_share": lambda: ge("attackable_share"),
+        "min_unanswered_asks": lambda: ge("unanswered_asks"),
+        "min_market_confidence": lambda: (_RANK.get(m.get("market_confidence") or "", -1) >= _RANK.get(threshold, 0), f"market_confidence={m.get('market_confidence')} (>= {threshold})"),
+        "max_leader_reviews": lambda: (m.get("leader_reviews") is None or float(m.get("leader_reviews")) <= float(threshold), f"leader_reviews={m.get('leader_reviews')} (<= {threshold} or unknown)"),
+        "require_dead_product_check": lambda: (m.get("dead_products_found") is not None, f"dead_products_found={m.get('dead_products_found')}"),
+        "barriers_must_be_false": lambda: (all(not (m.get("barriers") or {}).get(b) for b in (threshold or [])), "barriers=" + str({b: (m.get("barriers") or {}).get(b) for b in (threshold or [])})),
+        "min_interview_spontaneous_rate": lambda: ge("interview_spontaneous_rate"),
+        "min_interview_quantified_cost_count": lambda: ge("interview_quantified_cost_count"),
     }
     fn = table.get(key)
     if fn is None:
@@ -138,9 +166,10 @@ def check_stage(stage: dict, m: dict[str, Any]) -> tuple[bool, dict[str, str]]:
 def compute_overall_score(m: dict[str, Any]) -> float:
     """0-100. Weights are placeholders."""
     score = 0.0
-    score += min(m["signals"] / 50, 1) * 15                      # demand volume
+    score += min(m["signals"] / 50, 1) * 10                      # demand volume
     score += min(m["heuristic_avg"] / 5, 1) * 15                  # willingness-to-pay proxies
-    score += {"blue": 20, "purple": 10, "red": 0}.get(m.get("saturation") or "", 0)
+    score += {"blue": 15, "purple": 8, "red": 0}.get(m.get("saturation") or "", 0)
+    score += {"no_solution_exists": 10, "feature_gap": 7, "price_complaint": 2}.get(m.get("dominant_attack_vector") or "", 0)
     sam = m.get("sam_eur") or 0
     score += (0 if sam < 5e6 else 10 if sam < 2e7 else 15 if sam < 1e8 else 20)
     score += ((m.get("founder_fit") or 0) / 5) * 15
@@ -177,6 +206,8 @@ def evaluate(cluster_id: str, send_notifications: bool = True) -> dict:
     if not cluster:
         return {"cluster_id": cluster_id, "error": "cluster not found"}
     opp = ensure_opportunity(cluster_id)
+    opp.setdefault("funnel_stage", "signal_collected"); opp.setdefault("stage_history", []); opp.setdefault("notified_stages", [])
+    opp.setdefault("stage_entered_at", db.now())
     if opp.get("is_archived"):
         return {"cluster_id": cluster_id, "stage": opp.get("funnel_stage"), "archived": True}
 
@@ -229,6 +260,7 @@ def evaluate_all(send_notifications: bool = True) -> list[dict]:
 # cluster stats refresh (called when signals are attached; also by LLM stage later)
 # ----------------------------------------------------------------------------
 def refresh_cluster_stats(cluster_id: str) -> dict:
+    from collections import Counter
     from datetime import timedelta
 
     client = db.get_db()
@@ -239,13 +271,20 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
         refs = [client.collection(db.RAW_SIGNALS).document(i) for i in chunk]
         sigs.extend(d for d in (db.doc_to_dict(s) for s in client.get_all(refs)) if d)
     if not sigs:
-        stats = {"signal_count": 0, "distinct_sources": 0, "distinct_authors": 0, "heuristic_avg": 0.0}
+        stats = {"signal_count": 0, "distinct_sources": 0, "distinct_authors": 0, "heuristic_avg": 0.0,
+                 "attack_vector_dist": {}, "dominant_attack_vector": None, "attackable_share": 0.0, "unanswered_ask_count": 0}
     else:
         dates = [s["published_at"] for s in sigs if s.get("published_at")]
         now = db.now()
         last30 = sum(1 for d in dates if d >= now - timedelta(days=30))
         prev30 = sum(1 for d in dates if now - timedelta(days=60) <= d < now - timedelta(days=30))
+        av = Counter(s.get("attack_vector") for s in sigs if s.get("attack_vector"))
+        n_av = sum(av.values()) or 1
         stats = {
+            "attack_vector_dist": dict(av),
+            "dominant_attack_vector": av.most_common(1)[0][0] if av else None,
+            "attackable_share": round(sum(v for k, v in av.items() if k in ("feature_gap", "no_solution_exists")) / n_av, 2),
+            "unanswered_ask_count": sum(1 for s in sigs if s.get("unanswered_ask")),
             "signal_count": len(sigs),
             "distinct_sources": len({s["source"] for s in sigs}),
             "distinct_authors": len({s.get("author_hash") for s in sigs if s.get("author_hash")}),
@@ -256,3 +295,43 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
         }
     db.upsert(db.PROBLEM_CLUSTERS, cluster_id, stats)
     return stats
+
+
+# ----------------------------------------------------------------------------
+# weekly digest (human-in-the-loop calibration)
+# ----------------------------------------------------------------------------
+def build_digest(top_n: int = 5) -> dict:
+    from datetime import timedelta
+
+    stages = {st["key"]: st for st in get_stages()}
+    keys = [st["key"] for st in get_stages()]
+    clusters = {c["id"]: c for c in db.list_all(db.PROBLEM_CLUSTERS)}
+    opps = [o for o in db.list_all(db.OPPORTUNITY_SCORING) if not o.get("is_archived") and o["cluster_id"] in clusters]
+    rows = []
+    for o in opps:
+        c = clusters[o["cluster_id"]]
+        m = collect_metrics(c, o)
+        idx = keys.index(o.get("funnel_stage")) if o.get("funnel_stage") in keys else 0
+        blocking = {}
+        if idx + 1 < len(keys):
+            _, ev = check_stage(stages[keys[idx + 1]], m)
+            blocking = {k: v for k, v in ev.items() if v.startswith("✘")}
+        rows.append({"cluster": c, "opp": o, "score": compute_overall_score(m), "stage": o.get("funnel_stage"),
+                     "next_stage": keys[idx + 1] if idx + 1 < len(keys) else None, "blocking": blocking, "metrics": m})
+    rows.sort(key=lambda r: r["score"], reverse=True)
+    week_ago = db.now() - timedelta(days=7)
+    new_signals = sum(1 for _ in db.get_db().collection(db.RAW_SIGNALS).where("scraped_at", ">=", week_ago).select([]).stream())
+    stage_counts: dict[str, int] = {}
+    for o in opps:
+        stage_counts[o.get("funnel_stage")] = stage_counts.get(o.get("funnel_stage"), 0) + 1
+    return {"top": rows[:top_n], "total_clusters": len(opps), "stage_counts": stage_counts, "new_signals_7d": new_signals,
+            "attackable": sum(1 for r in rows if r["metrics"].get("dominant_attack_vector") in ("feature_gap", "no_solution_exists"))}
+
+
+def send_weekly_digest() -> str:
+    d = build_digest()
+    subject, html = notify.render_digest_email(d)
+    status, err = notify.send_email(subject, html)
+    db.upsert(db.NOTIFICATIONS, None, {"cluster_id": None, "stage_key": "digest", "channel": "email", "subject": subject,
+                                        "recipient": get_settings().notify_email_to, "status": status, "error": err, "sent_at": db.now()})
+    return status

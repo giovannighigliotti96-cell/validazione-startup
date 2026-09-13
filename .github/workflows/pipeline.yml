@@ -12,10 +12,12 @@ on:
   schedule:
     - cron: "17 */6 * * *"      # scraping + funnel ogni 6 ore (UTC)
     - cron: "45 * * * *"        # solo funnel ogni ora
+    - cron: "0 7 * * 1"         # digest settimanale (lunedì 07:00 UTC)
+    - cron: "30 6 1 * *"        # discovery nuovi verticali + why-now scan (1° del mese)
   workflow_dispatch:
     inputs:
       command:
-        description: "scrape | analyze | funnel | all"
+        description: "scrape | analyze | funnel | all | digest | discover"
         default: "all"
       sources:
         description: "comma-separated sources (empty = all)"
@@ -65,6 +67,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "45 * * * *" ]; then
             echo "command=funnel" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "0 7 * * 1" ]; then
+            echo "command=digest" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "30 6 1 * *" ]; then
+            echo "command=discover" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             echo "command=${{ github.event.client_payload.command || 'all' }}" >> "$GITHUB_OUTPUT"
           else
@@ -74,17 +80,20 @@ jobs:
       - name: Run pipeline
         run: |
           SRC="${{ github.event.inputs.sources }}"
-          if [ -n "$SRC" ]; then
-            python -m scripts.run_pipeline ${{ steps.cmd.outputs.command }} --sources "$SRC"
+          CMD="${{ steps.cmd.outputs.command }}"
+          if [ "$CMD" = "discover" ]; then
+            python -m scripts.run_pipeline whynow && python -m scripts.run_pipeline discover
+          elif [ -n "$SRC" ]; then
+            python -m scripts.run_pipeline $CMD --sources "$SRC"
           else
-            python -m scripts.run_pipeline ${{ steps.cmd.outputs.command }}
+            python -m scripts.run_pipeline $CMD
           fi
 
       - name: Export CSV artifact
-        if: steps.cmd.outputs.command != 'funnel'
+        if: steps.cmd.outputs.command == 'all' || steps.cmd.outputs.command == 'scrape'
         run: python -m scripts.run_pipeline export --out exports/signals.csv --min-wtp 3
       - uses: actions/upload-artifact@v4
-        if: steps.cmd.outputs.command != 'funnel'
+        if: steps.cmd.outputs.command == 'all' || steps.cmd.outputs.command == 'scrape'
         with:
           name: signals-csv
           path: exports/signals.csv

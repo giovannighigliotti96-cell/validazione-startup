@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("command", choices=["scrape", "analyze", "funnel", "all", "export", "seed"])
+    p.add_argument("command", choices=["scrape", "analyze", "funnel", "all", "export", "seed", "digest", "discover", "whynow"])
     p.add_argument("--sources", default=None)
     p.add_argument("--sets", default=None)
     p.add_argument("--out", default="exports/signals.csv")
@@ -46,6 +46,17 @@ def main() -> None:
 
         res = analysis.run_full_analysis(send_notifications=not a.no_notify)
         print(json.dumps(res, indent=2, default=str))
+    if a.command == "digest":
+        print(funnel.send_weekly_digest())
+    if a.command in ("discover", "whynow"):
+        from app.services import analysis
+        from app import db as _db
+
+        analysis.budget.reset()
+        if a.command == "discover":
+            print(json.dumps(analysis.discover_verticals(), indent=2, default=str))
+        else:
+            print(json.dumps({k["name"]: analysis.scan_why_now(k["id"]) for k in _db.list_all(_db.KEYWORD_SETS, is_active=True)}, indent=2, default=str))
     if a.command == "funnel":
         res = funnel.evaluate_all(send_notifications=not a.no_notify)
         print(json.dumps(res, indent=2, default=str))
