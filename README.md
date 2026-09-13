@@ -1,11 +1,11 @@
-# Validazione Start-up — signal engine (fase 1)
+# Validazione Start-up — signal engine
 
 Sistema autonomo che raccoglie segnali di **domanda insoddisfatta** (Reddit, HN, recensioni 1-2★, Trustpilot, Indie Hackers), di **offerta** (Product Hunt) e di **trend** (Google Trends), li struttura su Firestore, e fa avanzare ogni opportunità in un **funnel di validazione** con soglie configurabili. Quando un'idea arriva alla fase *"verifica che paghino con la carta di credito"* ti arriva una **mail HTML**.
 
-Il layer semantico (estrazione problema, clustering, scoring, domande Mom Test, stima mercato) è uno **stub** in [app/services/analysis.py](app/services/analysis.py) — fase 2 con Claude API.
+Il layer semantico (estrazione problema, clustering, scoring, domande Mom Test, stima mercato, competitor, founder fit) è in [app/services/analysis.py](app/services/analysis.py) e usa **qualsiasi LLM OpenAI-compatibile** (Mistral free tier di default; Groq/OpenRouter cambiando 3 variabili) + **Tavily** per la ricerca web.
 
 ```
-Fonti ──▶ raw_signals ──(LLM, TODO)──▶ problem_clusters ──▶ opportunity_scoring ──▶ funnel ──▶ 📧
+Fonti ──▶ raw_signals ──(LLM)──▶ problem_clusters ──▶ opportunity_scoring ──▶ funnel ──▶ 📧
           competitor_signals ─────────────────────────────────┘        ▲
           trend_snapshots                                   validation_experiments
 ```
@@ -13,6 +13,7 @@ Fonti ──▶ raw_signals ──(LLM, TODO)──▶ problem_clusters ──�
 ## Stack
 - Python 3.12 · FastAPI · **Firestore** (firebase-admin) · Docker
 - Runtime 24/7: **GitHub Actions** (scheduler, senza server) + **Cloud Run** (API, scale-to-zero) + **cron-job.org** (trigger esterno)
+- LLM: Mistral `ministral-8b-latest` (free) via API OpenAI-compatibile · ricerca web Tavily (free)
 - Email: SMTP (Gmail app password) o Resend
 
 ## Struttura
@@ -29,11 +30,11 @@ app/
     market.py          TAM/SAM/SOM per componenti
     funnel.py          motore fasi + soglie + scoring
     notify.py          email HTML
-    analysis.py        >>> STUB LLM (TODO) <<<
+    analysis.py        LLM: extract -> cluster -> enrich (score, Mom Test, TAM/SAM/SOM, competitor, founder fit)
   routers/             keyword_sets, runs, signals+export, opportunities, cron
 scripts/
   seed_firestore.py    fasi funnel (soglie placeholder) + keyword set iniziali
-  run_pipeline.py      CLI: scrape | funnel | all | export | seed
+  run_pipeline.py      CLI: scrape | analyze | funnel | all | export | seed
 firestore/SCHEMA.md    schema dettagliato
 .github/workflows/     pipeline.yml (scheduler), deploy-cloudrun.yml
 ```
@@ -66,6 +67,7 @@ firestore/SCHEMA.md    schema dettagliato
 | Competitor | `POST /competitors` · `POST /competitors/{id}/assign/{cluster_id}` |
 | Esperimenti | `POST /experiments` `{cluster_id, type:"interview", status:"done", metrics:{n_interviews:6, n_confirmed_problem:5, n_currently_paying:2}}` |
 | Funnel | `GET /funnel/stages` · `PATCH /funnel/stages/{key}` (soglie) · `POST /funnel/evaluate` |
+| **Analisi LLM** | `POST /analyze` (background) · `POST /analyze/sync` · `POST /clusters/{id}/enrich?force=true` |
 
 Ogni PATCH/PUT/POST su opportunità, mercato ed esperimenti **rivaluta il funnel** e manda la mail se scatta una fase con `notify=true`.
 
@@ -121,10 +123,21 @@ Nota: `/cron/scrape` risponde subito (202) e lavora in background, ma Cloud Run 
 | Indie Hackers | ❌ off di default | nessuna API; markup instabile |
 | GDPR | — | niente username salvati/esportati; solo `author_hash` |
 
-## Fase 2 (LLM) — dove agganciarsi
-Tutto in [app/services/analysis.py](app/services/analysis.py): `extract_problem → cluster_signals → score_cluster → generate_mom_test_questions → estimate_market_components → find_competitors → assess_founder_fit`, poi `funnel.evaluate_all()`. L'endpoint `POST /analyze` risponde 501 finché non è implementato.
+## Layer LLM — come funziona
+`python -m scripts.run_pipeline analyze` (o `POST /analyze`):
+1. **extract** — batch di 25 segnali non processati (prima quelli con WTP più alto) → `llm_problem_statement`, persona, urgenza/frequenza 1-5, tool citati, dolore quantificato, `is_noise`
+2. **cluster** — assegnazione incrementale: il modello vede i cluster esistenti del keyword set + 40 nuovi statement e decide "assegna" o "NEW"
+3. **enrich** — per i cluster con ≥5 segnali non ancora arricchiti (4 chiamate ciascuno): scoring 0-10 + domande Mom Test + why-now; componenti TAM/SAM/SOM (con Tavily); competitor + saturazione; founder fit
+4. `funnel.evaluate_all()` → avanzamento fasi + email
 
-Profilo founder da passare ad `assess_founder_fit`: solo founder, background digital marketing/sales, stack FastAPI/Next.js/Firebase, **nessun network** → canali privilegiati: outbound LinkedIn/email, SEO/contenuti, community verticali (Reddit/Facebook), partnership con associazioni di categoria. Penalizzare: enterprise sales, regolatorio pesante, marketplace a due lati, capital-intensive.
+Budget: `LLM_MAX_CALLS_PER_RUN` e `LLM_RPM` nel `.env`. Cambiare provider = `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`.
+Il profilo founder usato per `assess_founder_fit` è `FOUNDER_PROFILE` in analysis.py.
+
+## Deploy attuale
+- API: https://validazione-startup-148506634481.europe-west1.run.app (Cloud Run, europe-west1, min 0 / max 1 istanza, budget alert €5)
+- Scheduler: GitHub Actions ogni 6h (scrape+analyze+funnel), ogni ora (funnel)
+- cron-job.org: `POST /cron/funnel` ogni ora, `GET /cron/health` ogni 30 min (header `X-Cron-Token`)
+- Redeploy manuale: `gcloud run deploy validazione-startup --source . --region europe-west1 --env-vars-file runtime.yaml`
 
 ## Avvertenze di metodo
 - I 4 subreddit founder producono **bias verso tool-per-founder** (oceano rosso). I set `vertical_*` sono dove cercare il blue ocean: aggiungine di nuovi via API.
