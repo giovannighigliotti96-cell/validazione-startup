@@ -138,7 +138,7 @@ def llm_json(prompt: str, schema: type[BaseModel] | None = None, grounded: bool 
     budget.tick()
     try:
         resp = _llm().chat.completions.create(
-            model=get_settings().llm_model, temperature=temperature, response_format={"type": "json_object"},
+            model=get_settings().llm_model, temperature=temperature, response_format={"type": "json_object"}, max_tokens=8000,
             messages=[
                 {"role": "system", "content": "You are a precise analyst. Output ONLY valid JSON, no prose, no markdown fences."},
                 {"role": "user", "content": context + prompt + schema_txt},
@@ -159,8 +159,75 @@ def llm_json(prompt: str, schema: type[BaseModel] | None = None, grounded: bool 
             raise ValueError(f"LLM returned non-JSON: {text[:200]!r}")
         data = json.loads(m.group(1))
     if schema is not None:
-        data = schema.model_validate(data).model_dump()
+        data = _validate_lenient(schema, data)
     return data
+
+
+def _validate_lenient(schema: type[BaseModel], data: Any) -> dict:
+    """
+    Small models produce one bad item per batch. Validate list fields item by item and drop the bad ones
+    instead of failing the whole call; fall back to strict validation for scalar-only schemas.
+    """
+    from pydantic import ValidationError
+
+    try:
+        return schema.model_validate(data).model_dump()
+    except ValidationError as first_err:
+        if not isinstance(data, dict):
+            raise
+        fields = schema.model_fields
+        cleaned = dict(data)
+        for name, f in fields.items():
+            ann = f.annotation
+            args = getattr(ann, "__args__", ())
+            if getattr(ann, "__origin__", None) is list and args and isinstance(args[0], type) and issubclass(args[0], BaseModel):
+                item_model, good = args[0], []
+                for it in (data.get(name) or []):
+                    try:
+                        good.append(item_model.model_validate(_coerce_item(item_model, it)).model_dump())
+                    except ValidationError:
+                        continue
+                cleaned[name] = good
+        try:
+            return schema.model_validate(cleaned).model_dump()
+        except ValidationError:
+            # scalar schema (e.g. FounderFitResponse): coerce common slips then retry once
+            try:
+                return schema.model_validate(_coerce_item(schema, cleaned)).model_dump()
+            except ValidationError:
+                raise first_err
+
+
+def _coerce_item(model: type[BaseModel], it: Any) -> Any:
+    """Fix the usual 8B slips: attack_vector synonyms, bools as strings, ints as strings, missing lists."""
+    if not isinstance(it, dict):
+        return it
+    it = dict(it)
+    av = it.get("attack_vector")
+    if isinstance(av, str) and av not in ("feature_gap", "no_solution_exists", "quality_complaint", "price_complaint", "other"):
+        a = av.lower()
+        it["attack_vector"] = ("no_solution_exists" if "no_solution" in a or "manual" in a or "spreadsheet" in a
+                               else "feature_gap" if "gap" in a or "missing" in a
+                               else "price_complaint" if "price" in a or "cost" in a
+                               else "quality_complaint" if "quality" in a or "bug" in a or "complaint" in a else "other")
+    for k, f in model.model_fields.items():
+        v = it.get(k)
+        if f.annotation is bool and isinstance(v, str):
+            it[k] = v.strip().lower() in ("true", "yes", "1")
+        elif f.annotation is int and isinstance(v, str) and v.strip().lstrip("-").isdigit():
+            it[k] = int(v)
+        elif f.annotation is float and isinstance(v, str):
+            try:
+                it[k] = float(v)
+            except ValueError:
+                pass
+        elif getattr(f.annotation, "__origin__", None) is list and v is None:
+            it[k] = []
+        elif f.annotation is str and v is None:
+            it[k] = ""
+    if "barriers" in model.model_fields and isinstance(it.get("barriers"), dict):
+        it["barriers"] = {k: (str(v).lower() in ("true", "yes", "1") if not isinstance(v, bool) else v) for k, v in it["barriers"].items()}
+    return it
 
 
 # ----------------------------------------------------------------------------
@@ -342,11 +409,8 @@ def cluster_pending(keyword_set_id: str | None = None, limit: int = 2000) -> dic
                     name = (a.get("new_name") or "").strip() or sig["llm_problem_statement"][:60]
                     key = name.lower()
                     if key not in new_by_name:
-                        if len(new_by_name) >= 3 and existing:
-                            # over the NEW cap: fall back to the largest existing cluster with low relevance
-                            cid = max(existing, key=lambda c: c.get("signal_count") or 0)["id"]
-                            _attach(cid, sig, 0.3); touched.add(cid); assigned += 1
-                            continue
+                        if len(new_by_name) >= 3:
+                            continue  # over the NEW cap: leave unassigned, next run re-tries with more clusters in context
                         new_by_name[key] = db.upsert(db.PROBLEM_CLUSTERS, None, {
                             "keyword_set_id": ksid, "name": name, "problem_statement": a.get("new_statement") or sig["llm_problem_statement"],
                             "vertical": vertical, "persona": (sig.get("llm_metadata") or {}).get("persona"), "signal_count": 0,
@@ -613,11 +677,18 @@ def enrich_cluster(cluster_id: str, force: bool = False) -> dict:
     return res
 
 
-def enrich_ready_clusters(min_signals: int = 8, max_clusters: int = 8) -> dict:
-    """Enrich only clusters worth the calls: enough signals AND an attackable dominant vector."""
-    clusters = [c for c in db.list_all(db.PROBLEM_CLUSTERS)
-                if (c.get("signal_count") or 0) >= min_signals and not (c.get("llm_metadata") or {}).get("scored_at")
-                and (c.get("dominant_attack_vector") in ATTACKABLE)]
+def enrich_ready_clusters(max_clusters: int = 8) -> dict:
+    """Enrich only clusters that already satisfy the stage-2 (problem_clustered) criteria: no calls wasted on noise."""
+    stages = {st["key"]: st for st in funnel.get_stages()}
+    stage2 = stages.get("problem_clustered") or {"criteria": {}}
+    clusters = []
+    for c in db.list_all(db.PROBLEM_CLUSTERS):
+        if (c.get("llm_metadata") or {}).get("scored_at"):
+            continue
+        opp = db.get(db.OPPORTUNITY_SCORING, c["id"]) or {}
+        ok, _ = funnel.check_stage(stage2, funnel.collect_metrics(c, opp))
+        if ok:
+            clusters.append(c)
     clusters.sort(key=lambda c: (c.get("signal_count") or 0), reverse=True)
     out = {}
     for c in clusters[:max_clusters]:
