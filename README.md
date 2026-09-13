@@ -1,0 +1,132 @@
+# Validazione Start-up — signal engine (fase 1)
+
+Sistema autonomo che raccoglie segnali di **domanda insoddisfatta** (Reddit, HN, recensioni 1-2★, Trustpilot, Indie Hackers), di **offerta** (Product Hunt) e di **trend** (Google Trends), li struttura su Firestore, e fa avanzare ogni opportunità in un **funnel di validazione** con soglie configurabili. Quando un'idea arriva alla fase *"verifica che paghino con la carta di credito"* ti arriva una **mail HTML**.
+
+Il layer semantico (estrazione problema, clustering, scoring, domande Mom Test, stima mercato) è uno **stub** in [app/services/analysis.py](app/services/analysis.py) — fase 2 con Claude API.
+
+```
+Fonti ──▶ raw_signals ──(LLM, TODO)──▶ problem_clusters ──▶ opportunity_scoring ──▶ funnel ──▶ 📧
+          competitor_signals ─────────────────────────────────┘        ▲
+          trend_snapshots                                   validation_experiments
+```
+
+## Stack
+- Python 3.12 · FastAPI · **Firestore** (firebase-admin) · Docker
+- Runtime 24/7: **GitHub Actions** (scheduler, senza server) + **Cloud Run** (API, scale-to-zero) + **cron-job.org** (trigger esterno)
+- Email: SMTP (Gmail app password) o Resend
+
+## Struttura
+```
+app/
+  config.py            variabili d'ambiente (pydantic-settings)
+  db.py                Firestore: collection, helper, insert_new_only (dedup)
+  heuristics.py        flag regex di willingness-to-pay (no LLM)
+  models.py            Pydantic: RawSignal + payload API
+  scrapers/            reddit, hackernews, indiehackers, trustpilot, appstores, trends, producthunt
+  services/
+    runner.py          orchestrazione run
+    export.py          CSV/JSON leggibile (senza username)
+    market.py          TAM/SAM/SOM per componenti
+    funnel.py          motore fasi + soglie + scoring
+    notify.py          email HTML
+    analysis.py        >>> STUB LLM (TODO) <<<
+  routers/             keyword_sets, runs, signals+export, opportunities, cron
+scripts/
+  seed_firestore.py    fasi funnel (soglie placeholder) + keyword set iniziali
+  run_pipeline.py      CLI: scrape | funnel | all | export | seed
+firestore/SCHEMA.md    schema dettagliato
+.github/workflows/     pipeline.yml (scheduler), deploy-cloudrun.yml
+```
+
+## Setup locale (10 minuti)
+1. Firebase Console → crea progetto → **Firestore Database** (modalità produzione, regione `eur3`) → Project settings → Service accounts → *Generate new private key* → salva come `serviceAccount.json` nella root (è in `.gitignore`).
+2. `cp .env.example .env` e compila `FIREBASE_PROJECT_ID`, `CRON_TOKEN`, `API_TOKEN`.
+3. Reddit: https://www.reddit.com/prefs/apps → *create app* → tipo **script** → copia client id/secret in `.env`.
+4. (Opzionale) Product Hunt: https://www.producthunt.com/v2/oauth/applications → *Developer Token*.
+5. Email: Gmail → sicurezza → verifica in 2 passaggi → **Password per le app** → `SMTP_PASSWORD`.
+6. ```bash
+   python -m venv .venv && .venv/Scripts/activate      # (Linux/mac: source .venv/bin/activate)
+   pip install -r requirements.txt
+   python -m scripts.seed_firestore                    # fasi funnel + keyword set
+   uvicorn app.main:app --reload                       # http://localhost:8000/docs
+   ```
+7. Primo test senza chiavi: `python -m scripts.run_pipeline scrape --sources hackernews`
+8. Test email: `POST /notifications/test` (header `X-API-Token`).
+
+## Uso via API (Swagger su `/docs`, header `X-API-Token`)
+| cosa | endpoint |
+|---|---|
+| Config fonti | `GET/POST/PATCH /keyword-sets` |
+| Lancia scraping | `POST /runs` `{ "keyword_set_ids": null, "sources": ["reddit","hackernews"] }` → `GET /runs` |
+| Segnali | `GET /signals?min_wtp=3&source=reddit` · `GET /signals/stats/summary` |
+| **Export per interviste** | `GET /export/signals.csv?min_wtp=3` (o `.json`, o `?cluster_id=...`) |
+| Cluster (manuale finché non c'è l'LLM) | `POST /clusters` `{name, problem_statement, persona, signal_ids:[...]}` |
+| Opportunità | `GET /opportunities` · `PATCH /opportunities/{id}` (saturation, founder_fit, why_now…) |
+| Mercato | `PUT /opportunities/{id}/market/n_entities` `{value, unit, source_url, confidence}` (idem `annual_spend`, `geo_share`, `segment_share`, `capture_share`) |
+| Competitor | `POST /competitors` · `POST /competitors/{id}/assign/{cluster_id}` |
+| Esperimenti | `POST /experiments` `{cluster_id, type:"interview", status:"done", metrics:{n_interviews:6, n_confirmed_problem:5, n_currently_paying:2}}` |
+| Funnel | `GET /funnel/stages` · `PATCH /funnel/stages/{key}` (soglie) · `POST /funnel/evaluate` |
+
+Ogni PATCH/PUT/POST su opportunità, mercato ed esperimenti **rivaluta il funnel** e manda la mail se scatta una fase con `notify=true`.
+
+## Il funnel (soglie = placeholder, da tarare insieme)
+| # | fase | entra se… | mail |
+|---|---|---|---|
+| 1 | signal_collected | cluster creato | |
+| 2 | problem_clustered | ≥15 segnali, ≥2 fonti, ≥10 autori, WTP medio ≥2 | |
+| 3 | market_sized | componenti TAM/SAM/SOM compilati, SAM ≥ €20M | |
+| 4 | competition_checked | competitor mappati, ≤12, saturazione ≠ red | |
+| 5 | founder_fit_checked | founder_fit ≥3, canale raggiungibile, why-now presente | ✉ |
+| 6 | interviews_done | ≥5 interviste, ≥60% confermano, ≥30% già pagano | |
+| 7 | **presale_validation** | landing ≥100 visite, signup ≥5% | **✉ "VERIFICA CHE PAGHINO"** |
+| 8 | validated | ≥3 paganti, conversione ≥2% | ✉ |
+
+Chiavi di criterio supportate: `app/services/funnel.py::_check`. Le soglie si cambiano su Firestore o con `PATCH /funnel/stages/{key}`.
+
+## Autonomia 24/7
+### A) GitHub Actions (consigliato come motore principale, gratis, nessun server)
+1. Push su GitHub. Settings → Secrets → aggiungi: `FIREBASE_SERVICE_ACCOUNT_B64` (`base64 -w0 serviceAccount.json`), `FIREBASE_PROJECT_ID`, `CRON_TOKEN`, `REDDIT_*`, `PRODUCTHUNT_TOKEN`, `SMTP_USER`, `SMTP_PASSWORD`, `NOTIFY_EMAIL_TO`, `NOTIFY_EMAIL_FROM`. Variable: `PUBLIC_BASE_URL`.
+2. [pipeline.yml](.github/workflows/pipeline.yml) gira: scraping+funnel ogni 6h, funnel ogni ora. Il CSV `min_wtp≥3` è scaricabile come artifact di ogni run.
+3. Da **cron-job.org** puoi forzare un run chiamando l'API GitHub (`repository_dispatch`):
+   - URL `https://api.github.com/repos/<user>/<repo>/dispatches`, POST, header `Authorization: Bearer <fine-grained PAT con permesso Contents:write>`, `Accept: application/vnd.github+json`, body `{"event_type":"run-pipeline","client_payload":{"command":"all"}}`.
+
+### B) Cloud Run (API sempre raggiungibile, per export/edit manuali e per cron-job.org diretto)
+```bash
+gcloud auth login && gcloud config set project validation-start-up
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com
+gcloud run deploy validazione-startup --source . --region europe-west1 --allow-unauthenticated \
+  --min-instances 0 --max-instances 1 --timeout 3600 --memory 512Mi \
+  --set-env-vars "FIREBASE_PROJECT_ID=validation-start-up,CRON_TOKEN=...,API_TOKEN=...,REDDIT_CLIENT_ID=...,REDDIT_CLIENT_SECRET=...,EMAIL_PROVIDER=smtp,SMTP_USER=...,SMTP_PASSWORD=...,NOTIFY_EMAIL_TO=...,NOTIFY_EMAIL_FROM=..."
+```
+Su Cloud Run le credenziali Firestore arrivano automaticamente (ADC) se il service account di Cloud Run ha il ruolo *Cloud Datastore User*. Il deploy automatico è in [deploy-cloudrun.yml](.github/workflows/deploy-cloudrun.yml).
+
+Su **cron-job.org** crea:
+| job | metodo/URL | header | ogni |
+|---|---|---|---|
+| scrape | `POST https://<cloud-run-url>/cron/scrape` | `X-Cron-Token: <CRON_TOKEN>` | 6h |
+| funnel | `POST https://<cloud-run-url>/cron/funnel` | idem | 1h |
+
+Nota: `/cron/scrape` risponde subito (202) e lavora in background, ma Cloud Run può throttlare la CPU dopo la risposta (a meno di `--no-cpu-throttling`, che costa). **Configurazione consigliata**: scraping su GitHub Actions (job lunghi, gratis), Cloud Run solo per API/export/funnel, cron-job.org che chiama `/cron/funnel` ogni ora.
+
+## Rischi/limiti fonti (riassunto)
+| fonte | stato | nota |
+|---|---|---|
+| Reddit | ✅ API ufficiale | 100 req/min; PRAW gestisce i limiti. Search interno pessimo → scarichiamo new/top e filtriamo. |
+| Hacker News | ✅ Algolia pubblica | la più pulita |
+| App Store | ✅ RSS ufficiale | max 500 recensioni recenti/app |
+| Play Store | ⚠️ libreria non ufficiale, stabile | |
+| Product Hunt | ✅ API ufficiale | serve token; nessuna ricerca testuale → per topic + filtro locale |
+| Google Trends | ⚠️ pytrends fragile, 429 | 1 snapshot/keyword/giorno, retry; valori relativi |
+| Trustpilot | ❌ off di default | ToS vietano scraping; solo bassa frequenza |
+| Indie Hackers | ❌ off di default | nessuna API; markup instabile |
+| GDPR | — | niente username salvati/esportati; solo `author_hash` |
+
+## Fase 2 (LLM) — dove agganciarsi
+Tutto in [app/services/analysis.py](app/services/analysis.py): `extract_problem → cluster_signals → score_cluster → generate_mom_test_questions → estimate_market_components → find_competitors → assess_founder_fit`, poi `funnel.evaluate_all()`. L'endpoint `POST /analyze` risponde 501 finché non è implementato.
+
+Profilo founder da passare ad `assess_founder_fit`: solo founder, background digital marketing/sales, stack FastAPI/Next.js/Firebase, **nessun network** → canali privilegiati: outbound LinkedIn/email, SEO/contenuti, community verticali (Reddit/Facebook), partnership con associazioni di categoria. Penalizzare: enterprise sales, regolatorio pesante, marketplace a due lati, capital-intensive.
+
+## Avvertenze di metodo
+- I 4 subreddit founder producono **bias verso tool-per-founder** (oceano rosso). I set `vertical_*` sono dove cercare il blue ocean: aggiungine di nuovi via API.
+- Il sistema non sostituisce le interviste: prime 5 interviste anche con dati "sporchi".
+- Google Trends è relativo: ogni set include `crm software` come riferimento.

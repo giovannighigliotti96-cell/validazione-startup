@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytrends_cache/
+exports/
+*.log
+.DS_Store
+serviceAccount.json
+*.serviceAccount*.json

@@ -1,0 +1,17 @@
+{
+  "indexes": [
+    { "collectionGroup": "raw_signals", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "keyword_set_id", "order": "ASCENDING" }, { "fieldPath": "heuristic_score", "order": "ASCENDING" } ] },
+    { "collectionGroup": "raw_signals", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "source", "order": "ASCENDING" }, { "fieldPath": "heuristic_score", "order": "ASCENDING" } ] },
+    { "collectionGroup": "raw_signals", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "keyword_set_id", "order": "ASCENDING" }, { "fieldPath": "published_at", "order": "ASCENDING" } ] },
+    { "collectionGroup": "raw_signals", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "source", "order": "ASCENDING" }, { "fieldPath": "published_at", "order": "ASCENDING" } ] },
+    { "collectionGroup": "raw_signals", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "keyword_set_id", "order": "ASCENDING" }, { "fieldPath": "source", "order": "ASCENDING" }, { "fieldPath": "heuristic_score", "order": "ASCENDING" } ] },
+    { "collectionGroup": "trend_snapshots", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "keyword_set_id", "order": "ASCENDING" }, { "fieldPath": "captured_at", "order": "DESCENDING" } ] }
+  ],
+  "fieldOverrides": []
+}

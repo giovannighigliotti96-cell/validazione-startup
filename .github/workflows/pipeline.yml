@@ -1,0 +1,87 @@
+# Motore 24/7 "senza server": GitHub Actions esegue scraping + funnel direttamente.
+# Funziona anche se Cloud Run non è deployato. cron-job.org può forzare un run
+# chiamando l'endpoint repository_dispatch (vedi README).
+#
+# Secrets richiesti (Settings > Secrets and variables > Actions):
+#   FIREBASE_SERVICE_ACCOUNT_B64, FIREBASE_PROJECT_ID, CRON_TOKEN,
+#   REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT,
+#   PRODUCTHUNT_TOKEN (opz.), SMTP_USER, SMTP_PASSWORD, NOTIFY_EMAIL_TO, NOTIFY_EMAIL_FROM
+name: pipeline
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"      # scraping + funnel ogni 6 ore (UTC)
+    - cron: "45 * * * *"        # solo funnel ogni ora
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "scrape | funnel | all"
+        default: "all"
+      sources:
+        description: "comma-separated sources (empty = all)"
+        default: ""
+  repository_dispatch:
+    types: [run-pipeline]
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      FIREBASE_SERVICE_ACCOUNT_B64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_B64 }}
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      CRON_TOKEN: ${{ secrets.CRON_TOKEN }}
+      REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+      REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
+      PRODUCTHUNT_TOKEN: ${{ secrets.PRODUCTHUNT_TOKEN }}
+      EMAIL_PROVIDER: smtp
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
+      NOTIFY_EMAIL_FROM: ${{ secrets.NOTIFY_EMAIL_FROM }}
+      PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+      ENABLE_TRENDS: "true"
+      ENABLE_INDIEHACKERS: "false"
+      ENABLE_TRUSTPILOT: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Decide command
+        id: cmd
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "45 * * * *" ]; then
+            echo "command=funnel" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "command=${{ github.event.client_payload.command || 'all' }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "command=${{ github.event.inputs.command || 'all' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline
+        run: |
+          SRC="${{ github.event.inputs.sources }}"
+          if [ -n "$SRC" ]; then
+            python -m scripts.run_pipeline ${{ steps.cmd.outputs.command }} --sources "$SRC"
+          else
+            python -m scripts.run_pipeline ${{ steps.cmd.outputs.command }}
+          fi
+
+      - name: Export CSV artifact
+        if: steps.cmd.outputs.command != 'funnel'
+        run: python -m scripts.run_pipeline export --out exports/signals.csv --min-wtp 3
+      - uses: actions/upload-artifact@v4
+        if: steps.cmd.outputs.command != 'funnel'
+        with:
+          name: signals-csv
+          path: exports/signals.csv
+          retention-days: 14

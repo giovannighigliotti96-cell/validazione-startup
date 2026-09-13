@@ -1,0 +1,50 @@
+# Deploy dell'API FastAPI su Google Cloud Run ad ogni push su main.
+# Prerequisiti (una tantum, vedi README "Deploy"):
+#   - gcloud: abilitare Cloud Run + Artifact Registry + Cloud Build API
+#   - secret GCP_SA_KEY = JSON di un service account con ruoli:
+#       Cloud Run Admin, Artifact Registry Writer, Cloud Build Editor, Service Account User
+#   - secret RUNTIME_ENV = contenuto del .env di produzione (una riga per variabile, senza GOOGLE_APPLICATION_CREDENTIALS)
+name: deploy-cloudrun
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/**", "scripts/**", "requirements.txt", "Dockerfile", ".github/workflows/deploy-cloudrun.yml"]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: validation-start-up
+  REGION: europe-west1
+  SERVICE: validazione-startup
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Write runtime env file
+        run: |
+          printf '%s\n' "${{ secrets.RUNTIME_ENV }}" > runtime.env
+          # gcloud wants YAML for --env-vars-file
+          python3 - <<'PY'
+          import yaml, re
+          env = {}
+          for line in open("runtime.env"):
+              line = line.strip()
+              if not line or line.startswith("#") or "=" not in line: continue
+              k, v = line.split("=", 1); env[k.strip()] = v.strip()
+          yaml.safe_dump(env, open("runtime.yaml", "w"))
+          PY
+      - name: Deploy
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --source . \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --allow-unauthenticated \
+            --cpu 1 --memory 512Mi --min-instances 0 --max-instances 1 \
+            --timeout 3600 --concurrency 4 \
+            --env-vars-file runtime.yaml
