@@ -345,7 +345,7 @@ class ClusterResponse(BaseModel):
 
 CLUSTER_PROMPT = """You group problem statements into clusters. One cluster = one distinct JOB-TO-BE-DONE that a single product could solve for one persona.
 Cluster by the underlying job and persona, NOT by the product being complained about: "QuickBooks crashes", "QuickBooks slow", "QuickBooks logs out" are ONE cluster ("accounting app reliability"), not three.
-Rules: reuse an existing cluster whenever relevance >= 0.5. Create at most 3 NEW clusters in this batch; if more would be needed, put the rest in the closest existing one with lower relevance.
+Rules: reuse an existing cluster whenever relevance >= 0.5. Create at most {new_cap} NEW clusters in this batch; if more would be needed, put the rest in the closest existing one with lower relevance.
 Vertical: {vertical}.
 
 EXISTING CLUSTERS (id :: name :: statement):
@@ -373,14 +373,17 @@ def _attach(cluster_id: str, sig: dict, relevance: float) -> None:
     client.collection(db.RAW_SIGNALS).document(sig["id"]).update({"cluster_id": cluster_id})
 
 
-def cluster_pending(keyword_set_id: str | None = None, limit: int = 2000) -> dict:
+def cluster_pending(keyword_set_id: str | None = None, limit: int = 2000, max_passes: int = 4) -> dict:
+    """Several passes per run: each batch may create at most NEW_CAP clusters, so sets starting from zero need a few rounds."""
     ks_map = {k["id"]: k for k in db.list_all(db.KEYWORD_SETS)}
     sets = [keyword_set_id] if keyword_set_id else list(ks_map)
     created = assigned = 0
     for ksid in sets:
+      for _pass in range(max_passes):
         pending = _processed_unclustered(ksid, limit)
         if not pending:
-            continue
+            break
+        before = assigned
         vertical = (ks_map.get(ksid) or {}).get("vertical") or "general"
         for chunk in db.chunks(pending, 40):
             existing = db.list_all(db.PROBLEM_CLUSTERS, keyword_set_id=ksid)
@@ -389,7 +392,7 @@ def cluster_pending(keyword_set_id: str | None = None, limit: int = 2000) -> dic
                 f"{i} :: {(s.get('llm_metadata') or {}).get('persona') or '?'} :: {s.get('attack_vector') or '?'} :: {s['llm_problem_statement']}"
                 for i, s in enumerate(chunk))
             try:
-                data = llm_json(CLUSTER_PROMPT.format(vertical=vertical, existing=ex_txt, signals=sig_txt), ClusterResponse)
+                data = llm_json(CLUSTER_PROMPT.format(vertical=vertical, existing=ex_txt, signals=sig_txt, new_cap=(6 if len(existing) < 10 else 3)), ClusterResponse)
             except BudgetExhausted as e:
                 log.warning("clustering stopped: %s", e)
                 return {"created": created, "assigned": assigned, "calls": budget.calls, "stopped": True}
@@ -409,8 +412,8 @@ def cluster_pending(keyword_set_id: str | None = None, limit: int = 2000) -> dic
                     name = (a.get("new_name") or "").strip() or sig["llm_problem_statement"][:60]
                     key = name.lower()
                     if key not in new_by_name:
-                        if len(new_by_name) >= 3:
-                            continue  # over the NEW cap: leave unassigned, next run re-tries with more clusters in context
+                        if len(new_by_name) >= (6 if len(existing) < 10 else 3):
+                            continue  # over the NEW cap: leave unassigned, next pass re-tries with more clusters in context
                         new_by_name[key] = db.upsert(db.PROBLEM_CLUSTERS, None, {
                             "keyword_set_id": ksid, "name": name, "problem_statement": a.get("new_statement") or sig["llm_problem_statement"],
                             "vertical": vertical, "persona": (sig.get("llm_metadata") or {}).get("persona"), "signal_count": 0,
@@ -422,6 +425,8 @@ def cluster_pending(keyword_set_id: str | None = None, limit: int = 2000) -> dic
             for cid in touched:
                 funnel.refresh_cluster_stats(cid)
                 funnel.ensure_opportunity(cid)
+        if assigned == before:
+            break  # nothing new assigned in this pass: stop
     return {"created": created, "assigned": assigned, "calls": budget.calls}
 
 
