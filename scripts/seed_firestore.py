@@ -17,7 +17,8 @@ FUNNEL_STAGES = [
          criteria={}, notify=False, is_terminal=False),
     dict(position=2, key="problem_clustered", name="Problema ricorrente",
          description="Il problema è espresso da più persone, su più fonti, non da un singolo thread.",
-         criteria={"min_signals": 20, "min_sources": 3, "min_authors": 15, "min_heuristic_avg": 3.0,
+         # min_sources 2 until Reddit is live (then 3). min_recent_share: >=50% of signals from the last 30 days = problem alive.
+         criteria={"min_signals": 20, "min_sources": 2, "min_authors": 15, "min_heuristic_avg": 3.0, "min_recent_share": 0.5,
                    "attack_vector_in": ["feature_gap", "no_solution_exists"], "min_attackable_share": 0.5},
          notify=False, is_terminal=False),
     dict(position=3, key="market_sized", name="Mercato stimato",

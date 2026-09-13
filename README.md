@@ -77,7 +77,7 @@ Principio: fasi 2-5 automatiche e severe (il sistema uccide), fasi 6-8 umane (tu
 | # | fase | entra se… | mail |
 |---|---|---|---|
 | 1 | signal_collected | cluster creato | |
-| 2 | problem_clustered | ≥20 segnali, ≥3 fonti, ≥15 autori distinti, WTP medio ≥3, **attack_vector ∈ {feature_gap, no_solution_exists}**, ≥50% segnali attaccabili | |
+| 2 | problem_clustered | ≥20 segnali, ≥2 fonti (→3 con Reddit), ≥15 autori distinti, WTP medio ≥3, ≥50% segnali negli ultimi 30gg, **attack_vector ∈ {feature_gap, no_solution_exists}**, ≥50% segnali attaccabili | |
 | 3 | market_sized | componenti TAM/SAM/SOM compilati, SAM ≥ €30M, confidenza ≥ medium | |
 | 4 | competition_checked | competitor mappati ≤12, saturazione ≠ red, leader <500 recensioni, check prodotti morti fatto | |
 | 5 | founder_fit_checked | founder_fit ≥4, canale raggiungibile, why-now, barriere regulatory/enterprise/two-sided = false | ✉ |

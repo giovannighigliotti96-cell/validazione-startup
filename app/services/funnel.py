@@ -69,6 +69,7 @@ def collect_metrics(cluster: dict, opp: dict) -> dict[str, Any]:
         "authors": cluster.get("distinct_authors") or 0,
         "heuristic_avg": cluster.get("heuristic_avg") or 0.0,
         "velocity_30d": cluster.get("velocity_30d"),
+        "recent_share": cluster.get("recent_share_30d"),
         "dominant_attack_vector": cluster.get("dominant_attack_vector"),
         "attackable_share": cluster.get("attackable_share") or 0.0,
         "unanswered_asks": cluster.get("unanswered_ask_count") or 0,
@@ -115,6 +116,7 @@ def _check(key: str, threshold: Any, m: dict[str, Any]) -> tuple[bool, str]:
         "min_authors": lambda: ge("authors"),
         "min_heuristic_avg": lambda: ge("heuristic_avg"),
         "min_velocity_30d": lambda: ge("velocity_30d"),
+        "min_recent_share": lambda: ge("recent_share"),  # share of the cluster's signals published in the last 30 days
         "require_market_components": lambda: req("market_components_complete"),
         "min_sam_eur": lambda: ge("sam_eur"),
         "min_tam_eur": lambda: ge("tam_eur"),
@@ -292,6 +294,7 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
             "first_seen": min(dates) if dates else None,
             "last_seen": max(dates) if dates else None,
             "velocity_30d": (last30 / prev30) if prev30 else (float(last30) if last30 else None),
+            "recent_share_30d": round(last30 / len(dates), 2) if dates else None,
         }
     db.upsert(db.PROBLEM_CLUSTERS, cluster_id, stats)
     return stats
