@@ -36,7 +36,7 @@ def stats():
     return {
         "total": db.count(db.RAW_SIGNALS),
         "unprocessed": db.count(db.RAW_SIGNALS, is_processed=False),
-        "by_source": {s: db.count(db.RAW_SIGNALS, source=s) for s in ("reddit", "hackernews", "indiehackers", "trustpilot", "playstore", "appstore")},
+        "by_source": {s: db.count(db.RAW_SIGNALS, source=s) for s in ("reddit", "hackernews", "indiehackers", "trustpilot", "playstore", "appstore", "youtube", "forum")},
         "by_keyword_set": {k["name"]: db.count(db.RAW_SIGNALS, keyword_set_id=k["id"]) for k in ks},
         "competitors": db.count(db.COMPETITOR_SIGNALS),
         "trend_snapshots": db.count(db.TREND_SNAPSHOTS),

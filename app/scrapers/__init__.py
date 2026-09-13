@@ -1,5 +1,5 @@
 """Registry: source name -> fetch callable. Add a new source = add one line here + one module."""
-from app.scrapers import appstores, hackernews, indiehackers, producthunt, reddit, trends, trustpilot
+from app.scrapers import appstores, discourse, hackernews, indiehackers, producthunt, reddit, trends, trustpilot, youtube
 
 # Demand-side scrapers: return list[RawSignal] -> persisted to raw_signals by the runner
 SIGNAL_SCRAPERS = {
@@ -9,6 +9,8 @@ SIGNAL_SCRAPERS = {
     "trustpilot": trustpilot.fetch,
     "playstore": appstores.fetch_playstore,
     "appstore": appstores.fetch_appstore,
+    "youtube": youtube.fetch,
+    "forum": discourse.fetch,
 }
 
 # Metric / supply-side scrapers: persist themselves, return a stats dict

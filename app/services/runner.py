@@ -66,7 +66,7 @@ def run_keyword_set(keyword_set: dict, sources: list[str] | None, trigger: str) 
          "status": "running", "started_at": db.now(), "finished_at": None, "stats": {}, "error": None},
     )
     configured = keyword_set.get("sources") or {}
-    wanted = [s for s in configured if (sources is None or s in sources)]
+    wanted = [s for s in configured if (sources is None or s in sources) and s != "rss"]  # rss feeds are consumed by the why-now scan
     stats: dict[str, dict] = {}
     failed = 0
 

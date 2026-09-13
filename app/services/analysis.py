@@ -775,13 +775,39 @@ Return up to 6 items with URL.
 """
 
 
+def _rss_context(feeds: list[str], max_items: int = 12) -> str:
+    """Titles + summaries from vertical newsletters/blogs (RSS/Atom), for the why-now scan."""
+    import xml.etree.ElementTree as ET
+
+    from app.scrapers.base import http_client
+
+    out = []
+    with http_client(timeout=15) as client:
+        for url in feeds:
+            try:
+                r = client.get(url)
+                r.raise_for_status()
+                root = ET.fromstring(r.content)
+                items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
+                for it in items[:max_items]:
+                    title = (it.findtext("title") or it.findtext("{http://www.w3.org/2005/Atom}title") or "").strip()
+                    desc = (it.findtext("description") or it.findtext("{http://www.w3.org/2005/Atom}summary") or "")
+                    link = (it.findtext("link") or "").strip() or (it.find("{http://www.w3.org/2005/Atom}link").get("href") if it.find("{http://www.w3.org/2005/Atom}link") is not None else "")
+                    out.append(f"- {title}: {re.sub(r'<[^>]+>', ' ', desc)[:300].strip()} ({link})")
+            except Exception as e:  # noqa: BLE001
+                log.warning("rss %s failed: %s", url, e)
+    return "\n".join(out)
+
+
 def scan_why_now(keyword_set_id: str) -> dict:
     ks = db.get(db.KEYWORD_SETS, keyword_set_id)
     v = ks.get("vertical") or ks["name"]
     persona = ks.get("description") or v
+    feeds = ((ks.get("sources") or {}).get("rss") or {}).get("feeds") or []
     ctx = "\n".join(x for x in (
         web_search(f"{v} new regulation 2026 deadline small business software", 6, topic="news", days=120),
         web_search(f"{v} software price increase OR discontinued OR shutting down 2026", 5, topic="news", days=120),
+        _rss_context(feeds) if feeds else "",
     ) if x)
     if not ctx:
         return {"items": 0, "reason": "no search results / no TAVILY_API_KEY"}

@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     llm_rpm: int = 50
     llm_batch_size: int = 25
     tavily_api_key: str = ""
+    youtube_api_key: str = ""
 
     public_base_url: str = "http://localhost:8000"
 
