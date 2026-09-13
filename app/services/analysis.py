@@ -792,6 +792,8 @@ DISCOVERY_PROMPT = """You help a solo founder find BLUE-OCEAN B2B verticals: pro
 software that is either absent or generic. Avoid: tools for founders/developers/marketers (red ocean), consumer apps, enterprise.
 Given what we already monitor and what we learned, propose 5 NEW verticals or sub-verticals to monitor, with concrete sources.
 Prefer European/Italian angles where a recent regulation or platform change creates a why-now.
+STRICT RULES: only name subreddits, forums, products and regulations that you are CERTAIN exist (they will be verified; invented names
+disqualify the proposal). If unsure, leave the list empty. Use the web search results above to ground regulation names and dates.
 
 ALREADY MONITORED: {existing}
 CLUSTERS FOUND SO FAR (name :: vertical :: signals :: attack_vector): {clusters}
@@ -810,7 +812,9 @@ def discover_verticals() -> dict:
     data = llm_json(DISCOVERY_PROMPT.format(
         existing=", ".join(f"{k['name']} ({k.get('vertical')})" for k in sets),
         clusters="; ".join(f"{c['name']} :: {c.get('vertical')} :: {c.get('signal_count')} :: {c.get('dominant_attack_vector')}" for c in clusters),
-        rising=", ".join(dict.fromkeys(rising))[:1500] or "(none)"), DiscoveryResponse, temperature=0.6)
+        rising=", ".join(dict.fromkeys(rising))[:1500] or "(none)"), DiscoveryResponse, temperature=0.4,
+        grounded=True, search_queries=["new EU regulation 2026 small business compliance deadline software",
+                                       "underserved vertical SaaS niches 2026 small business trades professionals"])
     existing_names = {k["name"] for k in sets}
     created = []
     for p in data.get("proposals", []):
@@ -825,9 +829,12 @@ def discover_verticals() -> dict:
             sources["trends"] = {"keywords": p["trend_keywords"][:4] + ["crm software"], "geo": "", "timeframe": "today 12-m"}
         if p.get("producthunt_keywords"):
             sources["producthunt"] = {"topics": ["saas"], "keywords": p["producthunt_keywords"]}
+        # subreddits are NOT verified until the Reddit API is live: keep them aside, not in `sources`
+        unverified = {"subreddits": p.get("subreddits") or [], "apps": p.get("candidate_apps_to_review") or []}
+        sources.pop("reddit", None)
         db.upsert(db.KEYWORD_SETS, None, {
             "name": p["name"], "vertical": p["vertical"], "country": p.get("country") or "", "description": p["rationale"],
-            "is_active": False, "proposed_by": "llm", "candidate_apps_to_review": p.get("candidate_apps_to_review") or [],
+            "is_active": False, "proposed_by": "llm", "unverified": unverified, "review_note": "LLM proposal: verify every name before activating",
             "keywords": [], "sources": sources, "created_at": db.now()})
         created.append(p["name"])
     return {"proposed": created, "calls": budget.calls}
