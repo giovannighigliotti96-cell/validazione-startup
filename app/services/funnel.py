@@ -68,6 +68,8 @@ def collect_metrics(cluster: dict, opp: dict) -> dict[str, Any]:
         "sources": cluster.get("distinct_sources") or 0,
         "authors": cluster.get("distinct_authors") or 0,
         "heuristic_avg": cluster.get("heuristic_avg") or 0.0,
+        # language-agnostic willingness-to-pay: best of regex heuristic (EN) and LLM-derived proxy (any language)
+        "wtp_avg": max(cluster.get("heuristic_avg") or 0.0, cluster.get("llm_wtp_avg") or 0.0),
         "velocity_30d": cluster.get("velocity_30d"),
         "recent_share": cluster.get("recent_share_30d"),
         "dominant_attack_vector": cluster.get("dominant_attack_vector"),
@@ -115,6 +117,7 @@ def _check(key: str, threshold: Any, m: dict[str, Any]) -> tuple[bool, str]:
         "min_sources": lambda: ge("sources"),
         "min_authors": lambda: ge("authors"),
         "min_heuristic_avg": lambda: ge("heuristic_avg"),
+        "min_wtp_avg": lambda: ge("wtp_avg"),
         "min_velocity_30d": lambda: ge("velocity_30d"),
         "min_recent_share": lambda: ge("recent_share"),  # share of the cluster's signals published in the last 30 days
         "require_market_components": lambda: req("market_components_complete"),
@@ -169,7 +172,7 @@ def compute_overall_score(m: dict[str, Any]) -> float:
     """0-100. Weights are placeholders."""
     score = 0.0
     score += min(m["signals"] / 50, 1) * 10                      # demand volume
-    score += min(m["heuristic_avg"] / 5, 1) * 15                  # willingness-to-pay proxies
+    score += min(m.get("wtp_avg", m["heuristic_avg"]) / 5, 1) * 15   # willingness-to-pay proxies
     score += {"blue": 15, "purple": 8, "red": 0}.get(m.get("saturation") or "", 0)
     score += {"no_solution_exists": 10, "feature_gap": 7, "price_complaint": 2}.get(m.get("dominant_attack_vector") or "", 0)
     sam = m.get("sam_eur") or 0
@@ -280,6 +283,12 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
         now = db.now()
         last30 = sum(1 for d in dates if d >= now - timedelta(days=30))
         prev30 = sum(1 for d in dates if now - timedelta(days=60) <= d < now - timedelta(days=30))
+        def _llm_wtp(sig: dict) -> float | None:
+            md = sig.get("llm_metadata") or {}
+            if sig.get("llm_urgency") is None:
+                return None
+            return min(10.0, float(sig["llm_urgency"]) * 1.2 + (2.5 if (md.get("quantified_pain") or "").strip() else 0) + (1.5 if md.get("mentioned_tools") else 0))
+        llm_vals = [v for v in (_llm_wtp(s) for s in sigs) if v is not None]
         av = Counter(s.get("attack_vector") for s in sigs if s.get("attack_vector"))
         n_av = sum(av.values()) or 1
         stats = {
@@ -291,6 +300,7 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
             "distinct_sources": len({s["source"] for s in sigs}),
             "distinct_authors": len({s.get("author_hash") for s in sigs if s.get("author_hash")}),
             "heuristic_avg": round(sum(s.get("heuristic_score") or 0 for s in sigs) / len(sigs), 2),
+            "llm_wtp_avg": round(sum(llm_vals) / len(llm_vals), 2) if llm_vals else None,
             "first_seen": min(dates) if dates else None,
             "last_seen": max(dates) if dates else None,
             "velocity_30d": (last30 / prev30) if prev30 else (float(last30) if last30 else None),

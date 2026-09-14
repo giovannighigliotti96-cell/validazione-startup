@@ -18,7 +18,8 @@ FUNNEL_STAGES = [
     dict(position=2, key="problem_clustered", name="Problema ricorrente",
          description="Il problema è espresso da più persone, su più fonti, non da un singolo thread.",
          # min_sources 2 until Reddit is live (then 3). min_recent_share: >=50% of signals from the last 30 days = problem alive.
-         criteria={"min_signals": 20, "min_sources": 2, "min_authors": 15, "min_heuristic_avg": 3.0, "min_recent_share": 0.5,
+         # min_wtp_avg = max(regex heuristic, LLM proxy from urgency/quantified pain/tools) -> works for DE/FR/IT sources too
+         criteria={"min_signals": 20, "min_sources": 2, "min_authors": 15, "min_wtp_avg": 3.0, "min_recent_share": 0.5,
                    "attack_vector_in": ["feature_gap", "no_solution_exists"], "min_attackable_share": 0.5},
          notify=False, is_terminal=False),
     dict(position=3, key="market_sized", name="Mercato stimato",
@@ -144,7 +145,8 @@ KEYWORD_SETS = [
          sources={
              "forum": {"forums": [{"base_url": "https://community.shopify.com", "categories": [], "searches": ["is there an app that", "manually every", "spreadsheet"]}], "topics_per_forum": 30, "posts_per_topic": 3},
              "reddit": {"subreddits": ["shopify", "ecommerce"], "sorts": ["new", "top"], "time_filter": "month"},
-             "youtube": {"queries": ["shopify inventory management small store workflow"], "videos_per_query": 3},
+             "youtube": {"queries": ["shopify inventory reconciliation spreadsheet", "shopify reorder point purchase orders small store",
+                                     "shopify profit margin tracking spreadsheet cogs", "shopify multi channel inventory sync manual"], "videos_per_query": 4},
              "producthunt": {"topics": ["e-commerce"], "keywords": []},
          }),
     # --- Hand-curated verticals with REAL communities (buyers, not builders). Reddit runs once REDDIT_CLIENT_ID is set.
