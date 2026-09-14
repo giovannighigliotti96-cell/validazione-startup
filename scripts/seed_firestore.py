@@ -141,7 +141,7 @@ KEYWORD_SETS = [
          }),
     dict(name="ecommerce_merchants", vertical="ecommerce_smb", is_active=True,
          description="Merchant Shopify (compratori, non builder): operazioni, inventario, spedizioni, contabilità.",
-         keywords=["is there an app", "manually", "spreadsheet", "wish", "hours", "no app", "can't find"],
+         keywords=[],  # no local filter: the LLM noise/attack_vector gate does the filtering
          sources={
              "forum": {"forums": [{"base_url": "https://community.shopify.com", "categories": [], "searches": ["is there an app that", "manually every", "spreadsheet"]}], "topics_per_forum": 30, "posts_per_topic": 3},
              "reddit": {"subreddits": ["shopify", "ecommerce"], "sorts": ["new", "top"], "time_filter": "month"},
@@ -231,7 +231,7 @@ KEYWORD_SETS = [
 
 def main() -> None:
     for st in FUNNEL_STAGES:
-        db.upsert(db.FUNNEL_STAGES, st["key"], st)
+        db.upsert(db.FUNNEL_STAGES, st["key"], st, merge=False)  # criteria must be REPLACED, not merged (old keys would linger)
     print(f"funnel_stages: {len(FUNNEL_STAGES)} upserted")
 
     existing = {k["name"]: k["id"] for k in db.list_all(db.KEYWORD_SETS)}
