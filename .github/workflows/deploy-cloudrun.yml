@@ -6,10 +6,9 @@
 #   - secret RUNTIME_ENV = contenuto del .env di produzione (una riga per variabile, senza GOOGLE_APPLICATION_CREDENTIALS)
 name: deploy-cloudrun
 
+# Manual only: the deploy is normally done from a local gcloud (see README "Deploy attuale").
+# To enable automatic deploys, add secrets GCP_SA_KEY + RUNTIME_ENV and restore the `push` trigger.
 on:
-  push:
-    branches: [main]
-    paths: ["app/**", "scripts/**", "requirements.txt", "Dockerfile", ".github/workflows/deploy-cloudrun.yml"]
   workflow_dispatch:
 
 env:
