@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     llm_max_calls_per_run: int = 400
     llm_rpm: int = 50
     llm_batch_size: int = 25
+    # Strong tier (few calls/month: enrichment, competitors, market, founder fit, discovery, interviews)
+    llm_strong_base_url: str = ""
+    llm_strong_api_key: str = ""
+    llm_strong_model: str = ""
+    llm_strong_rpm: int = 20
     tavily_api_key: str = ""
     youtube_api_key: str = ""
 

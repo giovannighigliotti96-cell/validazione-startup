@@ -87,6 +87,7 @@ class OpportunityPatch(BaseModel):
     barriers: dict[str, bool] | None = None
     why_now: str | None = None
     prior_failed_attempts: str | None = None
+    n_reachable_linkedin: int | None = None      # people with the persona's title reachable on LinkedIn (IT/EU) — fill by hand from Sales Navigator
     notes: str | None = None
     is_archived: bool | None = None
     archive_reason: str | None = None

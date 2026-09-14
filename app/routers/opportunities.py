@@ -294,3 +294,9 @@ def digest_preview():
 @router.post("/digest/send")
 def digest_send():
     return {"status": funnel.send_weekly_digest()}
+
+
+@router.get("/calibration")
+def calibration():
+    """Where clusters die (per vertical), which criteria block most, and your archive reasons. Use it to tune funnel_stages."""
+    return funnel.calibration_report()

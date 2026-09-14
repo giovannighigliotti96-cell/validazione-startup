@@ -85,19 +85,26 @@ class RateLimited(RuntimeError):
 
 
 budget = Budget()
-_client = None
+_clients: dict[str, Any] = {}
 
 
-def _llm():
-    global _client
-    if _client is None:
-        from openai import OpenAI
+def _tier(strong: bool) -> tuple[str, str, str, int]:
+    """(base_url, api_key, model, rpm) for the requested tier; falls back to the cheap tier if strong is not configured."""
+    s = get_settings()
+    if strong and s.llm_strong_api_key and s.llm_strong_model:
+        return (s.llm_strong_base_url or s.llm_base_url, s.llm_strong_api_key, s.llm_strong_model, s.llm_strong_rpm)
+    if not s.llm_api_key:
+        raise RuntimeError("LLM_API_KEY not set")
+    return (s.llm_base_url, s.llm_api_key, s.llm_model, s.llm_rpm)
 
-        s = get_settings()
-        if not s.llm_api_key:
-            raise RuntimeError("LLM_API_KEY not set")
-        _client = OpenAI(api_key=s.llm_api_key, base_url=s.llm_base_url)
-    return _client
+
+def _llm(strong: bool = False):
+    from openai import OpenAI
+
+    base, key, model, _ = _tier(strong)
+    if base not in _clients:
+        _clients[base] = OpenAI(api_key=key, base_url=base)
+    return _clients[base], model
 
 
 def _strip_fences(text: str) -> str:
@@ -126,7 +133,8 @@ def web_search(query: str, max_results: int = 6, topic: str = "general", days: i
 
 @retry(retry=retry_if_exception_type(RateLimited), stop=stop_after_attempt(5), wait=wait_exponential(multiplier=5, min=5, max=60))
 def llm_json(prompt: str, schema: type[BaseModel] | None = None, grounded: bool = False, temperature: float = 0.2,
-             search_queries: list[str] | None = None) -> Any:
+             search_queries: list[str] | None = None, strong: bool = False) -> Any:
+    """strong=True routes to LLM_STRONG_* (e.g. gpt-oss-120b on Groq) — use for the few calls that decide."""
     from openai import APIStatusError, RateLimitError
 
     context = ""
@@ -136,9 +144,10 @@ def llm_json(prompt: str, schema: type[BaseModel] | None = None, grounded: bool 
             context = f"WEB SEARCH RESULTS (use these, cite URLs; if insufficient say so in notes):\n{joined}\n\n"
     schema_txt = f"\n\nRespond with a single JSON object matching this JSON Schema exactly:\n{json.dumps(schema.model_json_schema())}" if schema else ""
     budget.tick()
+    client, model = _llm(strong)
     try:
-        resp = _llm().chat.completions.create(
-            model=get_settings().llm_model, temperature=temperature, response_format={"type": "json_object"}, max_tokens=8000,
+        resp = client.chat.completions.create(
+            model=model, temperature=temperature, response_format={"type": "json_object"}, max_tokens=8000,
             messages=[
                 {"role": "system", "content": "You are a precise analyst. Output ONLY valid JSON, no prose, no markdown fences."},
                 {"role": "user", "content": context + prompt + schema_txt},
@@ -548,9 +557,12 @@ Return ONLY a JSON object with this exact shape:
 }}
 """
 
-COMPETITOR_PROMPT = """Find existing products that solve (or claim to solve) this problem. Use the web search results above (if any) plus your knowledge of G2, Capterra, Product Hunt.
+COMPETITOR_PROMPT = """Find existing products that solve (or claim to solve) this problem. Use ONLY the web search results above plus products you are CERTAIN exist
+(every URL will be verified; invented products disqualify the analysis). Cover BOTH the US/global landscape (G2, Capterra, Product Hunt)
+AND the European one (Capterra.it/.de/.fr, Appvizer, OMR Reviews, GetApp): say explicitly whether a localized EU/Italian player exists.
 Problem: {statement}
 Persona: {persona}
+Vertical: {vertical}
 
 Return ONLY a JSON object:
 {{
@@ -559,6 +571,8 @@ Return ONLY a JSON object:
       "pricing_monthly_usd": <number|null>, "founded_year": <int|null>, "funding_usd": <number|null>, "is_dead": <bool>, "notes": "..."}}
   ],
   "leader_reviews": <reviews count of the category leader, or null>,
+  "eu_localized_player_exists": <bool>,
+  "eu_landscape_notes": "which EU/IT/DE/FR players exist (or none) and how well they cover this persona",
   "saturation": "blue|purple|red",
   "saturation_notes": "how many credible players, how entrenched, are they solving it well for THIS persona",
   "prior_failed_attempts": "dead/pivoted products in this space and the likely reason, or 'none found'"
@@ -604,7 +618,7 @@ def score_cluster(cluster_id: str) -> dict:
     why_now = "\n".join(f"- {w.get('title')}: {w.get('summary')} ({w.get('url')})" for w in (ks.get("why_now_candidates") or [])[:8]) or "(none)"
     data = llm_json(SCORE_PROMPT.format(name=c["name"], statement=c.get("problem_statement"), persona=c.get("persona"),
                                         attack=json.dumps(c.get("attack_vector_dist") or {}), why_now=why_now,
-                                        n=c.get("signal_count"), signals=sample), ScoreResponse)
+                                        n=c.get("signal_count"), signals=sample), ScoreResponse, strong=True)
     db.upsert(db.PROBLEM_CLUSTERS, cluster_id, {
         "name": data["name"], "problem_statement": data["problem_statement"], "persona": data["persona"],
         "urgency_score": data["urgency_score"], "frequency_score": data["frequency_score"], "wtp_score": data["wtp_score"],
@@ -618,8 +632,9 @@ def score_cluster(cluster_id: str) -> dict:
 def estimate_market_components(cluster_id: str) -> dict:
     c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
     data = llm_json(MARKET_PROMPT.format(statement=c.get("problem_statement"), persona=c.get("persona"), vertical=c.get("vertical")),
-                    grounded=True, search_queries=[f"number of {c.get('persona')} worldwide statistics",
-                                                   f"{c.get('vertical')} software pricing per month {c.get('persona')}"])
+                    grounded=True, strong=True, search_queries=[f"number of {c.get('persona')} worldwide statistics",
+                                                                f"number of {c.get('persona')} in Europe Italy Germany France",
+                                                                f"{c.get('vertical')} software pricing per month {c.get('persona')}"])
     out = {}
     for comp in market.COMPONENTS:
         d = data.get(comp)
@@ -628,11 +643,75 @@ def estimate_market_components(cluster_id: str) -> dict:
     return out
 
 
-def find_competitors(cluster_id: str) -> dict:
+def verify_url(url: str | None) -> bool:
+    """Anti-hallucination: a competitor only counts if its website answers. HEAD then GET, 8s, any 2xx/3xx."""
+    if not url or not url.startswith("http"):
+        return False
+    from app.scrapers.base import http_client
+
+    try:
+        with http_client(timeout=8) as client:
+            r = client.head(url)
+            if r.status_code >= 400 or r.status_code == 405:
+                r = client.get(url)
+            # 401/403/429/5xx = the site exists but blocks bots; only "not found" means hallucinated
+            return r.status_code not in (404, 410)
+    except Exception:  # noqa: BLE001
+        # DNS failure / connection refused -> does not exist; a timeout on a real host is ambiguous -> retry the bare domain
+        try:
+            from urllib.parse import urlparse
+
+            host = urlparse(url).netloc
+            with http_client(timeout=8) as client:
+                return client.get(f"https://{host}/").status_code not in (404, 410)
+        except Exception:  # noqa: BLE001
+            return False
+
+
+_SAT_RANK = {"blue": 0, "purple": 1, "red": 2}
+
+
+def find_competitors(cluster_id: str, passes: int = 2) -> dict:
+    """
+    Two independent grounded passes with different search angles; competitors are unioned (after URL verification)
+    and the saturation verdict is the MOST SEVERE of the passes. A single-call verdict flips between runs — a sniper
+    needs the conservative one.
+    """
     c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
-    data = llm_json(COMPETITOR_PROMPT.format(statement=c.get("problem_statement"), persona=c.get("persona")),
-                    grounded=True, search_queries=[f"best software for {c.get('persona')} {c.get('name')}", f"{c.get('name')} tool G2 Capterra reviews"])
-    comps = [x for x in data.get("competitors", []) if isinstance(x, dict) and x.get("name")]
+    persona, name, stmt = c.get("persona") or "", c.get("name") or "", c.get("problem_statement") or ""
+    angles = [
+        [f"best software for {persona} {name}", f"site:capterra.com {name} software",
+         f"site:capterra.it OR site:capterra.de OR site:capterra.fr {name}", f"{name} software pricing per month"],
+        [f"{stmt[:80]} tool", f"{persona} {name} alternatives comparison 2026",
+         f"site:appvizer.com OR site:omr.com/reviews OR site:getapp.com {name}", f"{name} app reviews G2"],
+    ]
+    data: dict[str, Any] = {"competitors": []}
+    for i in range(max(1, passes)):
+        d = llm_json(COMPETITOR_PROMPT.format(statement=stmt, persona=persona, vertical=c.get("vertical")),
+                     grounded=True, strong=True, search_queries=angles[i % len(angles)])
+        data["competitors"] += [x for x in d.get("competitors", []) if isinstance(x, dict) and x.get("name")]
+        for k in ("leader_reviews",):
+            if isinstance(d.get(k), (int, float)) and (data.get(k) is None or d[k] > data[k]):
+                data[k] = d[k]
+        if _SAT_RANK.get(d.get("saturation"), -1) > _SAT_RANK.get(data.get("saturation"), -1):
+            data["saturation"] = d["saturation"]
+            data["saturation_notes"] = d.get("saturation_notes")
+        data["eu_localized_player_exists"] = bool(data.get("eu_localized_player_exists")) or bool(d.get("eu_localized_player_exists"))
+        for k in ("eu_landscape_notes", "prior_failed_attempts"):
+            data[k] = " | ".join(x for x in (data.get(k), d.get(k)) if x)
+    # dedupe by normalized name
+    seen: dict[str, dict] = {}
+    for x in data["competitors"]:
+        key = re.sub(r"\W+", "", x["name"].lower())
+        if key not in seen or (x.get("pricing_monthly_usd") and not seen[key].get("pricing_monthly_usd")):
+            seen[key] = x
+    comps = list(seen.values())
+    verified, rejected = [], []
+    for x in comps:
+        (verified if verify_url(x.get("url")) else rejected).append(x)
+    if rejected:
+        log.warning("competitors rejected (URL not reachable / hallucinated): %s", [r.get("name") for r in rejected])
+    comps = verified
     for x in comps:
         ext = re.sub(r"\W+", "-", x["name"].lower()).strip("-")
         db.upsert(db.COMPETITOR_SIGNALS, db.safe_id("llm", ext), {
@@ -641,11 +720,27 @@ def find_competitors(cluster_id: str) -> dict:
             "pricing_monthly_usd": x.get("pricing_monthly_usd"), "founded_year": x.get("founded_year"), "funding_usd": x.get("funding_usd"),
             "is_dead": x.get("is_dead"), "notes": x.get("notes"), "captured_at": db.now()})
     sat = data.get("saturation") if data.get("saturation") in ("blue", "purple", "red") else None
+    # if the model hallucinated most of its list, its saturation verdict is not trustworthy either
+    trust = (len(comps) / len(verified + rejected)) if (verified or rejected) else 1.0
+    if trust < 0.5:
+        sat = None
     db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {
         "competitor_count": len([x for x in comps if not x.get("is_dead")]), "leader_reviews": data.get("leader_reviews"),
         "dead_products_found": len([x for x in comps if x.get("is_dead")]),
+        "competitors_rejected": [r.get("name") for r in rejected], "competitor_trust": round(trust, 2),
+        "eu_localized_player_exists": data.get("eu_localized_player_exists"), "eu_landscape_notes": data.get("eu_landscape_notes"),
         "saturation": sat, "saturation_notes": data.get("saturation_notes"), "prior_failed_attempts": data.get("prior_failed_attempts")})
-    return {"competitors": len(comps), "saturation": sat}
+    prices = [float(x["pricing_monthly_usd"]) for x in comps if isinstance(x.get("pricing_monthly_usd"), (int, float)) and x["pricing_monthly_usd"] > 0]
+    if prices:
+        opp = db.get(db.OPPORTUNITY_SCORING, cluster_id) or {}
+        cur = (opp.get("market_estimates") or {}).get("annual_spend") or {}
+        if cur.get("method") in (None, "assumption") or cur.get("confidence") == "low":
+            med = sorted(prices)[len(prices) // 2]
+            market.set_component(cluster_id, "annual_spend", {
+                "value": round(med * 12 * 0.92), "unit": "EUR/year", "method": "competitor_pricing", "confidence": "medium",
+                "source_url": next((x.get("url") for x in comps if x.get("pricing_monthly_usd")), None),
+                "notes": f"median of {len(prices)} verified competitor monthly prices x12 (USD->EUR ~0.92)"}, created_by="llm")
+    return {"competitors": len(comps), "rejected": len(rejected), "saturation": sat, "pricing_points": len(prices)}
 
 
 def assess_founder_fit(cluster_id: str) -> dict:
@@ -654,7 +749,7 @@ def assess_founder_fit(cluster_id: str) -> dict:
     comps = db.list_all(db.COMPETITOR_SIGNALS, cluster_id=cluster_id)
     data = llm_json(FOUNDER_PROMPT.format(profile=FOUNDER_PROFILE, statement=c.get("problem_statement"), persona=c.get("persona"),
                                           saturation=o.get("saturation"), saturation_notes=o.get("saturation_notes"),
-                                          competitors=", ".join(x["name"] for x in comps[:12]) or "none found"), FounderFitResponse)
+                                          competitors=", ".join(x["name"] for x in comps[:12]) or "none found"), FounderFitResponse, strong=True)
     db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {
         "founder_fit": data["founder_fit"], "acquisition_channel": data["acquisition_channel"],
         "acquisition_channel_reachable": data["acquisition_channel_reachable"], "barriers": data["barriers"],
@@ -736,7 +831,7 @@ def ingest_interview_notes(cluster_id: str, notes: str, meta: dict | None = None
     c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
     if not c:
         raise ValueError("cluster not found")
-    data = llm_json(INTERVIEW_PROMPT.format(statement=c.get("problem_statement"), persona=c.get("persona"), notes=notes[:12000]), InterviewExtract)
+    data = llm_json(INTERVIEW_PROMPT.format(statement=c.get("problem_statement"), persona=c.get("persona"), notes=notes[:12000]), InterviewExtract, strong=True)
     doc = {**data, **(meta or {}), "notes": notes, "cluster_id": cluster_id, "created_at": db.now()}
     iid = db.new_id()
     db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("interviews").document(iid).set(doc)
@@ -764,7 +859,7 @@ Tone: human, curious, no product pitch, no "would you pay". Messages in English 
 def recruiting_pack(cluster_id: str) -> dict:
     c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
     data = llm_json(RECRUIT_PROMPT.format(statement=c.get("problem_statement"), persona=c.get("persona"), vertical=c.get("vertical"),
-                                          questions=json.dumps(c.get("mom_test_questions") or [])), RecruitingPack, temperature=0.5)
+                                          questions=json.dumps(c.get("mom_test_questions") or [])), RecruitingPack, temperature=0.5, strong=True)
     db.upsert(db.PROBLEM_CLUSTERS, cluster_id, {"recruiting_pack": {**data, "generated_at": db.now()}})
     return data
 
@@ -813,7 +908,7 @@ def discover_verticals() -> dict:
         existing=", ".join(f"{k['name']} ({k.get('vertical')})" for k in sets),
         clusters="; ".join(f"{c['name']} :: {c.get('vertical')} :: {c.get('signal_count')} :: {c.get('dominant_attack_vector')}" for c in clusters),
         rising=", ".join(dict.fromkeys(rising))[:1500] or "(none)"), DiscoveryResponse, temperature=0.4,
-        grounded=True, search_queries=["new EU regulation 2026 small business compliance deadline software",
+        grounded=True, strong=True, search_queries=["new EU regulation 2026 small business compliance deadline software",
                                        "underserved vertical SaaS niches 2026 small business trades professionals"])
     existing_names = {k["name"] for k in sets}
     created = []

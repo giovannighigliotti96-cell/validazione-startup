@@ -348,3 +348,45 @@ def send_weekly_digest() -> str:
     db.upsert(db.NOTIFICATIONS, None, {"cluster_id": None, "stage_key": "digest", "channel": "email", "subject": subject,
                                         "recipient": get_settings().notify_email_to, "status": status, "error": err, "sent_at": db.now()})
     return status
+
+
+# ----------------------------------------------------------------------------
+# calibration report: where do clusters die, per vertical, and why
+# ----------------------------------------------------------------------------
+def calibration_report() -> dict:
+    from collections import Counter, defaultdict
+
+    stages = get_stages()
+    keys = [s["key"] for s in stages]
+    by_key = {s["key"]: s for s in stages}
+    clusters = {c["id"]: c for c in db.list_all(db.PROBLEM_CLUSTERS)}
+    per_vertical: dict[str, dict] = defaultdict(lambda: {"clusters": 0, "archived": 0, "by_stage": Counter(), "blocking": Counter(), "attack": Counter()})
+    archive_reasons: list[dict] = []
+    for o in db.list_all(db.OPPORTUNITY_SCORING):
+        c = clusters.get(o["cluster_id"])
+        if not c:
+            continue
+        v = per_vertical[c.get("vertical") or "?"]
+        v["clusters"] += 1
+        v["attack"][c.get("dominant_attack_vector") or "none"] += 1
+        if o.get("is_archived"):
+            v["archived"] += 1
+            archive_reasons.append({"cluster": c.get("name"), "vertical": c.get("vertical"), "reason": o.get("archive_reason")})
+            continue
+        stage = o.get("funnel_stage") or keys[0]
+        v["by_stage"][stage] += 1
+        idx = keys.index(stage) if stage in keys else 0
+        if idx + 1 < len(keys):
+            _, ev = check_stage(by_key[keys[idx + 1]], collect_metrics(c, o))
+            for k, val in ev.items():
+                if val.startswith("✘"):
+                    v["blocking"][k] += 1
+    out = {}
+    for name, v in per_vertical.items():
+        out[name] = {"clusters": v["clusters"], "archived": v["archived"], "by_stage": dict(v["by_stage"]),
+                     "top_blocking_criteria": v["blocking"].most_common(4), "attack_vectors": dict(v["attack"])}
+    total_block = Counter()
+    for v in per_vertical.values():
+        total_block.update(v["blocking"])
+    return {"per_vertical": out, "overall_blocking": total_block.most_common(8), "archive_reasons": archive_reasons[-30:],
+            "hint": "A criterion blocking >80% of attackable clusters across ALL verticals is a threshold problem; one blocking a single vertical is a data/source problem."}
