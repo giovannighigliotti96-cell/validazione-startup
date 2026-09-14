@@ -1,0 +1,138 @@
+"""
+Human explanations of funnel criteria (Italian). The funnel speaks in keys ("min_sources") — the founder
+reads sentences: what is measured, current value vs required, and what to do about it.
+"""
+from __future__ import annotations
+
+from typing import Any
+
+STAGE_LABELS = {
+    "signal_collected": "1 · Segnali raccolti",
+    "problem_clustered": "2 · Problema ricorrente",
+    "market_sized": "3 · Mercato stimato",
+    "competition_checked": "4 · Competizione verificata",
+    "founder_fit_checked": "5 · Founder fit",
+    "interviews_done": "6 · Interviste fatte",
+    "presale_validation": "7 · Verifica che paghino",
+    "validated": "8 · Validata",
+}
+
+STAGE_ORDER = list(STAGE_LABELS)
+
+
+def _pct(v) -> str:
+    try:
+        return f"{float(v) * 100:.0f}%"
+    except (TypeError, ValueError):
+        return "—"
+
+
+def _num(v) -> str:
+    if v is None:
+        return "—"
+    try:
+        f = float(v)
+        return f"{int(f)}" if f.is_integer() else f"{f:.1f}"
+    except (TypeError, ValueError):
+        return str(v)
+
+
+def _eur(v) -> str:
+    if v is None:
+        return "—"
+    v = float(v)
+    return f"€{v/1e6:.0f}M" if v >= 1e6 else f"€{v/1e3:.0f}k"
+
+
+def explain(key: str, threshold: Any, m: dict[str, Any]) -> dict[str, str]:
+    """Returns {"label", "current", "required", "why", "action"} for one failing criterion."""
+    src_n = m.get("sources") or 0
+    table: dict[str, dict[str, str]] = {
+        "min_signals": dict(label="Volume di segnali", current=_num(m.get("signals")), required=f"≥ {threshold}",
+                            why="Servono abbastanza persone che descrivono lo stesso problema perché non sia un caso isolato.",
+                            action="Nessuna azione: lo scraping ogni 6 ore accumula. Se resta fermo per settimane, il problema è raro."),
+        "min_authors": dict(label="Persone diverse", current=_num(m.get("authors")), required=f"≥ {threshold}",
+                            why="Contiamo gli autori distinti, non i messaggi: 30 post della stessa persona valgono 1.",
+                            action="Come sopra: accumulo. Reddit moltiplica gli autori."),
+        "min_sources": dict(label="Fonti indipendenti", current=f"{src_n} ({'una sola fonte' if src_n == 1 else 'fonti'})", required=f"≥ {threshold}",
+                            why="Se tutti i segnali vengono da un unico sito, può essere un bias di quella community. Due fonti diverse (es. forum + YouTube, o Reddit + recensioni) lo escludono.",
+                            action="Aggiungi una fonte al keyword set (Reddit quando attivo, YouTube, un altro forum) o attendi che ne arrivi una."),
+        "min_recent_share": dict(label="Problema vivo oggi", current=_pct(m.get("recent_share")) + " dei segnali negli ultimi 30 gg", required=f"≥ {_pct(threshold)}",
+                                 why="Un problema discusso tre anni fa e non più oggi è probabilmente già risolto da qualcuno.",
+                                 action="Nessuna azione: se la fonte è viva, la quota sale da sola al prossimo scrape."),
+        "min_wtp_avg": dict(label="Disponibilità a pagare", current=_num(m.get("wtp_avg")) + "/10", required=f"≥ {threshold}",
+                            why="Cerchiamo segnali di budget: usano già un tool a pagamento, quantificano ore o euro persi, chiedono esplicitamente uno strumento.",
+                            action="Se resta basso, il problema è fastidioso ma non vale soldi: candidato da archiviare."),
+        "min_heuristic_avg": dict(label="Disponibilità a pagare (regex)", current=_num(m.get("heuristic_avg")) + "/10", required=f"≥ {threshold}",
+                                  why="Proxy testuale di budget (tool citati, costi, richieste di strumenti).", action="Vedi disponibilità a pagare."),
+        "attack_vector_in": dict(label="Tipo di problema", current=str(m.get("dominant_attack_vector") or "non classificato"), required="gap di funzionalità o nessuna soluzione",
+                                 why="Se la maggior parte dei segnali si lamenta di un prodotto esistente (lento, bug, supporto) non è un'opportunità: è un incumbent con clienti scontenti che restano.",
+                                 action="Nessuna: è un filtro di qualità. Se il vettore è 'quality_complaint', archivia."),
+        "min_attackable_share": dict(label="Quota di segnali attaccabili", current=_pct(m.get("attackable_share")), required=f"≥ {_pct(threshold)}",
+                                     why="Almeno metà delle persone deve descrivere un buco (nessun tool lo fa), non un difetto di un tool esistente.",
+                                     action="Nessuna: filtro di qualità."),
+        "require_market_components": dict(label="Stima di mercato", current="incompleta", required="n. clienti potenziali × spesa annua compilati",
+                                          why="Senza numero di clienti e spesa annua non esiste TAM/SAM/SOM.",
+                                          action="L'arricchimento automatico li compila; puoi correggerli a mano con PUT /opportunities/{id}/market/…"),
+        "min_sam_eur": dict(label="Mercato raggiungibile (SAM)", current=_eur(m.get("sam_eur")), required=f"≥ {_eur(threshold)}",
+                            why="Sotto questa soglia anche vincendo non c'è una startup, c'è un side project.",
+                            action="Verifica i componenti (clienti potenziali, spesa annua): se sono sottostimati correggili con fonte."),
+        "min_market_confidence": dict(label="Affidabilità della stima", current=str(m.get("market_confidence") or "—"), required=f"≥ {threshold}",
+                                      why="Un SAM da €50M con confidenza 'low' è un numero inventato.",
+                                      action="Trova una fonte reale per il numero di clienti potenziali (ISTAT, Eurostat, report di settore) e aggiornala."),
+        "require_competitors_checked": dict(label="Competitor mappati", current="non ancora", required="analisi fatta",
+                                            why="Serve sapere chi c'è già prima di decidere.", action="L'arricchimento automatico la fa; oppure POST /clusters/{id}/enrich"),
+        "max_competitor_count": dict(label="Numero di competitor", current=_num(m.get("competitor_count")), required=f"≤ {threshold}",
+                                     why="Oltre questa soglia è un mercato affollato.", action="Cerca una nicchia più stretta dentro il problema."),
+        "saturation_not_in": dict(label="Saturazione", current=str(m.get("saturation") or "—").upper(), required="non ROSSO",
+                                  why="Rosso = più di 12 player o un leader dominante che risolve bene il problema.",
+                                  action="Se rosso, archivia o restringi la persona (es. solo studi italiani)."),
+        "max_leader_reviews": dict(label="Forza del leader", current=_num(m.get("leader_reviews")) + " recensioni", required=f"≤ {threshold}",
+                                   why="Un leader con centinaia di recensioni ha già i clienti e la fiducia: batterlo da soli è quasi impossibile.",
+                                   action="Restringi a un segmento che il leader serve male (verticale, paese, lingua)."),
+        "require_dead_product_check": dict(label="Prodotti morti", current="non verificato", required="verificato",
+                                           why="Chi ci ha già provato e ha fallito ti dice il rischio nascosto.", action="Fatto dall'arricchimento automatico."),
+        "min_founder_fit": dict(label="Founder fit", current=_num(m.get("founder_fit")) + "/5", required=f"≥ {threshold}",
+                                why="Puoi arrivare ai primi 20 clienti da solo, con i tuoi canali, in 3 mesi?",
+                                action="Compila n_reachable_linkedin e il canale in PATCH /opportunities/{id}; se il fit è basso, archivia."),
+        "require_channel_reachable": dict(label="Canale raggiungibile", current="no", required="sì",
+                                          why="Senza un canale che sai usare (LinkedIn, SEO, community) non vendi.", action="Indica il canale in PATCH /opportunities/{id}."),
+        "require_why_now": dict(label="Perché adesso", current="mancante", required="presente con fonte",
+                                why="Le opportunità vere nascono da un cambiamento recente (norma, tecnologia, prezzo, piattaforma).",
+                                action="Cerca il cambiamento; se non esiste, chiediti perché nessuno l'ha fatto prima."),
+        "barriers_must_be_false": dict(label="Barriere", current=", ".join(k for k, v in (m.get("barriers") or {}).items() if v) or "nessuna", required="no regolatorio / enterprise / marketplace",
+                                       why="Per un founder solo senza network sono kill criteria, non penalità.", action="Archivia o trova un angolo senza quella barriera."),
+        "min_interviews": dict(label="Interviste fatte", current=_num(m.get("interviews")), required=f"≥ {threshold}",
+                               why="Meno di 8 conversazioni non bastano per decidere.", action="Genera il recruiting pack e fissa le interviste."),
+        "min_interview_confirm_rate": dict(label="Confermano il problema", current=_pct(m.get("interview_confirm_rate")), required=f"≥ {_pct(threshold)}",
+                                           why="Deve succedere davvero a loro, non 'sì, sarebbe utile'.", action="Se sotto soglia dopo 8 interviste: archivia."),
+        "min_interview_spontaneous_rate": dict(label="Lo dicono spontaneamente", current=_pct(m.get("interview_spontaneous_rate")), required=f"≥ {_pct(threshold)}",
+                                               why="Se lo nominano prima che tu lo descriva, è in cima ai loro pensieri.", action="Nelle prossime interviste non anticipare il problema."),
+        "min_interview_paying_rate": dict(label="Pagano già qualcosa", current=_pct(m.get("interview_paying_rate")), required=f"≥ {_pct(threshold)}",
+                                          why="Chi paga già (tool, persona, servizio) per aggirare il problema ha un budget.", action="Chiedi sempre: cosa usi oggi e quanto ti costa?"),
+        "min_interview_quantified_cost_count": dict(label="Costi quantificati", current=_num(m.get("interview_quantified_cost_count")), required=f"≥ {threshold}",
+                                                    why="Ore/settimana o euro/mese: senza numeri non puoi prezzare.", action="Chiedi 'quanto tempo ci hai messo l'ultima volta?'"),
+        "min_landing_visitors": dict(label="Visite alla landing", current=_num(m.get("landing_visitors")), required=f"≥ {threshold}",
+                                     why="Sotto questa soglia il tasso di iscrizione non è statisticamente leggibile.", action="Manda traffico: outreach + €100-200 di ads."),
+        "min_landing_signup_rate": dict(label="Iscrizioni con prezzo visibile", current=_pct(m.get("landing_signup_rate")), required=f"≥ {_pct(threshold)}",
+                                        why="Con il prezzo in pagina, chi si iscrive ha già accettato di pagare.", action="Mostra il prezzo; se il tasso crolla, il prezzo o il problema sono sbagliati."),
+        "min_presale_paid": dict(label="Hanno pagato", current=_num(m.get("presale_paid")), required=f"≥ {threshold}",
+                                 why="Solo la carta di credito valida.", action="Payment link, pre-order, sconto fondatore."),
+        "min_presale_conversion": dict(label="Conversione a pagamento", current=_pct(m.get("presale_conversion")), required=f"≥ {_pct(threshold)}",
+                                       why="Tra chi arriva alla pagina con prezzo, quanti pagano.", action="—"),
+        "min_presale_revenue_eur": dict(label="Incassato", current=_eur(m.get("presale_revenue_eur")), required=f"≥ {_eur(threshold)}", why="", action="—"),
+        "min_unanswered_asks": dict(label="Richieste senza risposta", current=_num(m.get("unanswered_asks")), required=f"≥ {threshold}",
+                                    why="Post che chiedono un tool e nessuno ne indica uno = domanda senza offerta.", action="—"),
+        "min_velocity_30d": dict(label="Trend", current=_num(m.get("velocity_30d")), required=f"≥ {threshold}", why="Segnali ultimi 30gg / 30gg precedenti.", action="—"),
+    }
+    e = table.get(key)
+    if not e:
+        return dict(label=key, current=str(m.get(key.replace("min_", "").replace("max_", ""), "—")), required=str(threshold), why="", action="")
+    return e
+
+
+def next_stage_key(current: str | None) -> str | None:
+    if current not in STAGE_ORDER:
+        return STAGE_ORDER[1]
+    i = STAGE_ORDER.index(current)
+    return STAGE_ORDER[i + 1] if i + 1 < len(STAGE_ORDER) else None

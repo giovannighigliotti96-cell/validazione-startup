@@ -49,8 +49,9 @@ def render_stage_email(cluster: dict, opp: dict, stage: dict, evidence: dict | N
         for h in (opp.get("stage_history") or [])[-8:]
     )
     questions = "".join(f"<li>{escape(q)}</li>" for q in (cluster.get("mom_test_questions") or [])[:8])
+    from app.services.explain import explain as _explain
     ev_rows = "".join(
-        f"<tr><td style='padding:4px 8px;color:#6b7280'>{escape(k)}</td><td style='padding:4px 8px'>{escape(str(v))}</td></tr>"
+        f"<tr><td style='padding:4px 8px;color:#15803d'>✔</td><td style='padding:4px 8px'>{escape(_explain(k, None, {}).get('label') or k)} <span style='color:#6b7280'>({escape(str(v).lstrip('✔✘ '))})</span></td></tr>"
         for k, v in (evidence or {}).items()
     )
 
@@ -146,48 +147,86 @@ def notify_stage(cluster: dict, opp: dict, stage: dict, evidence: dict | None = 
 
 
 def render_digest_email(d: dict) -> tuple[str, str]:
-    """Weekly digest: top clusters, what blocks them, one suggested action each."""
+    """Weekly digest, mobile-first: one card per cluster, every blocking criterion explained in plain Italian."""
+    from app.services.explain import STAGE_LABELS, STAGE_ORDER, explain
+
     s = get_settings()
     base = s.public_base_url.rstrip("/")
-    subject = f"📬 Digest settimanale — {d['total_clusters']} cluster, {d['attackable']} attaccabili, {d['new_signals_7d']} nuovi segnali"
-    stage_line = " · ".join(f"{k}: {v}" for k, v in sorted((d.get("stage_counts") or {}).items()))
-    rows = []
+    reasons_txt = {
+        "min_signals": "poco volume", "min_authors": "poche persone diverse", "min_sources": "una sola fonte",
+        "min_recent_share": "segnali non recenti", "attack_vector_in": "lamentele su prodotti esistenti", "min_wtp_avg": "poca disponibilità a pagare",
+    }
+    main = ", ".join(reasons_txt.get(k, k) for k, _ in (d.get("main_reasons") or [])[:2]) or "—"
+    subject = f"📬 Validazione · settimana: {d['new_signals_7d']} segnali nuovi, {d['attackable']} problemi attaccabili, {d.get('passed_stage2', 0)} oltre la fase 2"
+
+    def stage_strip(current: str | None) -> str:
+        cells = []
+        cur_i = STAGE_ORDER.index(current) if current in STAGE_ORDER else 0
+        for i, k in enumerate(STAGE_ORDER):
+            bg = "#1d4ed8" if i <= cur_i else "#e5e7eb"
+            cells.append(f'<td style="height:6px;background:{bg};border-radius:3px;padding:0"></td><td style="width:3px;padding:0"></td>')
+        return f'<table role="presentation" style="width:100%;border-collapse:collapse;margin:6px 0 2px"><tr>{"".join(cells)}</tr></table>'
+
+    cards = []
     for r in d["top"]:
         c, o, m = r["cluster"], r["opp"], r["metrics"]
+        it = r.get("it") or {}
         av = m.get("dominant_attack_vector") or "—"
+        av_it = {"feature_gap": "manca una funzione ai tool esistenti", "no_solution_exists": "nessun tool lo fa, lavoro manuale",
+                 "quality_complaint": "lamentele su un prodotto esistente", "price_complaint": "problema di prezzo"}.get(av, av)
         av_color = "#15803d" if av in ("feature_gap", "no_solution_exists") else "#b91c1c" if av == "quality_complaint" else "#6b7280"
-        blocking = "<br>".join(escape(v) for v in list(r["blocking"].values())[:3]) or "—"
-        action = {
-            "problem_clustered": "Aggiungi fonti verticali / attendi volume",
-            "market_sized": "Verifica i componenti TAM con una fonte (PUT /market)",
-            "competition_checked": "Controlla G2/Capterra a mano e conferma la saturazione",
-            "founder_fit_checked": "Scrivi il why-now e il canale (PATCH /opportunities)",
-            "interviews_done": "Genera il recruiting pack e fissa 8 interviste",
-            "presale_validation": "Landing con prezzo + payment link",
-            "validated": "Chiedi 5 pagamenti",
-        }.get(r["next_stage"] or "", "—")
-        rows.append(f"""
-        <tr>
-          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top">
-            <b>{escape(c.get('name') or '')}</b><br>
-            <span style="font-size:12px;color:#6b7280">{escape(c.get('vertical') or '')} · {escape(c.get('persona') or '')} · {c.get('signal_count') or 0} segnali / {c.get('distinct_authors') or 0} autori</span><br>
-            <span style="font-size:12px;color:{av_color};font-weight:600">{escape(av)}</span>
-            <span style="font-size:12px;color:#6b7280"> · {_badge(o.get('saturation'))} · SAM {_fmt_eur(o.get('sam_eur'))}</span>
-          </td>
-          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top;font-size:13px"><b>{r['score']}</b><br><span style="color:#6b7280">{escape(r['stage'] or '')}</span></td>
-          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top;font-size:12px;color:#374151">{blocking}</td>
-          <td style="padding:10px 8px;border-top:1px solid #e5e7eb;vertical-align:top;font-size:12px">{escape(action)}<br>
-            <a href="{escape(base)}/opportunities/{escape(c.get('id') or '')}" style="color:#1d4ed8">apri</a></td>
-        </tr>""")
+        sat = o.get("saturation")
+        sat_it = {"blue": "poca concorrenza", "purple": "concorrenza media", "red": "mercato affollato"}.get(sat or "", "concorrenza non ancora analizzata")
+        facts = f"{c.get('signal_count') or 0} segnali · {c.get('distinct_authors') or 0} persone · {c.get('distinct_sources') or 0} font{'e' if (c.get('distinct_sources') or 0) == 1 else 'i'}"
+        if o.get("sam_eur"):
+            facts += f" · mercato raggiungibile {_fmt_eur(o.get('sam_eur'))}"
+        blocks = []
+        for key, thr in r.get("blocking_detail") or []:
+            e = explain(key, thr, m)
+            blocks.append(f"""
+            <tr><td style="padding:8px 0;border-top:1px solid #f1f5f9">
+              <div style="font-size:14px"><b>✘ {escape(e['label'])}</b> &nbsp;<span style="color:#6b7280">oggi {escape(e['current'])} · serve {escape(e['required'])}</span></div>
+              <div style="font-size:13px;color:#374151;margin-top:2px">{escape(e['why'])}</div>
+              <div style="font-size:13px;color:#1d4ed8;margin-top:2px">→ {escape(e['action'])}</div>
+            </td></tr>""")
+        nxt = r.get("next_stage")
+        cards.append(f"""
+        <table role="presentation" style="width:100%;border-collapse:separate;border:1px solid #e5e7eb;border-radius:12px;margin:0 0 16px;background:#ffffff">
+          <tr><td style="padding:16px">
+            <div style="font-size:17px;font-weight:700;line-height:1.3">{escape(it.get('titolo') or c.get('name') or '')}</div>
+            <div style="font-size:14px;color:#374151;margin:6px 0 8px;line-height:1.45">{escape(it.get('spiegazione') or c.get('problem_statement') or '')}</div>
+            <div style="font-size:12px;color:#6b7280">{escape(c.get('vertical') or '')} · {escape(c.get('persona') or '')}</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:2px">{escape(facts)}</div>
+            <div style="font-size:12px;margin-top:6px"><span style="color:{av_color};font-weight:600">● {escape(av_it)}</span> &nbsp;·&nbsp; <span style="color:#6b7280">{escape(sat_it)}</span> &nbsp;·&nbsp; <span style="color:#6b7280">punteggio {r['score']}/100</span></div>
+            {stage_strip(r['stage'])}
+            <div style="font-size:12px;color:#6b7280">Fase attuale: <b>{escape(STAGE_LABELS.get(r['stage'] or '', r['stage'] or ''))}</b>{(' → prossima: ' + escape(STAGE_LABELS.get(nxt, nxt))) if nxt else ''}</div>
+            <div style="font-size:13px;font-weight:600;margin:12px 0 2px">Cosa manca per passare alla fase successiva</div>
+            <table role="presentation" style="width:100%;border-collapse:collapse">{''.join(blocks) or '<tr><td style="font-size:13px;color:#15803d;padding:6px 0">Nulla: passa al prossimo controllo.</td></tr>'}</table>
+            <div style="margin-top:12px;font-size:13px"><a href="{escape(base)}/opportunities/{escape(c.get('id') or '')}" style="color:#1d4ed8">Dettagli</a> &nbsp;·&nbsp; <a href="{escape(base)}/export/signals.csv?cluster_id={escape(c.get('id') or '')}" style="color:#1d4ed8">Segnali (CSV)</a></div>
+          </td></tr>
+        </table>""")
+
     html = f"""
-<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:760px;margin:0 auto;padding:24px;color:#111827">
-  <p style="margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em">Validazione start-up · digest settimanale</p>
-  <h1 style="margin:0 0 8px;font-size:20px">{d['total_clusters']} cluster · {d['attackable']} con vettore d'attacco · {d['new_signals_7d']} segnali nuovi (7gg)</h1>
-  <p style="margin:0 0 16px;font-size:13px;color:#6b7280">Fasi: {escape(stage_line) or '—'}</p>
-  <table style="width:100%;border-collapse:collapse;font-size:14px">
-    <tr style="font-size:12px;color:#6b7280;text-align:left"><th style="padding:4px 8px">Cluster</th><th style="padding:4px 8px">Score / fase</th><th style="padding:4px 8px">Cosa lo blocca</th><th style="padding:4px 8px">Azione</th></tr>
-    {''.join(rows) or '<tr><td colspan="4" style="padding:12px;color:#6b7280">Nessun cluster ancora.</td></tr>'}
+<div style="background:#f8fafc;padding:16px 0">
+<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;padding:0 12px;color:#111827">
+  <p style="margin:0 0 4px;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em">Validazione start-up · digest settimanale</p>
+  <h1 style="margin:0 0 10px;font-size:22px;line-height:1.25">Questa settimana</h1>
+  <table role="presentation" style="width:100%;border-collapse:separate;border-spacing:6px 0;margin:0 -6px 12px">
+    <tr>
+      <td style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;text-align:center;width:33%"><div style="font-size:22px;font-weight:700">{d['new_signals_7d']}</div><div style="font-size:11px;color:#6b7280">segnali nuovi</div></td>
+      <td style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;text-align:center;width:33%"><div style="font-size:22px;font-weight:700">{d['attackable']}<span style="font-size:13px;color:#6b7280">/{d['total_clusters']}</span></div><div style="font-size:11px;color:#6b7280">problemi attaccabili</div></td>
+      <td style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;text-align:center;width:33%"><div style="font-size:22px;font-weight:700">{d.get('passed_stage2', 0)}</div><div style="font-size:11px;color:#6b7280">oltre la fase 2</div></td>
+    </tr>
   </table>
-  <p style="margin:20px 0 0;font-size:12px;color:#9ca3af">Se un cluster in cima è rumore: PATCH /opportunities/{{id}} con is_archived=true e archive_reason — serve a tarare i filtri.</p>
-</div>"""
+  <p style="margin:0 0 18px;font-size:14px;color:#374151;line-height:1.5">
+    <b>In breve:</b> {"nessun problema ha ancora superato il filtro 'problema di tanti'. " if not d.get('passed_stage2') else ""}Il motivo principale è: <b>{escape(main)}</b>.
+    {"Non è un difetto: il sistema scarta finché non c'è volume da più fonti. Reddit e il tempo risolvono questo." if (d.get('main_reasons') or [("",0)])[0][0] in ("min_signals","min_authors","min_sources","min_recent_share") else ""}
+  </p>
+  <h2 style="margin:0 0 10px;font-size:15px;color:#374151">I {len(d['top'])} problemi più promettenti</h2>
+  {''.join(cards) or '<p style="color:#6b7280">Nessun cluster ancora.</p>'}
+  <p style="margin:8px 0 0;font-size:12px;color:#6b7280;line-height:1.5">
+    <b>Legenda fasi:</b> 1 segnali → 2 problema di tanti → 3 mercato → 4 concorrenza → 5 founder fit → 6 interviste → 7 pagano? → 8 validata.<br>
+    Se un problema in cima è rumore, archivialo (PATCH /opportunities/{{id}} con is_archived=true e il motivo): serve a tarare i filtri.
+  </p>
+</div></div>"""
     return subject, html

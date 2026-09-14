@@ -326,19 +326,48 @@ def build_digest(top_n: int = 5) -> dict:
         m = collect_metrics(c, o)
         idx = keys.index(o.get("funnel_stage")) if o.get("funnel_stage") in keys else 0
         blocking = {}
+        blocking_detail = []
         if idx + 1 < len(keys):
-            _, ev = check_stage(stages[keys[idx + 1]], m)
+            nxt = stages[keys[idx + 1]]
+            _, ev = check_stage(nxt, m)
             blocking = {k: v for k, v in ev.items() if v.startswith("✘")}
+            blocking_detail = [(k, (nxt.get("criteria") or {}).get(k)) for k in blocking]
         rows.append({"cluster": c, "opp": o, "score": compute_overall_score(m), "stage": o.get("funnel_stage"),
-                     "next_stage": keys[idx + 1] if idx + 1 < len(keys) else None, "blocking": blocking, "metrics": m})
+                     "next_stage": keys[idx + 1] if idx + 1 < len(keys) else None, "blocking": blocking,
+                     "blocking_detail": blocking_detail, "metrics": m})
     rows.sort(key=lambda r: r["score"], reverse=True)
+    # prefer attackable clusters at the top of the digest
+    rows.sort(key=lambda r: (r["metrics"].get("dominant_attack_vector") in ("feature_gap", "no_solution_exists"), r["score"]), reverse=True)
     week_ago = db.now() - timedelta(days=7)
     new_signals = sum(1 for _ in db.get_db().collection(db.RAW_SIGNALS).where("scraped_at", ">=", week_ago).select([]).stream())
     stage_counts: dict[str, int] = {}
     for o in opps:
         stage_counts[o.get("funnel_stage")] = stage_counts.get(o.get("funnel_stage"), 0) + 1
-    return {"top": rows[:top_n], "total_clusters": len(opps), "stage_counts": stage_counts, "new_signals_7d": new_signals,
-            "attackable": sum(1 for r in rows if r["metrics"].get("dominant_attack_vector") in ("feature_gap", "no_solution_exists"))}
+    top = rows[:top_n]
+    # Italian one-liners for the top clusters (one strong-model call; silently skipped on failure)
+    try:
+        from app.services import analysis
+
+        analysis.budget.reset()
+        items = "\n".join(f"{i}. {r['cluster'].get('name')} :: {r['cluster'].get('problem_statement') or ''} :: persona: {r['cluster'].get('persona') or ''}" for i, r in enumerate(top))
+        data = analysis.llm_json(
+            "Per ogni cluster scrivi in ITALIANO, per un founder non tecnico: 'titolo' (max 8 parole, chiaro) e 'spiegazione' "
+            "(1-2 frasi: chi ha il problema, cosa fa oggi a mano, perché gli costa). Niente gergo, niente inglese salvo nomi di prodotti.\n"
+            "Rispondi con JSON {\"items\": [{\"idx\": 0, \"titolo\": \"...\", \"spiegazione\": \"...\"}]}\n\nCLUSTER:\n" + items, strong=True, temperature=0.3)
+        for it in data.get("items", []):
+            try:
+                top[int(it["idx"])]["it"] = {"titolo": it.get("titolo"), "spiegazione": it.get("spiegazione")}
+            except (KeyError, ValueError, IndexError, TypeError):
+                continue
+    except Exception as e:  # noqa: BLE001
+        log.warning("digest italian summaries skipped: %s", e)
+    attackable = sum(1 for r in rows if r["metrics"].get("dominant_attack_vector") in ("feature_gap", "no_solution_exists"))
+    # main reason clusters are stuck, across all attackable clusters
+    from collections import Counter
+    reasons = Counter(k for r in rows if r["metrics"].get("dominant_attack_vector") in ("feature_gap", "no_solution_exists") for k in r["blocking"])
+    return {"top": top, "total_clusters": len(opps), "stage_counts": stage_counts, "new_signals_7d": new_signals,
+            "attackable": attackable, "passed_stage2": sum(1 for r in rows if r["stage"] != "signal_collected"),
+            "main_reasons": reasons.most_common(3)}
 
 
 def send_weekly_digest() -> str:
