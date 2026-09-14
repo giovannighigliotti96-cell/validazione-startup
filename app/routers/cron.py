@@ -13,7 +13,7 @@ from app.services import analysis, funnel, runner
 router = APIRouter(prefix="/cron", tags=["cron"], dependencies=[Depends(require_cron)])
 
 
-@router.post("/scrape", status_code=202)
+@router.api_route("/scrape", methods=["GET", "POST"], status_code=202)
 def cron_scrape(background: BackgroundTasks, sources: str | None = None):
     """Scrape all active keyword sets in the background, then evaluate the funnel."""
     src = sources.split(",") if sources else None
@@ -26,7 +26,7 @@ def cron_scrape(background: BackgroundTasks, sources: str | None = None):
     return {"status": "accepted"}
 
 
-@router.post("/scrape/sync")
+@router.api_route("/scrape/sync", methods=["GET", "POST"])
 def cron_scrape_sync(sources: str | None = None):
     """Blocking variant (for GitHub Actions or when you want the result in the response)."""
     src = sources.split(",") if sources else None
@@ -34,17 +34,17 @@ def cron_scrape_sync(sources: str | None = None):
     return {"runs": res, "analysis": analysis.run_full_analysis()}
 
 
-@router.post("/analyze")
+@router.api_route("/analyze", methods=["GET", "POST"])
 def cron_analyze():
     return analysis.run_full_analysis()
 
 
-@router.post("/digest")
+@router.api_route("/digest", methods=["GET", "POST"])
 def cron_digest():
     return {"status": funnel.send_weekly_digest()}
 
 
-@router.post("/funnel")
+@router.api_route("/funnel", methods=["GET", "POST"])
 def cron_funnel():
     return funnel.evaluate_all(send_notifications=True)
 
