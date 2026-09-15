@@ -276,6 +276,7 @@ class ExtractedItem(BaseModel):
     frequency: int = Field(ge=1, le=5, description="1=rare edge case, 5=daily/weekly recurring workflow pain")
     mentioned_tools: list[str] = Field(default_factory=list)
     quantified_pain: str = Field(default="", description="e.g. '5 hours/week', '$300/month', '' if none")
+    evidence_span: str = Field(default="", description="VERBATIM excerpt (10-160 chars, copied exactly from the item text) that proves the problem. Empty if noise.")
 
 
 class ExtractionResponse(BaseModel):
@@ -288,6 +289,8 @@ Be strict on `is_noise`. Reviews of a product ARE valid signals: describe the JO
 honestly — "the app crashes / is slow / bad support / new UI is worse" is quality_complaint, not an opportunity.
 Only call it feature_gap when a concrete capability is missing for a concrete segment; no_solution_exists when they resort to spreadsheets, manual work, VAs or scripts.
 Write problem_statement in English, third person, concrete. Return one record per item, same idx.
+GROUNDING: for every non-noise item copy `evidence_span` EXACTLY from the item text (a substring). It will be checked mechanically:
+if the span is not found in the text, the item is discarded as invented. Texts that are mostly page navigation, ads, or off-topic are noise.
 
 ITEMS:
 {items}
@@ -325,9 +328,16 @@ def extract_batch(signals: list[dict]) -> dict[str, dict]:
     out: dict[str, dict] = {}
     for it in data.get("items", []):
         try:
-            out[signals[int(it["idx"])]["id"]] = it
+            sig = signals[int(it["idx"])]
         except (KeyError, IndexError, ValueError, TypeError):
             continue
+        if not it.get("is_noise"):
+            # REAL, NOT INVENTED: the evidence must literally exist in the text
+            span = re.sub(r"\s+", " ", (it.get("evidence_span") or "")).strip().lower()
+            hay = re.sub(r"\s+", " ", f"{sig.get('title') or ''} {sig.get('text') or ''}").lower()
+            if len(span) < 10 or span[:80] not in hay:
+                it = {**it, "is_noise": True, "noise_reason": "evidence_span not found in text"}
+        out[sig["id"]] = it
     return out
 
 
@@ -363,7 +373,8 @@ def process_unprocessed(limit: int | None = None, keyword_set_id: str | None = N
                 "llm_frequency": None if is_noise else it.get("frequency"),
                 "attack_vector": None if is_noise else it.get("attack_vector"),
                 "llm_metadata": {
-                    "is_noise": is_noise, "persona": it.get("persona"), "attack_vector": it.get("attack_vector"),
+                    "is_noise": is_noise, "noise_reason": it.get("noise_reason"), "evidence_span": it.get("evidence_span"),
+                    "persona": it.get("persona"), "attack_vector": it.get("attack_vector"),
                     "mentioned_tools": it.get("mentioned_tools") or [], "quantified_pain": it.get("quantified_pain") or "",
                     "model": s.llm_model, "processed_at": db.now(),
                 },

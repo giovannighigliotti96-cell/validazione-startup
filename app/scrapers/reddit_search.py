@@ -25,13 +25,31 @@ from app.models import RawSignal
 from app.scrapers.base import clip, log, polite_sleep
 
 _POST = re.compile(r"reddit\.com/r/([^/]+)/comments/([a-z0-9]+)", re.I)
-_CHROME = re.compile(r"(Reddit - The heart of the internet|Skip to main content|Open menu|Log In|Get app|Get the Reddit app|Title:\s*)", re.I)
+_CHROME = re.compile(
+    r"(Reddit - The heart of the internet|Skip to main content|Open navigation\s*Go to Reddit Home|Open navigation|Go to Reddit Home|"
+    r"Sign Up\s*Sign up for Reddit to Reddit|Sign up for Reddit|Expand user menu\s*Open settings menu|Expand user menu|Open settings menu|"
+    r"Open menu|Log In|Get app|Get the Reddit app|Image \d+ Go to \w+|Go to \w+\.|\d+(\.\d+)?[KM]? Members Online|Members Online|"
+    r"Additional Keywords,?|Title:\s*|: r/\w+|r/\w+\s*#|^#+\s*)", re.I)
 
 
 def _clean(text: str) -> str:
     text = _CHROME.sub(" ", text)
-    text = re.sub(r"^#\s*", "", text.strip())
-    return re.sub(r"\s{2,}", " ", text).strip()
+    text = re.sub(r"#+\s*", " ", text)
+    text = re.sub(r"\s{2,}", " ", text).strip(" -:|.")
+    return text
+
+
+_STOP = {"the", "a", "an", "for", "to", "of", "and", "is", "in", "on", "my", "how", "do", "you", "with", "that", "there", "tool", "software",
+         "il", "la", "di", "per", "un", "una", "e", "con", "che", "come", "del", "della", "gestione", "gestionale"}
+
+
+def _relevant(query: str, text: str, min_hits: int = 2) -> bool:
+    """At least 2 meaningful query words must appear in the snippet: search engines return loosely related threads."""
+    words = [w for w in re.findall(r"[a-zà-ú]{4,}", query.lower()) if w not in _STOP]
+    if len(words) < 2:
+        return True
+    low = text.lower()
+    return sum(1 for w in words if w[:5] in low) >= min(min_hits, len(words))
 
 
 def _search(query: str, days: int, max_results: int) -> list[dict]:
@@ -84,9 +102,11 @@ def fetch(keyword_set: dict, config: dict) -> list[RawSignal]:
                 seen.add(post_id)
                 title = _clean((r.get("title") or "").replace(" : r/" + sub, ""))
                 snippet = _clean(r.get("content") or "")
-                if snippet.lower().startswith(title.lower()[:40]) and len(snippet) > len(title) + 20:
-                    snippet = snippet[len(title):].strip(" -:|")
-                if len(snippet) < 40:
+                # snippets usually repeat the title: drop every occurrence of it
+                if title and len(title) > 15:
+                    snippet = snippet.replace(title, " ").strip(" -:|.")
+                snippet = re.sub(r"\s{2,}", " ", snippet)
+                if len(snippet) < 60 or not _relevant(q, f"{title} {snippet}"):
                     continue
                 kw = matches_keywords(f"{title}\n{snippet}", keywords)
                 if kw is None:
@@ -102,7 +122,8 @@ def fetch(keyword_set: dict, config: dict) -> list[RawSignal]:
                 out.append(RawSignal(
                     source="reddit", signal_type="post", external_id=post_id,
                     url=f"https://www.reddit.com/r/{sub}/comments/{post_id}/", title=title, text=clip(snippet),
-                    author_hash=None, published_at=published or datetime.now(timezone.utc),
+                    author_hash=hashlib.sha256(f"reddit-thread:{post_id}".encode()).hexdigest()[:32],  # one thread = one person (no username stored)
+                    published_at=published or datetime.now(timezone.utc),
                     score=None, num_comments=None,
                     engagement={"via": "search_snippet", "score_hint": r.get("score")},
                     keyword=kw or q, channel=f"r/{sub}",
