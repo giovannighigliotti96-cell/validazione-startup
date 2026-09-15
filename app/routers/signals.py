@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import PlainTextResponse, Response
 
 from app import db
@@ -85,3 +85,35 @@ def list_trends(keyword_set_id: str | None = None, limit: int = 200):
     if keyword_set_id:
         q = q.where("keyword_set_id", "==", keyword_set_id)
     return [db.doc_to_dict(s) for s in q.order_by("captured_at", direction="DESCENDING").limit(limit).stream()]
+
+
+@router.post("/signals/manual", status_code=201)
+def manual_signal(body: dict = Body(...)):
+    """
+    Paste something you read yourself (a Facebook group thread, a WhatsApp message, a forum post, notes from a chat):
+    {"keyword_set_name": "sport_ski_schools", "text": "...", "url": "optional", "title": "optional", "source_label": "facebook_group",
+     "published_at": "2026-09-10" (optional), "author_label": "optional stable pseudonym to count distinct people, e.g. 'direttore scuola A'"}
+    Enters the pipeline like any scraped signal (heuristics, LLM extraction with grounding, clustering).
+    """
+    from app import heuristics
+    from app.db import hash_author
+    from app.models import RawSignal
+
+    ks = next((k for k in db.list_all(db.KEYWORD_SETS) if k["name"] == body.get("keyword_set_name")), None)
+    if not ks:
+        raise HTTPException(422, "unknown keyword_set_name (GET /keyword-sets)")
+    text = (body.get("text") or "").strip()
+    if len(text) < 30:
+        raise HTTPException(422, "text too short")
+    ext = "manual_" + db.new_id()[:16]
+    sig = RawSignal(source="forum", signal_type="post", external_id=ext, url=body.get("url"), title=body.get("title"), text=text[:20000],
+                    author_hash=hash_author("manual", body.get("author_label")) if body.get("author_label") else None,
+                    published_at=datetime.fromisoformat(body["published_at"]) if body.get("published_at") else datetime.now(timezone.utc),
+                    keyword="manual", channel=body.get("source_label") or "manual", raw={"imported_by": "founder"})
+    h = heuristics.analyze(sig.text, sig.title)
+    d = {**sig.model_dump(), **h.as_dict(), "keyword_set_id": ks["id"], "run_id": None, "scraped_at": db.now(), "is_processed": False,
+         "cluster_id": None, "unanswered_ask": False, "attack_vector": None, "llm_problem_statement": None, "llm_urgency": None,
+         "llm_frequency": None, "llm_metadata": None}
+    doc_id = db.signal_doc_id("forum", ext)
+    db.insert_new_only(db.RAW_SIGNALS, {doc_id: d})
+    return {"id": doc_id, "keyword_set": ks["name"], "heuristic_score": h.heuristic_score, "note": "will be extracted and clustered at the next analysis run (every 6h) or POST /analyze"}
