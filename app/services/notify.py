@@ -204,6 +204,8 @@ def render_digest_email(d: dict) -> tuple[str, str]:
         av = m.get("dominant_attack_vector") or "—"
         av_it = {"feature_gap": "manca una funzione ai tool esistenti", "no_solution_exists": "nessun tool lo fa, lavoro manuale",
                  "quality_complaint": "lamentele su un prodotto esistente", "price_complaint": "problema di prezzo"}.get(av, av)
+        if (o.get("path") == "execution_gap"):
+            av_it += " · percorso EXECUTION GAP (categoria validata, incumbent mediocri)"
         av_color = "#15803d" if av in ("feature_gap", "no_solution_exists") else "#b91c1c" if av == "quality_complaint" else "#6b7280"
         sat = o.get("saturation")
         sat_it = {"blue": "poca concorrenza", "purple": "concorrenza media", "red": "mercato affollato"}.get(sat or "", "concorrenza non ancora analizzata")

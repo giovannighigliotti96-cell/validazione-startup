@@ -864,6 +864,8 @@ def enrich_ready_clusters(max_clusters: int = 8) -> dict:
         if (c.get("llm_metadata") or {}).get("scored_at"):
             continue
         opp = db.get(db.OPPORTUNITY_SCORING, c["id"]) or {}
+        if opp.get("path") == "execution_gap":
+            continue
         ok, _ = funnel.check_stage(stage2, funnel.collect_metrics(c, opp))
         if ok:
             clusters.append(c)
@@ -1086,6 +1088,9 @@ def run_full_analysis(keyword_set_id: str | None = None, extract_limit: int | No
         res["expand"] = expand_queries()
         res["cross_vertical"] = cross_vertical_merge()
         res["enrich"] = enrich_ready_clusters()
+        from app.services import execution_gap as _eg
+
+        res["execution_gap"] = _eg.run_all(min_signals=30, max_clusters=2)  # second path, budgeted
     except BudgetExhausted as e:
         res["stopped"] = str(e)
     res["funnel"] = funnel.evaluate_all(send_notifications)

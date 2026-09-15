@@ -95,6 +95,18 @@ def collect_metrics(cluster: dict, opp: dict) -> dict[str, Any]:
         "mvp_weeks_solo": opp.get("mvp_weeks_solo"),
         "why_now": bool((opp.get("why_now") or "").strip()),
     }
+    eg = opp.get("execution_gap") or {}
+    h, lk, sw, ed = eg.get("category_health") or {}, eg.get("lockin") or {}, eg.get("switch_intent") or {}, eg.get("edge") or {}
+    m.update({
+        "path": opp.get("path") or "new_problem",
+        "eg_analyzed": bool(eg.get("analyzed_at")),
+        "eg_avg_core_rating": h.get("avg_core_rating"), "eg_avg_store_rating": h.get("avg_store_rating"), "eg_n_rated": h.get("n_rated") or 0,
+        "eg_excellent_leader": h.get("excellent_leader_exists"),
+        "eg_lockin_level": lk.get("lockin_level"), "eg_do_they_switch": lk.get("do_they_switch"),
+        "eg_seeking_share": sw.get("seeking_share"), "eg_alternative_threads": sw.get("alternative_threads_found"),
+        "eg_edge_structural": ed.get("edge_is_structural"), "eg_edge": ed.get("execution_edge"),
+        "eg_weeks_to_parity": ed.get("weeks_to_parity_on_core_job"),
+    })
     m.update(_experiment_metrics(cluster["id"]))
     return m
 
@@ -156,6 +168,17 @@ def _check(key: str, threshold: Any, m: dict[str, Any]) -> tuple[bool, str]:
         "delivery_model_not_in": lambda: (m.get("delivery_model") is not None and m.get("delivery_model") not in (threshold or []), f"delivery_model={m.get('delivery_model')} (not in {threshold})"),
         "price_channel_consistent": lambda: _price_channel_ok(m, threshold),
         "max_mvp_weeks_solo": lambda: le("mvp_weeks_solo"),
+        # --- execution-gap path ---
+        "require_eg_analyzed": lambda: req("eg_analyzed"),
+        "max_eg_core_rating": lambda: (m.get("eg_avg_core_rating") is not None and float(m["eg_avg_core_rating"]) <= float(threshold), f"avg core rating={m.get('eg_avg_core_rating')} (<= {threshold})"),
+        "max_eg_store_rating": lambda: (m.get("eg_avg_store_rating") is None or float(m["eg_avg_store_rating"]) <= float(threshold), f"avg store rating={m.get('eg_avg_store_rating')} (<= {threshold} or n/a)"),
+        "min_eg_rated": lambda: ge("eg_n_rated"),
+        "require_no_excellent_leader": lambda: (m.get("eg_excellent_leader") is False, f"excellent_leader_exists={m.get('eg_excellent_leader')}"),
+        "eg_lockin_not_in": lambda: (m.get("eg_lockin_level") is not None and m.get("eg_lockin_level") not in (threshold or []), f"lockin={m.get('eg_lockin_level')} (not in {threshold})"),
+        "eg_switch_in": lambda: (m.get("eg_do_they_switch") in (threshold or []), f"do_they_switch={m.get('eg_do_they_switch')} (in {threshold})"),
+        "min_eg_seeking_share": lambda: ge("eg_seeking_share"),
+        "require_eg_structural_edge": lambda: (bool(m.get("eg_edge_structural")) and (m.get("eg_edge") or "none").lower() != "none", f"edge_structural={m.get('eg_edge_structural')}: {(m.get('eg_edge') or '')[:60]}"),
+        "max_eg_weeks_to_parity": lambda: le("eg_weeks_to_parity"),
         "min_interview_spontaneous_rate": lambda: ge("interview_spontaneous_rate"),
         "min_interview_quantified_cost_count": lambda: ge("interview_quantified_cost_count"),
     }
@@ -178,10 +201,17 @@ def _price_channel_ok(m: dict[str, Any], threshold: Any) -> tuple[bool, str]:
     return float(price) >= float(need), f"price/year={price:.0f} vs channel {ch} (needs >= {need})"
 
 
+def stage_criteria(stage: dict, m: dict[str, Any]) -> dict:
+    """Path-aware: execution-gap opportunities use `criteria_execution_gap` when the stage defines it."""
+    if m.get("path") == "execution_gap" and stage.get("criteria_execution_gap") is not None:
+        return stage["criteria_execution_gap"]
+    return stage.get("criteria") or {}
+
+
 def check_stage(stage: dict, m: dict[str, Any]) -> tuple[bool, dict[str, str]]:
     evidence: dict[str, str] = {}
     passed = True
-    for key, threshold in (stage.get("criteria") or {}).items():
+    for key, threshold in stage_criteria(stage, m).items():
         ok, ev = _check(key, threshold, m)
         evidence[key] = ("✔ " if ok else "✘ ") + ev
         passed = passed and ok
@@ -378,7 +408,7 @@ def build_digest(top_n: int = 5) -> dict:
             nxt = stages[keys[idx + 1]]
             _, ev = check_stage(nxt, m)
             blocking = {k: v for k, v in ev.items() if v.startswith("✘")}
-            blocking_detail = [(k, (nxt.get("criteria") or {}).get(k)) for k in blocking]
+            blocking_detail = [(k, stage_criteria(nxt, m).get(k)) for k in blocking]
         rows.append({"cluster": c, "opp": o, "score": compute_overall_score(m), "stage": o.get("funnel_stage"),
                      "next_stage": keys[idx + 1] if idx + 1 < len(keys) else None, "blocking": blocking,
                      "blocking_detail": blocking_detail, "metrics": m})

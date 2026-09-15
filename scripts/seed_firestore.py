@@ -15,12 +15,15 @@ FUNNEL_STAGES = [
     dict(position=1, key="signal_collected", name="Segnali raccolti",
          description="Il cluster esiste e ha almeno un segnale. Punto di ingresso automatico.",
          criteria={}, notify=False, is_terminal=False),
+    # Each stage may define `criteria_execution_gap` for the second path (validated category, badly executed).
     dict(position=2, key="problem_clustered", name="Problema ricorrente",
          description="Il problema è espresso da più persone, su più fonti, non da un singolo thread.",
          # min_sources 2 until Reddit is live (then 3). min_recent_share: >=50% of signals from the last 30 days = problem alive.
          # min_wtp_avg = max(regex heuristic, LLM proxy from urgency/quantified pain/tools) -> works for DE/FR/IT sources too
          criteria={"min_signals": 20, "min_sources": 2, "min_authors": 15, "min_wtp_avg": 3.0, "min_recent_share": 0.5,
                    "attack_vector_in": ["feature_gap", "no_solution_exists"], "min_attackable_share": 0.5},
+         criteria_execution_gap={"min_signals": 30, "min_sources": 2, "min_authors": 20, "min_wtp_avg": 3.0, "min_recent_share": 0.4,
+                                 "attack_vector_in": ["quality_complaint", "price_complaint"]},
          notify=False, is_terminal=False),
     dict(position=3, key="market_sized", name="Mercato stimato",
          description="TAM/SAM/SOM compilati per componenti (anche a mano) e SAM sopra soglia.",
@@ -30,6 +33,10 @@ FUNNEL_STAGES = [
          description="Offerta mappata (Product Hunt / G2 / Capterra). Non è oceano rosso.",
          criteria={"require_competitors_checked": True, "max_competitor_count": 12, "saturation_not_in": ["red"],
                    "max_leader_reviews": 500, "require_dead_product_check": True},
+         # execution gap: competitors are EXPECTED; what matters is that they are all mediocre, users switch, and lock-in is beatable
+         criteria_execution_gap={"require_competitors_checked": True, "require_eg_analyzed": True, "min_eg_rated": 3,
+                                 "max_eg_core_rating": 4.0, "require_no_excellent_leader": True,
+                                 "eg_lockin_not_in": ["high"], "eg_switch_in": ["yes", "slowly"], "min_eg_seeking_share": 0.15},
          notify=False, is_terminal=False),
     dict(position=5, key="founder_fit_checked", name="Founder fit",
          description="Posso raggiungere i primi 20 clienti da solo con un canale che so usare. C'è un why-now.",
@@ -39,6 +46,11 @@ FUNNEL_STAGES = [
                    "min_gross_margin_pct": 0.6, "delivery_model_not_in": ["service_heavy"],
                    "price_channel_consistent": {"outbound": 1200, "partnerships": 900, "seo_content": 300, "community": 300, "self_serve_marketplace": 240},
                    "max_mvp_weeks_solo": 8},
+         criteria_execution_gap={"min_founder_fit": 4, "require_channel_reachable": True,
+                                 "barriers_must_be_false": ["regulatory", "enterprise_sales", "two_sided", "capital"],
+                                 "min_gross_margin_pct": 0.6, "delivery_model_not_in": ["service_heavy"],
+                                 "price_channel_consistent": {"outbound": 1200, "partnerships": 900, "seo_content": 300, "community": 300, "self_serve_marketplace": 240},
+                                 "require_eg_structural_edge": True, "max_eg_weeks_to_parity": 10},
          notify=True, is_terminal=False),
     dict(position=6, key="interviews_done", name="Interviste Mom Test",
          description="Interviste fatte; la maggioranza conferma il problema e una parte già paga per soluzioni.",

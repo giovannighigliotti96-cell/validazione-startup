@@ -355,3 +355,23 @@ def cross_vertical():
     """Evidence-based horizontal clusters: only verticals whose own signals literally express the same job are grouped."""
     analysis.budget.reset()
     return analysis.cross_vertical_merge()
+
+
+@router.post("/clusters/{cluster_id}/execution-gap")
+def execution_gap(cluster_id: str, force: bool = False):
+    """Second path: validated category, badly executed. Category health (core vs store ratings), lock-in (why they stay),
+    switch intent (do they leave), execution edge. Sets path=execution_gap and re-evaluates."""
+    from app.services import execution_gap as eg
+
+    if not db.get(db.PROBLEM_CLUSTERS, cluster_id):
+        raise HTTPException(404)
+    analysis.budget.reset()
+    return {"analysis": eg.enrich_execution_gap(cluster_id, force=force), "funnel": funnel.evaluate(cluster_id)}
+
+
+@router.post("/execution-gap/run")
+def execution_gap_run(min_signals: int = 10, max_clusters: int = 8):
+    from app.services import execution_gap as eg
+
+    analysis.budget.reset()
+    return eg.run_all(min_signals=min_signals, max_clusters=max_clusters)
