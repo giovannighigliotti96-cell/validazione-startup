@@ -88,6 +88,7 @@ def render_stage_email(cluster: dict, opp: dict, stage: dict, evidence: dict | N
   </table>
 
   {presale_block}
+  {("<h3 style='font-size:14px;margin:16px 0 6px'>Precedenti reali (come sono partiti)</h3><ul style='font-size:13px;color:#374151'>" + "".join(f"<li><b>{escape(a.get('name',''))}</b>" + (" (bootstrapped)" if a.get('bootstrapped') else "") + f": {escape(a.get('how_they_found_the_problem') or '')} — primi clienti: {escape(a.get('first_customers_channel') or '')} — {escape(a.get('outcome') or '')} <a href='{escape(a.get('url') or '')}' style='color:#1d4ed8'>sito</a></li>" for a in (opp.get('analogues') or [])[:3]) + "</ul>") if opp.get('analogues') else ""}
 
   {"<h3 style='font-size:14px;margin:16px 0 6px'>Evidenza che ha fatto scattare la fase</h3><table style='font-size:13px;border-collapse:collapse'>" + ev_rows + "</table>" if ev_rows else ""}
   {"<h3 style='font-size:14px;margin:16px 0 6px'>Domande Mom Test</h3><ul style='font-size:13px;color:#374151'>" + questions + "</ul>" if questions else ""}

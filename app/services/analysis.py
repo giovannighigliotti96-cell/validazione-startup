@@ -613,6 +613,9 @@ class FounderFitResponse(BaseModel):
     buyer_persona: str = Field(description="Who signs the payment (may differ from who has the pain)")
     buyer_is_user: bool
     mvp_weeks_solo: int = Field(description="Weeks for this founder alone to ship a sellable MVP")
+    analogues: list[dict] = Field(default_factory=list, description=(
+        "1-3 REAL startups that solved a closely analogous problem (same persona type or same job): "
+        "{name, url, how_they_found_the_problem, first_customers_channel, bootstrapped: bool, outcome}. Only companies you are certain exist."))
     reasoning: str
 
 
@@ -624,6 +627,8 @@ SATURATION: {saturation} — {saturation_notes}
 COMPETITORS: {competitors}
 
 founder_fit 1-5 (5 = this founder can realistically reach the first 20 paying customers alone within 3 months).
+Also name 1-3 real analogous startups (vertical SaaS that started from a similar job/persona) and how they got their first customers:
+the founder compares every opportunity against real precedents (e.g. Cliniko, Jane App, Jobber, ConvertKit, Fatture in Cloud).
 Be sober on economics: if the persona pays < 50 EUR/month and the only channel is founder outbound, the model does not work.
 If delivering value requires recurring human work per customer, say so (service_heavy) and lower the margin accordingly.
 """
@@ -786,6 +791,7 @@ def assess_founder_fit(cluster_id: str) -> dict:
         "expected_price_eur_month": data.get("expected_price_eur_month"), "delivery_model": data.get("delivery_model"),
         "gross_margin_pct": data.get("gross_margin_pct"), "buyer_persona": data.get("buyer_persona"), "buyer_is_user": data.get("buyer_is_user"),
         "mvp_weeks_solo": data.get("mvp_weeks_solo"),
+        "analogues": [a for a in (data.get("analogues") or []) if isinstance(a, dict) and a.get("name") and verify_url(a.get("url"))],
         "notes": ((o.get("notes") or "") + "\n[founder-fit] " + data["reasoning"]).strip()})
     return data
 
