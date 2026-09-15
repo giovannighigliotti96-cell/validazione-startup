@@ -145,14 +145,30 @@ def llm_json(prompt: str, schema: type[BaseModel] | None = None, grounded: bool 
     schema_txt = f"\n\nRespond with a single JSON object matching this JSON Schema exactly:\n{json.dumps(schema.model_json_schema())}" if schema else ""
     budget.tick()
     client, model = _llm(strong)
+    messages = [
+        {"role": "system", "content": "You are a precise analyst. Output ONLY valid JSON, no prose, no markdown fences."},
+        {"role": "user", "content": context + prompt + schema_txt},
+    ]
+
+    def _call(json_mode: bool):
+        # Groq free tier counts max_tokens toward an 8k TPM limit: keep the strong tier's output budget small
+        kw: dict[str, Any] = {"model": model, "temperature": temperature, "max_tokens": 4000 if strong else 8000, "messages": messages}
+        if "gpt-oss" in model:  # reasoning models: keep the hidden reasoning short so the answer fits the budget
+            kw["extra_body"] = {"reasoning_effort": "low"}
+        if json_mode:
+            kw["response_format"] = {"type": "json_object"}
+        return client.chat.completions.create(**kw)
+
     try:
-        resp = client.chat.completions.create(
-            model=model, temperature=temperature, response_format={"type": "json_object"}, max_tokens=8000,
-            messages=[
-                {"role": "system", "content": "You are a precise analyst. Output ONLY valid JSON, no prose, no markdown fences."},
-                {"role": "user", "content": context + prompt + schema_txt},
-            ],
-        )
+        try:
+            resp = _call(True)
+        except APIStatusError as e:
+            # Groq's server-side JSON validation rejects long/complex outputs: retry in free-text mode and parse ourselves
+            if e.status_code == 400 and "json" in str(e).lower():
+                budget.tick()
+                resp = _call(False)
+            else:
+                raise
     except RateLimitError as e:
         raise RateLimited(str(e)) from e
     except APIStatusError as e:
@@ -1011,3 +1027,95 @@ def run_full_analysis(keyword_set_id: str | None = None, extract_limit: int | No
     res["funnel"] = funnel.evaluate_all(send_notifications)
     res["llm_calls"] = budget.calls
     return res
+
+
+# ----------------------------------------------------------------------------
+# SPLIT: a broad cluster ("run the store") -> narrow jobs-to-be-done, each evaluated on its own
+# ----------------------------------------------------------------------------
+class SubCluster(BaseModel):
+    name: str = Field(description="max 8 words, one specific job-to-be-done")
+    problem_statement: str
+    persona: str
+
+
+class SplitResponse(BaseModel):
+    subclusters: list[SubCluster]
+
+
+SPLIT_PROMPT = """This cluster is too broad: it bundles several distinct jobs-to-be-done. Propose 3-7 NARROW sub-clusters,
+each one a single job that ONE focused product could solve for ONE persona (e.g. "reconcile B2B net-30 wholesale orders", not "store operations").
+Base them on the signals below; prefer specificity. Do NOT assign signals, just define the sub-clusters.
+
+PARENT: {name} :: {statement}
+SIGNALS (attack_vector :: statement):
+{signals}
+"""
+
+ASSIGN_PROMPT = """Assign each signal to exactly one of the sub-clusters below (by id). If none fits well, use "{other}".
+
+SUB-CLUSTERS (id :: name :: statement):
+{existing}
+
+SIGNALS (idx :: statement):
+{signals}
+
+Return one assignment per signal idx.
+"""
+
+
+def split_cluster(cluster_id: str, min_signals: int = 3) -> dict:
+    """
+    Broad parent -> narrow children. Step 1 (strong model): define 3-7 sub-clusters. Step 2 (cheap model, batches):
+    assign every signal. Children with < min_signals are dissolved; the parent is archived (kept for history).
+    """
+    c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
+    sigs = [s for s in _cluster_signals(cluster_id, limit=300) if s.get("llm_problem_statement")]
+    if len(sigs) < 6:
+        return {"error": "too few signals to split"}
+    sample = "\n".join(f"- {(s.get('attack_vector') or '?')[:12]} :: {s['llm_problem_statement'][:120]}" for s in sigs[:60])
+    data = llm_json(SPLIT_PROMPT.format(name=c["name"], statement=c.get("problem_statement"), signals=sample), SplitResponse, strong=True)
+    children: dict[str, dict] = {}
+    for sc in data.get("subclusters", []):
+        cid = db.upsert(db.PROBLEM_CLUSTERS, None, {
+            "keyword_set_id": c.get("keyword_set_id"), "vertical": c.get("vertical"), "name": sc["name"],
+            "problem_statement": sc["problem_statement"], "persona": sc["persona"], "parent_cluster_id": cluster_id,
+            "signal_count": 0, "created_by": "llm_split", "created_at": db.now()})
+        children[cid] = {"id": cid, "name": sc["name"], "signals": 0}
+    if not children:
+        return {"error": "no sub-clusters proposed"}
+    other_id = "OTHER"
+    ex_txt = "\n".join(f"{cid} :: {ch['name']} :: {db.get(db.PROBLEM_CLUSTERS, cid).get('problem_statement')}" for cid, ch in children.items())
+    for chunk in db.chunks(sigs, 30):
+        sig_txt = "\n".join(f"{i} :: {s['llm_problem_statement'][:200]}" for i, s in enumerate(chunk))
+        try:
+            a = llm_json(ASSIGN_PROMPT.format(other=other_id, existing=ex_txt, signals=sig_txt), ClusterResponse)
+        except Exception as e:  # noqa: BLE001
+            log.error("split assignment failed: %s", e)
+            continue
+        for it in a.get("assignments", []):
+            try:
+                sig = chunk[int(it["idx"])]
+            except (KeyError, IndexError, ValueError, TypeError):
+                continue
+            cid = it.get("cluster")
+            if cid in children:
+                _attach(cid, sig, float(it.get("relevance") or 0.8))
+                children[cid]["signals"] += 1
+    kept = []
+    for cid, ch in children.items():
+        if ch["signals"] < min_signals:
+            for d in db.get_db().collection(db.PROBLEM_CLUSTERS).document(cid).collection(db.CLUSTER_SIGNALS_SUB).stream():
+                db.get_db().collection(db.RAW_SIGNALS).document(d.id).update({"cluster_id": cluster_id}); d.reference.delete()
+            db.delete(db.PROBLEM_CLUSTERS, cid); db.delete(db.OPPORTUNITY_SCORING, cid)
+            continue
+        funnel.refresh_cluster_stats(cid)
+        funnel.ensure_opportunity(cid)
+        kept.append(ch)
+    covered = sum(ch["signals"] for ch in kept)
+    if kept and covered >= 0.5 * len(sigs):
+        db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {"is_archived": True, "archive_reason": f"split into {len(kept)} narrower sub-clusters"})
+    else:
+        # children cover a minority: the parent keeps accumulating; children compete on their own
+        db.upsert(db.PROBLEM_CLUSTERS, cluster_id, {"split_note": f"{len(kept)} sub-clusters cover {covered}/{len(sigs)} signals; parent kept active"})
+    funnel.refresh_cluster_stats(cluster_id)
+    return {"parent": c["name"], "children": kept, "covered": covered, "total": len(sigs), "calls": budget.calls}

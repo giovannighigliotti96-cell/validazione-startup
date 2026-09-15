@@ -300,3 +300,12 @@ def digest_send():
 def calibration():
     """Where clusters die (per vertical), which criteria block most, and your archive reasons. Use it to tune funnel_stages."""
     return funnel.calibration_report()
+
+
+@router.post("/clusters/{cluster_id}/split")
+def split_cluster(cluster_id: str):
+    """Broad cluster -> narrow sub-clusters (each enters the funnel on its own); the parent is archived."""
+    if not db.get(db.PROBLEM_CLUSTERS, cluster_id):
+        raise HTTPException(404)
+    analysis.budget.reset()
+    return analysis.split_cluster(cluster_id)
