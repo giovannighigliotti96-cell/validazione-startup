@@ -44,8 +44,15 @@ def cron_digest():
     return {"status": funnel.send_weekly_digest()}
 
 
-@router.api_route("/funnel", methods=["GET", "POST"])
-def cron_funnel():
+@router.api_route("/funnel", methods=["GET", "POST"], status_code=202)
+def cron_funnel(background: BackgroundTasks):
+    """Responds immediately (cron-job.org has a 30s limit); evaluation runs in the background (Cloud Run: CPU always allocated)."""
+    background.add_task(funnel.evaluate_all, True)
+    return {"status": "accepted", "clusters": db.count(db.PROBLEM_CLUSTERS)}
+
+
+@router.api_route("/funnel/sync", methods=["GET", "POST"])
+def cron_funnel_sync():
     return funnel.evaluate_all(send_notifications=True)
 
 

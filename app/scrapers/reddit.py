@@ -37,6 +37,9 @@ def _client():
 
 def fetch(keyword_set: dict, config: dict) -> list[RawSignal]:
     s = get_settings()
+    if not s.reddit_client_id or not s.reddit_client_secret:
+        log.info("reddit skipped: no API credentials (use reddit_search meanwhile)")
+        return []
     reddit = _client()
     keywords: list[str] = keyword_set.get("keywords") or []
     cutoff = lookback_cutoff()
