@@ -600,9 +600,19 @@ Rules: blue = <=4 credible players or only generic/horizontal tools; purple = 5-
 class FounderFitResponse(BaseModel):
     founder_fit: int = Field(ge=1, le=5)
     acquisition_channel: str
+    acquisition_channel_type: Literal["outbound", "self_serve_marketplace", "seo_content", "community", "partnerships"] = Field(
+        description="outbound = LinkedIn/email/calls by the founder; self_serve_marketplace = app store / marketplace listing; seo_content; community; partnerships")
     acquisition_channel_reachable: bool
     first_20_customers_plan: str = Field(description="Concrete: where exactly to find the first 20 buyers and what to send them")
     barriers: dict[str, bool] = Field(description="keys: regulatory, enterprise_sales, two_sided, capital, technical")
+    # --- economics: a blue ocean without margin is not a business ---
+    expected_price_eur_month: float = Field(description="Realistic price per customer per month in EUR, anchored to verified competitor pricing and the persona's budget")
+    delivery_model: Literal["self_serve_software", "sales_assisted_software", "service_heavy"] = Field(
+        description="service_heavy = humans must do work per customer (onboarding, manual processing, support) -> low margin")
+    gross_margin_pct: float = Field(ge=0, le=1, description="Expected gross margin after hosting, LLM/API costs, payment fees, per-customer human work. Pure software 0.75-0.9; service-heavy 0.2-0.5")
+    buyer_persona: str = Field(description="Who signs the payment (may differ from who has the pain)")
+    buyer_is_user: bool
+    mvp_weeks_solo: int = Field(description="Weeks for this founder alone to ship a sellable MVP")
     reasoning: str
 
 
@@ -614,6 +624,8 @@ SATURATION: {saturation} — {saturation_notes}
 COMPETITORS: {competitors}
 
 founder_fit 1-5 (5 = this founder can realistically reach the first 20 paying customers alone within 3 months).
+Be sober on economics: if the persona pays < 50 EUR/month and the only channel is founder outbound, the model does not work.
+If delivering value requires recurring human work per customer, say so (service_heavy) and lower the margin accordingly.
 """
 
 
@@ -768,8 +780,12 @@ def assess_founder_fit(cluster_id: str) -> dict:
                                           competitors=", ".join(x["name"] for x in comps[:12]) or "none found"), FounderFitResponse, strong=True)
     db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {
         "founder_fit": data["founder_fit"], "acquisition_channel": data["acquisition_channel"],
+        "acquisition_channel_type": data.get("acquisition_channel_type"),
         "acquisition_channel_reachable": data["acquisition_channel_reachable"], "barriers": data["barriers"],
         "first_20_customers_plan": data["first_20_customers_plan"],
+        "expected_price_eur_month": data.get("expected_price_eur_month"), "delivery_model": data.get("delivery_model"),
+        "gross_margin_pct": data.get("gross_margin_pct"), "buyer_persona": data.get("buyer_persona"), "buyer_is_user": data.get("buyer_is_user"),
+        "mvp_weeks_solo": data.get("mvp_weeks_solo"),
         "notes": ((o.get("notes") or "") + "\n[founder-fit] " + data["reasoning"]).strip()})
     return data
 

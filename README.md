@@ -80,7 +80,7 @@ Principio: fasi 2-5 automatiche e severe (il sistema uccide), fasi 6-8 umane (tu
 | 2 | problem_clustered | ≥20 segnali, ≥2 fonti (→3 con Reddit), ≥15 autori distinti, WTP medio ≥3 (max tra regex EN e proxy LLM multilingua), ≥50% segnali negli ultimi 30gg, **attack_vector ∈ {feature_gap, no_solution_exists}**, ≥50% segnali attaccabili | |
 | 3 | market_sized | componenti TAM/SAM/SOM compilati, SAM ≥ €30M, confidenza ≥ medium | |
 | 4 | competition_checked | competitor mappati ≤12, saturazione ≠ red, leader <500 recensioni, check prodotti morti fatto | |
-| 5 | founder_fit_checked | founder_fit ≥4, canale raggiungibile, why-now, barriere regulatory/enterprise/two-sided = false | ✉ |
+| 5 | founder_fit_checked | founder_fit ≥4, canale raggiungibile, why-now, **barriere = kill** (regolatorio/enterprise/due lati/capitale), **margine lordo ≥60%**, non service-heavy, **prezzo coerente col canale** (outbound ≥€1.200/anno, self-serve ≥€240), MVP ≤8 settimane | ✉ |
 | 6 | interviews_done | ≥8 interviste, ≥60% confermano, ≥40% spontanee, ≥40% pagano già, ≥3 costi quantificati | |
 | 7 | **presale_validation** | landing ≥150 visite, signup ≥8% con prezzo visibile | **✉ "VERIFICA CHE PAGHINO"** |
 | 8 | validated | ≥5 paganti, conversione ≥3% | ✉ |

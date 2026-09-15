@@ -87,6 +87,11 @@ def collect_metrics(cluster: dict, opp: dict) -> dict[str, Any]:
         "saturation": opp.get("saturation"),
         "founder_fit": opp.get("founder_fit"),
         "channel_reachable": opp.get("acquisition_channel_reachable"),
+        "channel_type": opp.get("acquisition_channel_type"),
+        "price_eur_year": (float(opp["expected_price_eur_month"]) * 12) if opp.get("expected_price_eur_month") is not None else None,
+        "gross_margin_pct": opp.get("gross_margin_pct"),
+        "delivery_model": opp.get("delivery_model"),
+        "mvp_weeks_solo": opp.get("mvp_weeks_solo"),
         "why_now": bool((opp.get("why_now") or "").strip()),
     }
     m.update(_experiment_metrics(cluster["id"]))
@@ -145,6 +150,11 @@ def _check(key: str, threshold: Any, m: dict[str, Any]) -> tuple[bool, str]:
         "max_leader_reviews": lambda: (m.get("leader_reviews") is None or float(m.get("leader_reviews")) <= float(threshold), f"leader_reviews={m.get('leader_reviews')} (<= {threshold} or unknown)"),
         "require_dead_product_check": lambda: (m.get("dead_products_found") is not None, f"dead_products_found={m.get('dead_products_found')}"),
         "barriers_must_be_false": lambda: (all(not (m.get("barriers") or {}).get(b) for b in (threshold or [])), "barriers=" + str({b: (m.get("barriers") or {}).get(b) for b in (threshold or [])})),
+        # --- economics (a blue ocean without margin is not a business) ---
+        "min_gross_margin_pct": lambda: ge("gross_margin_pct"),
+        "delivery_model_not_in": lambda: (m.get("delivery_model") is not None and m.get("delivery_model") not in (threshold or []), f"delivery_model={m.get('delivery_model')} (not in {threshold})"),
+        "price_channel_consistent": lambda: _price_channel_ok(m, threshold),
+        "max_mvp_weeks_solo": lambda: le("mvp_weeks_solo"),
         "min_interview_spontaneous_rate": lambda: ge("interview_spontaneous_rate"),
         "min_interview_quantified_cost_count": lambda: ge("interview_quantified_cost_count"),
     }
@@ -153,6 +163,18 @@ def _check(key: str, threshold: Any, m: dict[str, Any]) -> tuple[bool, str]:
         log.warning("unknown criteria key %r — ignored", key)
         return True, f"{key}: unknown key ignored"
     return fn()
+
+
+def _price_channel_ok(m: dict[str, Any], threshold: Any) -> tuple[bool, str]:
+    """Price per customer must cover the acquisition channel: founder outbound needs a high ticket; self-serve can be cheap.
+    threshold = {"outbound": 1200, "partnerships": 900, "seo_content": 300, "community": 300, "self_serve_marketplace": 240} (EUR/year)."""
+    price = m.get("price_eur_year")
+    ch = m.get("channel_type")
+    floors = threshold if isinstance(threshold, dict) else {}
+    need = floors.get(ch or "", floors.get("outbound", 1200))
+    if price is None or ch is None:
+        return False, f"price/year={price}, channel={ch} (needs >= {need} for that channel)"
+    return float(price) >= float(need), f"price/year={price:.0f} vs channel {ch} (needs >= {need})"
 
 
 def check_stage(stage: dict, m: dict[str, Any]) -> tuple[bool, dict[str, str]]:
