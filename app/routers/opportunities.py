@@ -341,3 +341,17 @@ def patch_offer(cluster_id: str, body: dict = Body(...)):
         raise HTTPException(404, "no offer yet")
     db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {"offer": {**o["offer"], **body}})
     return db.get(db.OPPORTUNITY_SCORING, cluster_id)["offer"]
+
+
+@router.post("/discover/expand-queries")
+def expand_queries():
+    """Active learning: real clusters -> new queries in the persona's own words, added to their keyword sets."""
+    analysis.budget.reset()
+    return analysis.expand_queries()
+
+
+@router.post("/clusters/cross-vertical")
+def cross_vertical():
+    """Evidence-based horizontal clusters: only verticals whose own signals literally express the same job are grouped."""
+    analysis.budget.reset()
+    return analysis.cross_vertical_merge()

@@ -63,7 +63,8 @@ FOUNDER_KEYWORDS = ["struggling with", "is there a tool", "wish there was", "any
                     "manually", "spreadsheet", "waste", "pain"]
 
 KEYWORD_SETS = [
-    dict(name="founders_general", vertical="founders", is_active=True,
+    # founders_general: people who BUILD, not buy -> developer-tool noise (red ocean). Kept for reference, inactive.
+    dict(name="founders_general", vertical="founders", is_active=False,
          description="Le 4 community founder di partenza. Alto rumore, forte bias verso tool-per-founder.",
          keywords=FOUNDER_KEYWORDS,
          sources={

@@ -290,6 +290,23 @@ ITEMS:
 """
 
 
+_NEG_CACHE: dict[str, Any] = {"at": 0.0, "text": ""}
+
+
+def founder_negative_examples(max_items: int = 12) -> str:
+    """The founder's archive reasons become negative examples for extraction/clustering (cached 1h)."""
+    if time.time() - _NEG_CACHE["at"] < 3600:
+        return _NEG_CACHE["text"]
+    reasons = []
+    clusters = {c["id"]: c for c in db.list_all(db.PROBLEM_CLUSTERS)}
+    for o in db.list_all(db.OPPORTUNITY_SCORING):
+        if o.get("is_archived") and o.get("archive_reason") and o["cluster_id"] in clusters:
+            reasons.append(f"- \"{clusters[o['cluster_id']].get('name')}\": {o['archive_reason'][:160]}")
+    txt = ("\nTHE FOUNDER HAS REJECTED clusters like these (treat similar signals as noise or classify conservatively):\n" + "\n".join(reasons[-max_items:]) + "\n") if reasons else ""
+    _NEG_CACHE.update(at=time.time(), text=txt)
+    return txt
+
+
 def _fmt_signal(i: int, s: dict) -> str:
     title = (s.get("title") or "").strip()
     text = (s.get("text") or "").strip().replace("\n", " ")
@@ -300,7 +317,7 @@ def _fmt_signal(i: int, s: dict) -> str:
 
 def extract_batch(signals: list[dict]) -> dict[str, dict]:
     items = "\n".join(_fmt_signal(i, s) for i, s in enumerate(signals))
-    data = llm_json(EXTRACT_PROMPT.format(items=items), ExtractionResponse)
+    data = llm_json(EXTRACT_PROMPT.format(items=items) + founder_negative_examples(), ExtractionResponse)
     out: dict[str, dict] = {}
     for it in data.get("items", []):
         try:
@@ -535,7 +552,9 @@ def merge_clusters(keyword_set_id: str | None = None) -> dict:
 # ----------------------------------------------------------------------------
 class ScoreResponse(BaseModel):
     name: str
-    problem_statement: str
+    problem_statement: str = Field(description="ONLY what the quoted signals support. No inferred pains, no invented personas, no extrapolation to other segments.")
+    grounded: bool = Field(description="True only if every claim in problem_statement is directly supported by at least one quoted signal")
+    unsupported_claims_removed: list[str] = Field(default_factory=list, description="Claims you dropped because no signal supports them")
     persona: str
     urgency_score: float = Field(ge=0, le=10)
     frequency_score: float = Field(ge=0, le=10)
@@ -546,7 +565,9 @@ class ScoreResponse(BaseModel):
 
 
 SCORE_PROMPT = """You are validating a startup opportunity. Below is a cluster of online signals describing the same problem.
-1. Rewrite `name` (max 8 words, job-to-be-done, no product names) and `problem_statement` (persona + job + current pain).
+RULE ZERO — real, not invented: the problem_statement may contain ONLY claims that the quoted signals literally support. If the signals come
+from dentists, do not say "healthcare practices". If nobody mentions cost, do not say "expensive". List every claim you had to drop.
+1. Rewrite `name` (max 8 words, job-to-be-done, no product names) and `problem_statement` (persona + job + current pain, grounded).
 2. Score 0-10: urgency, frequency, wtp (mentions of paid tools, budgets, quantified losses, DIY effort).
 3. Write 6-8 Mom-Test interview questions about the LAST TIME it happened, what they did, what it cost, what they tried. Never "would you use/pay".
 4. `why_now`: a recent change making this newly solvable or newly painful. Use the WHY-NOW CANDIDATES below if relevant (cite the URL), else ''.
@@ -657,6 +678,7 @@ def score_cluster(cluster_id: str) -> dict:
                                         n=c.get("signal_count"), signals=sample), ScoreResponse, strong=True)
     db.upsert(db.PROBLEM_CLUSTERS, cluster_id, {
         "name": data["name"], "problem_statement": data["problem_statement"], "persona": data["persona"],
+        "grounded": data.get("grounded"), "unsupported_claims_removed": data.get("unsupported_claims_removed") or [],
         "urgency_score": data["urgency_score"], "frequency_score": data["frequency_score"], "wtp_score": data["wtp_score"],
         "mom_test_questions": data["mom_test_questions"],
         "llm_metadata": {**(c.get("llm_metadata") or {}), "scored_at": db.now(), "model": get_settings().llm_model}})
@@ -1046,6 +1068,8 @@ def run_full_analysis(keyword_set_id: str | None = None, extract_limit: int | No
         res["extract"] = process_unprocessed(limit=extract_limit, keyword_set_id=keyword_set_id)
         res["cluster"] = cluster_pending(keyword_set_id)
         res["merge"] = merge_clusters(keyword_set_id)
+        res["expand"] = expand_queries()
+        res["cross_vertical"] = cross_vertical_merge()
         res["enrich"] = enrich_ready_clusters()
     except BudgetExhausted as e:
         res["stopped"] = str(e)
@@ -1144,3 +1168,116 @@ def split_cluster(cluster_id: str, min_signals: int = 3) -> dict:
         db.upsert(db.PROBLEM_CLUSTERS, cluster_id, {"split_note": f"{len(kept)} sub-clusters cover {covered}/{len(sigs)} signals; parent kept active"})
     funnel.refresh_cluster_stats(cluster_id)
     return {"parent": c["name"], "children": kept, "covered": covered, "total": len(sigs), "calls": budget.calls}
+
+
+# ----------------------------------------------------------------------------
+# (1) QUERY EXPANSION — follow the scent: real clusters -> new queries in the persona's own words
+# ----------------------------------------------------------------------------
+class QueryExpansion(BaseModel):
+    reddit_search: list[str] = Field(description="3-5 search queries as the persona would phrase the pain (no product names unless they used them)")
+    youtube: list[str] = Field(description="2-3 tutorial/vlog-style queries whose comments would contain this pain")
+    trends: list[str] = Field(default_factory=list, description="0-2 Google Trends keywords")
+
+
+EXPAND_PROMPT = """A real problem cluster emerged from these verbatim signals. Write new search queries to find MORE people expressing the SAME pain,
+using their vocabulary (copy words from the quotes). Do not broaden to other personas or adjacent problems.
+
+CLUSTER: {name} :: {statement}
+PERSONA: {persona} · VERTICAL: {vertical}
+VERBATIM QUOTES:
+{quotes}
+EXISTING QUERIES (do not repeat): {existing}
+"""
+
+
+def expand_queries(min_signals: int = 5, max_clusters: int = 10) -> dict:
+    """For each attackable cluster with >= min_signals not yet expanded: add cluster-derived queries to its keyword set."""
+    done = []
+    clusters = [c for c in db.list_all(db.PROBLEM_CLUSTERS)
+                if (c.get("signal_count") or 0) >= min_signals and c.get("dominant_attack_vector") in ATTACKABLE
+                and not c.get("queries_expanded_at") and c.get("keyword_set_id") and c.get("vertical") != "founders"]
+    clusters.sort(key=lambda c: -(c.get("signal_count") or 0))
+    for c in clusters[:max_clusters]:
+        ks = db.get(db.KEYWORD_SETS, c["keyword_set_id"])
+        if not ks:
+            continue
+        src = dict(ks.get("sources") or {})
+        existing = (src.get("reddit_search", {}).get("queries") or []) + (src.get("youtube", {}).get("queries") or [])
+        quotes = "\n".join(f"- \"{q['quote']}\"" for q in (c.get("evidence_quotes") or [])[:6]) or "(none)"
+        try:
+            data = llm_json(EXPAND_PROMPT.format(name=c["name"], statement=c.get("problem_statement"), persona=c.get("persona"),
+                                                 vertical=c.get("vertical"), quotes=quotes, existing=", ".join(existing)[:800]), QueryExpansion, strong=True)
+        except BudgetExhausted:
+            break
+        except Exception as e:  # noqa: BLE001
+            log.error("expand_queries failed for %s: %s", c["name"], e)
+            continue
+        rs = src.setdefault("reddit_search", {"queries": [], "subreddits": (src.get("reddit", {}).get("subreddits") or [])[:3], "days": 365, "max_results": 8})
+        rs["queries"] = list(dict.fromkeys((rs.get("queries") or []) + data.get("reddit_search", [])))[:12]
+        yt = src.setdefault("youtube", {"queries": [], "videos_per_query": 4})
+        yt["queries"] = list(dict.fromkeys((yt.get("queries") or []) + data.get("youtube", [])))[:10]
+        if data.get("trends"):
+            tr = src.setdefault("trends", {"keywords": ["crm software"], "geo": "", "timeframe": "today 12-m"})
+            tr["keywords"] = list(dict.fromkeys((tr.get("keywords") or []) + data["trends"]))[:5]
+        db.upsert(db.KEYWORD_SETS, ks["id"], {"sources": src, "expanded_from": list(dict.fromkeys((ks.get("expanded_from") or []) + [c["id"]]))})
+        db.upsert(db.PROBLEM_CLUSTERS, c["id"], {"queries_expanded_at": db.now()})
+        done.append({"cluster": c["name"], "set": ks["name"], "added": data.get("reddit_search", []) + data.get("youtube", [])})
+    return {"expanded": done, "calls": budget.calls}
+
+
+# ----------------------------------------------------------------------------
+# (2) CROSS-VERTICAL — evidence-based only: every vertical must have written it itself
+# ----------------------------------------------------------------------------
+class CrossMatch(BaseModel):
+    groups: list[dict] = Field(description="items {cluster_ids: [...], name, problem_statement}: clusters from DIFFERENT verticals whose signals literally describe the same job")
+
+
+CROSS_PROMPT = """Below are problem clusters from DIFFERENT verticals, each with verbatim quotes. Group ONLY clusters whose quotes literally describe the same
+job-to-be-done (same task, same failure). Do not group by analogy ("dentists and physios probably both..."): if the quotes of a vertical do not say it,
+that vertical is not in. Prefer no group over a speculative one.
+
+CLUSTERS (id :: vertical :: name :: quotes):
+{clusters}
+"""
+
+CROSS_MIN_SIGNALS_PER_VERTICAL = 5
+CROSS_MIN_AUTHORS_PER_VERTICAL = 4
+
+
+def cross_vertical_merge(max_groups: int = 5) -> dict:
+    """
+    Create horizontal clusters from clusters of different verticals that each, on their own evidence, express the same job.
+    Guard rails: each member cluster must have >= 5 signals and >= 4 distinct authors from its own vertical; the merged
+    cluster keeps `evidence_by_vertical` so the claim "it exists in N verticals" is always traceable.
+    """
+    cands = [c for c in db.list_all(db.PROBLEM_CLUSTERS)
+             if not c.get("parent_cluster_id") and not c.get("is_cross_vertical") and not c.get("cross_merged_into")
+             and (c.get("signal_count") or 0) >= CROSS_MIN_SIGNALS_PER_VERTICAL and (c.get("distinct_authors") or 0) >= CROSS_MIN_AUTHORS_PER_VERTICAL
+             and c.get("dominant_attack_vector") in ATTACKABLE and c.get("evidence_quotes")]
+    if len({c.get("vertical") for c in cands}) < 2:
+        return {"groups": 0, "reason": "fewer than 2 verticals with eligible clusters"}
+    txt = "\n".join(f"{c['id']} :: {c.get('vertical')} :: {c['name']} :: " + " | ".join(f"\"{q['quote'][:110]}\"" for q in c['evidence_quotes'][:3]) for c in cands[:60])
+    data = llm_json(CROSS_PROMPT.format(clusters=txt), CrossMatch, strong=True)
+    by_id = {c["id"]: c for c in cands}
+    created = []
+    for g in (data.get("groups") or [])[:max_groups]:
+        members = [by_id[i] for i in (g.get("cluster_ids") or []) if i in by_id]
+        verts = {m.get("vertical") for m in members}
+        if len(members) < 2 or len(verts) < 2:
+            continue
+        new_id = db.upsert(db.PROBLEM_CLUSTERS, None, {
+            "name": g.get("name") or members[0]["name"], "problem_statement": g.get("problem_statement") or members[0].get("problem_statement"),
+            "persona": " / ".join(sorted({m.get("persona") or "" for m in members if m.get("persona")}))[:200],
+            "vertical": "+".join(sorted(verts)), "is_cross_vertical": True, "member_cluster_ids": [m["id"] for m in members],
+            "evidence_by_vertical": {m.get("vertical"): {"cluster": m["name"], "signals": m.get("signal_count"), "authors": m.get("distinct_authors"),
+                                                          "quotes": (m.get("evidence_quotes") or [])[:3]} for m in members},
+            "keyword_set_id": members[0].get("keyword_set_id"), "created_by": "cross_vertical", "signal_count": 0, "created_at": db.now()})
+        client = db.get_db()
+        for m in members:
+            for d in client.collection(db.PROBLEM_CLUSTERS).document(m["id"]).collection(db.CLUSTER_SIGNALS_SUB).stream():
+                client.collection(db.PROBLEM_CLUSTERS).document(new_id).collection(db.CLUSTER_SIGNALS_SUB).document(d.id).set(d.to_dict() or {"relevance": 0.8})
+            db.upsert(db.PROBLEM_CLUSTERS, m["id"], {"cross_merged_into": new_id})  # members stay (their own funnel), flagged
+        funnel.refresh_cluster_stats(new_id)
+        funnel.ensure_opportunity(new_id)
+        created.append({"id": new_id, "name": g.get("name"), "verticals": sorted(verts), "members": len(members)})
+    return {"groups": len(created), "created": created, "calls": budget.calls}

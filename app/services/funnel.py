@@ -312,6 +312,9 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
     for chunk in db.chunks(signal_ids, 300):
         refs = [client.collection(db.RAW_SIGNALS).document(i) for i in chunk]
         sigs.extend(d for d in (db.doc_to_dict(s) for s in client.get_all(refs)) if d)
+    ks_vert = {k["id"]: k.get("vertical") for k in db.list_all(db.KEYWORD_SETS)}
+    for s_ in sigs:
+        s_["_vertical"] = ks_vert.get(s_.get("keyword_set_id"))
     if not sigs:
         stats = {"signal_count": 0, "distinct_sources": 0, "distinct_authors": 0, "heuristic_avg": 0.0,
                  "attack_vector_dist": {}, "dominant_attack_vector": None, "attackable_share": 0.0, "unanswered_ask_count": 0}
@@ -326,10 +329,17 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
                 return None
             return min(10.0, float(sig["llm_urgency"]) * 1.2 + (2.5 if (md.get("quantified_pain") or "").strip() else 0) + (1.5 if md.get("mentioned_tools") else 0))
         llm_vals = [v for v in (_llm_wtp(s) for s in sigs) if v is not None]
+        # REAL, NOT INVENTED: keep verbatim quotes (with links) so every cluster is traceable to what people actually wrote
+        ranked = sorted(sigs, key=lambda s: ((s.get("heuristic_score") or 0) + (s.get("llm_urgency") or 0), s.get("score") or 0), reverse=True)
+        evidence = [{"quote": (s.get("text") or "")[:240].replace("\n", " ").strip(), "url": s.get("url"), "source": s.get("source"),
+                     "vertical": s.get("_vertical")} for s in ranked[:6] if (s.get("text") or "").strip()]
         av = Counter(s.get("attack_vector") for s in sigs if s.get("attack_vector"))
         n_av = sum(av.values()) or 1
         stats = {
             "attack_vector_dist": dict(av),
+            "evidence_quotes": evidence,
+            "by_keyword_set": dict(Counter(s.get("keyword_set_id") for s in sigs if s.get("keyword_set_id"))),
+            "authors_by_keyword_set": {k: len({s.get("author_hash") or s.get("external_id") for s in sigs if s.get("keyword_set_id") == k}) for k in {s.get("keyword_set_id") for s in sigs if s.get("keyword_set_id")}},
             "dominant_attack_vector": av.most_common(1)[0][0] if av else None,
             "attackable_share": round(sum(v for k, v in av.items() if k in ("feature_gap", "no_solution_exists")) / n_av, 2),
             "unanswered_ask_count": sum(1 for s in sigs if s.get("unanswered_ask")),
