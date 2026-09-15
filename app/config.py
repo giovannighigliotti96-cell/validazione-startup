@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     llm_strong_rpm: int = 20
     tavily_api_key: str = ""
     youtube_api_key: str = ""
+    meta_pixel_id: str = ""   # optional: injects the Meta pixel into hosted landing pages (PageView / Lead)
 
     public_base_url: str = "http://localhost:8000"
 

@@ -503,6 +503,9 @@ def merge_clusters(keyword_set_id: str | None = None) -> dict:
     merged = groups = 0
     for ksid in sets:
         clusters = db.list_all(db.PROBLEM_CLUSTERS, keyword_set_id=ksid)
+        # never merge split children (deliberately narrow) nor parents that have children
+        parents = {c.get("parent_cluster_id") for c in clusters if c.get("parent_cluster_id")}
+        clusters = [c for c in clusters if not c.get("parent_cluster_id") and c["id"] not in parents]
         if len(clusters) < 2:
             continue
         clusters.sort(key=lambda c: -(c.get("signal_count") or 0))

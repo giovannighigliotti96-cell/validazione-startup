@@ -30,7 +30,8 @@ _RANK = {"low": 0, "medium": 1, "high": 2}
 # ----------------------------------------------------------------------------
 def _experiment_metrics(cluster_id: str) -> dict[str, Any]:
     exps = db.list_all(db.VALIDATION_EXPERIMENTS, cluster_id=cluster_id)
-    done = [e for e in exps if e.get("status") == "done"]
+    # interviews count when done; live tests (hosted landing / presale) count while running too
+    done = [e for e in exps if e.get("status") == "done" or (e.get("status") == "running" and e.get("type") in ("landing_page", "ads_smoke", "presale"))]
     m: dict[str, Any] = {"n_experiments_done": len(done)}
 
     def _sum(t: str, key: str) -> float:
@@ -259,6 +260,20 @@ def evaluate(cluster_id: str, send_notifications: bool = True) -> dict:
         history.append({"stage": nxt["key"], "at": db.now().isoformat(), "reason": "; ".join(evidence.values())[:500]})
         opp.update({"funnel_stage": nxt["key"], "stage_entered_at": db.now(), "stage_history": history})
         advanced.append(nxt["key"])
+        if nxt["key"] == "founder_fit_checked":
+            # the founder's work starts here: prepare recruiting pack + testable offer automatically (5 strong calls)
+            try:
+                from app.services import analysis as _an, offer as _offer
+
+                _an.budget.reset()
+                if not cluster.get("recruiting_pack"):
+                    _an.recruiting_pack(cluster_id)
+                if not (db.get(db.OPPORTUNITY_SCORING, cluster_id) or {}).get("offer"):
+                    _offer.generate_offer(cluster_id)
+                cluster = db.get(db.PROBLEM_CLUSTERS, cluster_id) or cluster
+                opp.update({k: v for k, v in (db.get(db.OPPORTUNITY_SCORING, cluster_id) or {}).items() if k in ("offer", "premortem")})
+            except Exception as e:  # noqa: BLE001
+                log.warning("auto recruiting pack / offer failed: %s", e)
         if nxt.get("notify") and nxt["key"] not in (opp.get("notified_stages") or []):
             if send_notifications:
                 status = notify.notify_stage(cluster, {**opp, "overall_score": compute_overall_score(m)}, nxt, evidence)

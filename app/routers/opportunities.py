@@ -309,3 +309,35 @@ def split_cluster(cluster_id: str):
         raise HTTPException(404)
     analysis.budget.reset()
     return analysis.split_cluster(cluster_id)
+
+
+# ------------------------------ offer / landing ------------------------------
+@router.post("/clusters/{cluster_id}/offer")
+def make_offer(cluster_id: str):
+    """Problem -> 2-3 testable landing VARIANTS (angle/price) + pre-mortem. Then the page is live at /lp/{cluster_id}."""
+    from app.services import offer as offer_svc
+
+    if not db.get(db.PROBLEM_CLUSTERS, cluster_id):
+        raise HTTPException(404)
+    analysis.budget.reset()
+    res = offer_svc.generate_offer(cluster_id)
+    from app.config import get_settings
+
+    return {"landing_url": f"{get_settings().public_base_url.rstrip('/')}/lp/{cluster_id}", **res}
+
+
+@router.get("/clusters/{cluster_id}/offer")
+def get_offer(cluster_id: str):
+    o = db.get(db.OPPORTUNITY_SCORING, cluster_id) or {}
+    return o.get("offer") or {"detail": "not generated yet: POST this same path"}
+
+
+@router.patch("/clusters/{cluster_id}/offer")
+def patch_offer(cluster_id: str, body: dict = Body(...)):
+    """Edit the offer by hand: e.g. {"payment_link_url": "https://buy.stripe.com/...", "active_variants": ["A","B"]}
+    or {"variants": [...]} to rewrite copy/prices after reading the A/B results."""
+    o = db.get(db.OPPORTUNITY_SCORING, cluster_id) or {}
+    if not o.get("offer"):
+        raise HTTPException(404, "no offer yet")
+    db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {"offer": {**o["offer"], **body}})
+    return db.get(db.OPPORTUNITY_SCORING, cluster_id)["offer"]

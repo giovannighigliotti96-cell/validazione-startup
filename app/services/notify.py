@@ -34,6 +34,34 @@ def _badge(sat: str | None) -> str:
     return f'<span style="display:inline-block;padding:2px 10px;border-radius:999px;background:{c};color:#fff;font-size:12px;font-weight:600">{escape((sat or "n/a").upper())}</span>'
 
 
+def _offer_block(opp: dict, cluster: dict, base: str) -> str:
+    offer = opp.get("offer") or {}
+    pm = opp.get("premortem") or offer.get("premortem") or {}
+    rp = cluster.get("recruiting_pack") or {}
+    if not offer and not pm and not rp:
+        return ""
+    out = []
+    if offer.get("variants"):
+        rows = "".join(f"<tr><td style='padding:6px 8px;font-weight:700'>{escape(v.get('key',''))}</td><td style='padding:6px 8px'>{escape(v.get('headline',''))}<br><span style='color:#6b7280;font-size:12px'>{escape(v.get('angle',''))} · €{v.get('price_eur_month',0):.0f}/mese</span></td></tr>" for v in offer["variants"])
+        out.append(f"""<div style="margin:20px 0;padding:16px;border:1px solid #e5e7eb;border-radius:10px">
+          <h2 style="margin:0 0 6px;font-size:16px">Landing pronta (A/B): <a href="{escape(base)}/lp/{escape(cluster.get('id') or '')}" style="color:#1d4ed8">{escape(base)}/lp/{escape((cluster.get('id') or '')[:8])}…</a></h2>
+          <p style="margin:0 0 8px;font-size:13px;color:#374151">Ipotesi scelta: {escape(offer.get('chosen_hypothesis') or '')}</p>
+          <table style="font-size:13px;border-collapse:collapse">{rows}</table>
+          <p style="margin:8px 0 0;font-size:12px;color:#6b7280">Le visite e le iscrizioni per variante finiscono da sole nel funnel. Forza una variante con ?v=B. Aggiungi un payment link con PATCH /clusters/{{id}}/offer.</p>
+        </div>""")
+    if pm.get("top_risks"):
+        risks = "".join(f"<li><b>{escape(r.get('risk',''))}</b> ({escape(r.get('probability',''))}) — lo smentisce: {escape(r.get('what_would_disprove_it',''))}</li>" for r in pm["top_risks"][:3])
+        out.append(f"""<div style="margin:16px 0;padding:14px;border-left:4px solid #b45309;background:#fffbeb">
+          <h3 style="margin:0 0 6px;font-size:14px">Pre-mortem: perché potrebbe fallire</h3><ul style="margin:0;padding-left:18px;font-size:13px;color:#374151">{risks}</ul>
+          <p style="margin:8px 0 0;font-size:13px"><b>Rischio piattaforma:</b> {escape(pm.get('platform_risk') or '')}<br><b>Segnale di stop:</b> {escape(pm.get('kill_signal') or '')}</p></div>""")
+    if rp.get("where_to_find_them"):
+        out.append(f"""<div style="margin:16px 0;padding:14px;border:1px solid #e5e7eb;border-radius:10px">
+          <h3 style="margin:0 0 6px;font-size:14px">Dove trovare le persone da intervistare</h3>
+          <ul style="margin:0;padding-left:18px;font-size:13px;color:#374151">{''.join(f'<li>{escape(x)}</li>' for x in rp['where_to_find_them'][:6])}</ul>
+          <p style="margin:8px 0 0;font-size:12px;color:#6b7280">Messaggi pronti (Reddit, email, LinkedIn) e screener: GET /clusters/{{id}}/recruiting-pack</p></div>""")
+    return "".join(out)
+
+
 def render_stage_email(cluster: dict, opp: dict, stage: dict, evidence: dict | None = None) -> tuple[str, str]:
     """Returns (subject, html)."""
     s = get_settings()
@@ -88,6 +116,7 @@ def render_stage_email(cluster: dict, opp: dict, stage: dict, evidence: dict | N
   </table>
 
   {presale_block}
+  {_offer_block(opp, cluster, base)}
   {("<h3 style='font-size:14px;margin:16px 0 6px'>Precedenti reali (come sono partiti)</h3><ul style='font-size:13px;color:#374151'>" + "".join(f"<li><b>{escape(a.get('name',''))}</b>" + (" (bootstrapped)" if a.get('bootstrapped') else "") + f": {escape(a.get('how_they_found_the_problem') or '')} — primi clienti: {escape(a.get('first_customers_channel') or '')} — {escape(a.get('outcome') or '')} <a href='{escape(a.get('url') or '')}' style='color:#1d4ed8'>sito</a></li>" for a in (opp.get('analogues') or [])[:3]) + "</ul>") if opp.get('analogues') else ""}
 
   {"<h3 style='font-size:14px;margin:16px 0 6px'>Evidenza che ha fatto scattare la fase</h3><table style='font-size:13px;border-collapse:collapse'>" + ev_rows + "</table>" if ev_rows else ""}

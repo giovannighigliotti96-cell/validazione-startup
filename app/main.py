@@ -2,7 +2,7 @@ import logging
 
 from fastapi import FastAPI
 
-from app.routers import cron, keyword_sets, opportunities, runs, signals
+from app.routers import cron, keyword_sets, landing, opportunities, runs, signals
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -21,6 +21,7 @@ app.include_router(runs.router)
 app.include_router(signals.router)
 app.include_router(opportunities.router)
 app.include_router(cron.router)
+app.include_router(landing.router)
 
 
 @app.get("/", include_in_schema=False)
