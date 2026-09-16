@@ -20,3 +20,19 @@ Le tesi NON creano cluster: orientano dove cercare. Un cluster nasce solo da seg
 | Physical AI / robotica, difesa, media generativi, creator economy | no | hardware/capitale o B2C |
 
 Aggiornamento automatico: la discovery settimanale legge il feed a16z (RSS) e la pagina YC RFS e passa i titoli recenti al modello come contesto di tesi.
+
+## Venture Wishlist (11 interviste a VC, nov 2024 – lug 2025) — temi ricorrenti
+| tema | VC | adottato | angolo italiano |
+|---|---|---|---|
+| Invecchiamento, assistenza domiciliare, caregiver | Tyle, Kimerling, Kalad | sì → set `italia_assistenza_anziani` | badanti, assistenza domiciliare, RSA, caregiver familiari |
+| Capacità "enterprise" per PMI ("rent scale") | Kalad, Lazarow, Donnelly | sì | micro-imprese e studi |
+| Industrie addormentate, processi cartacei | Hamilton, Wilkinson | sì (già coperto) | trades, condomini, autoscuole, ASD |
+| Accesso a benefici/bonus pubblici | Kalad, Dosani | sì → set `italia_bonus_bandi_pmi` | bandi, incentivi, ISEE: servizio già esternalizzato |
+| Passaggio generazionale delle PMI | Lazarow | sì → set `italia_passaggio_generazionale` | aziende familiari senza successore |
+| Concierge acquisto casa | Mayall | sì → set `italia_acquisto_casa` | notaio, agenzia, mutuo, perizia frammentati |
+| Factoring fornitori PA | Weinberg | no (capitale) | PA paga tardi: vero, ma serve bilancio |
+| Pricing a transazione invece di abbonamento | Wilkinson | regola | usata dal generatore di offerte |
+| Gov-tech USA, stablecoin, difesa, spazio, musica, asset management | vari | no | fuori perimetro |
+
+## Seedcamp
+Nessuna RFS pubblica; portafoglio: fintech infra, AI agents, enterprise/healthcare AI. Conferma che in Europa si finanzia B2B/fintech; non è una lista di problemi.

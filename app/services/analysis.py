@@ -1009,10 +1009,18 @@ def discover_verticals() -> dict:
         for r in ((t.get("related_queries") or {}).get("rising") or [])[:5]:
             if isinstance(r, dict) and r.get("query"):
                 rising.append(r["query"])
+    # fresh thesis context: a16z feed + YC RFS page (titles only; theses orient search, never create clusters)
+    thesis_ctx = ""
+    try:
+        a16z = _rss_context(["https://a16z.com/feed/"], max_items=15)
+        yc = web_search("site:ycombinator.com/rfs requests for startups", 3)
+        thesis_ctx = ("\nRECENT INVESTOR THESES (a16z feed, YC RFS) for orientation only:\n" + a16z[:1500] + "\n" + yc[:800]) if (a16z or yc) else ""
+    except Exception as e:  # noqa: BLE001
+        log.info("thesis context skipped: %s", e)
     data = llm_json(DISCOVERY_PROMPT.format(
         existing=", ".join(f"{k['name']} ({k.get('vertical')})" for k in sets),
         clusters="; ".join(f"{c['name']} :: {c.get('vertical')} :: {c.get('signal_count')} :: {c.get('dominant_attack_vector')}" for c in clusters),
-        rising=", ".join(dict.fromkeys(rising))[:1500] or "(none)") + "\n" + THESES, DiscoveryResponse, temperature=0.4,
+        rising=", ".join(dict.fromkeys(rising))[:1500] or "(none)") + "\n" + THESES + thesis_ctx, DiscoveryResponse, temperature=0.4,
         grounded=True, strong=True, search_queries=["new EU regulation 2026 small business compliance deadline software",
                                        "underserved vertical SaaS niches 2026 small business trades professionals"])
     existing_names = {k["name"] for k in sets}
