@@ -470,6 +470,9 @@ KEYWORD_SETS = [
              "youtube": {"queries": ["comprare casa passo passo notaio mutuo agenzia", "acquisto prima casa errori da evitare"], "videos_per_query": 4, "relevance_language": "it"},
              "trends": {"keywords": ["comprare casa", "mutuo prima casa", "notaio acquisto casa", "crm software"], "geo": "IT", "timeframe": "today 12-m"},
          }),
+    dict(name="institutional_challenges", vertical="institutional_problems", is_active=True,
+         description="Problemi posti da aziende/istituzioni con un premio (Nesta Challenge Works, HeroX): 'paghiamo chi risolve questo'. Persona = lo sponsor.", keywords=[],
+         sources={"challenges": {"sources": ["nesta", "herox"], "max_per_source": 15}}),
     dict(name="vertical_healthcare_practices", vertical="healthcare_practices", is_active=True,
          description="Verticale: fisioterapisti, psicologi, optometristi, veterinari.", keywords=[],
          sources={

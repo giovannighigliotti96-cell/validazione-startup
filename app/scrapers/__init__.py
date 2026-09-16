@@ -1,5 +1,5 @@
 """Registry: source name -> fetch callable. Add a new source = add one line here + one module."""
-from app.scrapers import appstores, discourse, hackernews, indiehackers, producthunt, reddit, reddit_search, trends, trustpilot, youtube
+from app.scrapers import appstores, challenges, discourse, hackernews, indiehackers, producthunt, reddit, reddit_search, trends, trustpilot, youtube
 
 # Demand-side scrapers: return list[RawSignal] -> persisted to raw_signals by the runner
 SIGNAL_SCRAPERS = {
@@ -12,6 +12,7 @@ SIGNAL_SCRAPERS = {
     "youtube": youtube.fetch,
     "forum": discourse.fetch,
     "reddit_search": reddit_search.fetch,  # search-engine snippets of Reddit threads (no Reddit API needed)
+    "challenges": challenges.fetch,  # institutional problem statements with a prize (Nesta Challenge Works, HeroX — via their sitemaps)
 }
 
 # Metric / supply-side scrapers: persist themselves, return a stats dict

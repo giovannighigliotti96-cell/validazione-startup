@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-Source = Literal["reddit", "hackernews", "indiehackers", "trustpilot", "playstore", "appstore", "youtube", "forum"]
+Source = Literal["reddit", "hackernews", "indiehackers", "trustpilot", "playstore", "appstore", "youtube", "forum", "challenge"]
 SignalType = Literal["post", "comment", "review", "story"]
 
 
