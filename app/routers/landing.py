@@ -150,3 +150,18 @@ def stats(cluster_id: str):
     leads = [d.to_dict() for d in db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").stream()]
     out["leads"] = [{"variant": l.get("variant"), "answer": l.get("answer"), "at": l.get("at")} for l in leads]  # emails only via Firestore
     return out
+
+
+@router.get("/{cluster_id}/privacy", response_class=HTMLResponse)
+def privacy(cluster_id: str):
+    c, o, offer = _offer(cluster_id)
+    brand = offer.get("product_name") or "questo progetto"
+    return HTMLResponse(f"""<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy — {escape(brand)}</title>
+<style>body{{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:720px;margin:0 auto;padding:32px 20px;color:#0f172a;line-height:1.6}}h1{{font-size:26px}}h2{{font-size:18px;margin-top:24px}}</style></head><body>
+<h1>Informativa privacy — {escape(brand)}</h1>
+<p><b>Titolare del trattamento</b>: Giovanni Ghigliotti, giovannighigliotti96@gmail.com.</p>
+<h2>Quali dati raccogliamo</h2><p>L'indirizzo email e, se lo indichi, il nome del locale e la risposta libera che inserisci nel modulo. Dati tecnici di navigazione (pagina vista, variante mostrata) in forma aggregata.</p>
+<h2>Perché</h2><p>Per contattarti in merito a {escape(brand)}, un progetto in fase di validazione, e per misurare l'interesse verso il servizio. Base giuridica: il tuo consenso, espresso inviando il modulo. Nessuna newsletter, nessuna cessione a terzi.</p>
+<h2>Pixel di Meta</h2><p>La pagina usa il pixel di Meta Platforms per misurare l'efficacia degli annunci (eventi: visualizzazione pagina, iscrizione). Puoi limitarne l'uso tramite le impostazioni del browser o le <a href="https://www.facebook.com/ads/preferences">preferenze pubblicitarie di Meta</a>.</p>
+<h2>Conservazione e diritti</h2><p>I dati sono conservati su Google Cloud (Firestore, regione UE) per 12 mesi o fino a tua richiesta di cancellazione. Puoi chiedere accesso, rettifica o cancellazione scrivendo all'email sopra. Hai diritto di reclamo al Garante per la protezione dei dati personali.</p>
+</body></html>""")

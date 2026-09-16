@@ -9,3 +9,4 @@ exports/
 .DS_Store
 serviceAccount.json
 *.serviceAccount*.json
+creatives/

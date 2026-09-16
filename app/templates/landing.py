@@ -46,6 +46,7 @@ footer{padding:28px 0 40px;color:#94a3b8;font-size:12px;border-top:1px solid #e2
 def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "", signed_up: bool = False) -> str:
     lang = v.get("target_language") if v.get("target_language") in T else "en"
     t = T[lang]
+    brand = offer.get("product_name") or ""
     quotes = offer.get("quotes") or []  # curated (cleaned, translated, anonymised) from real signals; never raw scraped text on a public page
     pay = offer.get("payment_link_url")
     if signed_up:
@@ -68,11 +69,12 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     steps = "".join(f'<div class="card"><span class="num">{i+1}</span><p>{escape(s)}</p></div>' for i, s in enumerate(v.get("how_it_works", [])))
     faq = "".join(f'<details><summary>{escape(o.get("objection",""))}</summary><p>{escape(o.get("answer",""))}</p></details>' for o in v.get("objections", []))
     return f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{escape(v['headline'])}</title><meta name="description" content="{escape(v['subheadline'][:150])}">
+<title>{(escape(brand) + " — ") if brand else ""}{escape(v['headline'])}</title><meta name="description" content="{escape(v['subheadline'][:150])}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 {pixel_html}<style>{CSS}</style></head>
 <body>
 <header class="hero"><div class="w">
+  {("<div style='font-weight:800;font-size:22px;letter-spacing:-.02em;margin-bottom:18px'>" + escape(brand) + "</div>") if brand else ""}
   <span class="kicker">{t['kicker']}</span>
   <h1>{escape(v['headline'])}</h1>
   <p class="sub">{escape(v['subheadline'])}</p>
@@ -100,5 +102,5 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 
 {("<section><div class='w'><h2>" + t['faq'] + "</h2>" + faq + "</div></section>") if faq else ""}
 
-<footer><div class="w">{t['privacy']}</div></footer>
+<footer><div class="w">{(escape(brand) + " · ") if brand else ""}{t['privacy']} <a href="{base}/lp/{escape(c['id'])}/privacy">Privacy</a></div></footer>
 </body></html>"""
