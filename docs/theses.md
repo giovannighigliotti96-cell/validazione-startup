@@ -43,3 +43,10 @@ Nessuna RFS pubblica; portafoglio: fintech infra, AI agents, enterprise/healthca
 | Agente che "intervista l'azienda" e cattura la conoscenza tacita (Ghodsi) | conferma della tesi "company brain", versione PMI | in Italia: la conoscenza vive nella testa del titolare/dello studio |
 | AI operating system for work, governance sandbox, evaluation infra (Naga, Tafvizi, Fang) | no | enterprise: barriera |
 | Coach personale (Schlosser), Lovable for kids (London) | no | B2C, CAC alto |
+
+## Fonti valutate e non integrate (rivalutare)
+| fonte | stato | motivo | rivalutare |
+|---|---|---|---|
+| problemsight.com | non integrata | ToS vietano lo scraping, API chiusa (robots Disallow /api/), contenuto ancora minimo (1 thread in SaaS, set 2026) | dic 2026 — chiedere API a hello@problemsight.com; newsletter + import manuale nel frattempo |
+| Reddit Data API | rifiutata (set 2026) | richiesta respinta; in uso reddit_search via motore di ricerca | ott 2026 — seconda richiesta con retention minima e account bot |
+| Facebook gruppi | non integrabile | login richiesto, API gruppi rimossa | — (import manuale) |
