@@ -157,6 +157,8 @@ KEYWORD_SETS = [
     dict(name="workaround_builders", vertical="smb_ops_automation", is_active=True,
          description="Utenti Make/n8n che automatizzano processi manuali di PMI: descrivono il job che nessun tool fa (no_solution_exists).",
          keywords=["manual", "manually", "spreadsheet", "every week", "every day", "client", "customer", "invoice", "hours"],
+         # platform-internal jargon = automation builders talking about n8n/Make, not buyers describing their job
+         exclude_keywords=["webhook", "node", "execution", "credential", "http request", "error workflow", "json", "api key", "trigger", "workflow run", "self-host", "docker"],
          sources={
              "forum": {"forums": [
                  {"base_url": "https://community.make.com", "categories": [], "searches": ["manually every week", "spreadsheet workflow", "is there a way to"]},
