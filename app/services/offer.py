@@ -85,4 +85,35 @@ def generate_offer(cluster_id: str) -> dict:
     offer = {**data, "variants": variants, "generated_at": db.now(), "payment_link_url": (o.get("offer") or {}).get("payment_link_url"),
              "active_variants": [v["key"] for v in variants]}
     db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {"offer": offer, "premortem": data.get("premortem")})
-    return offer
+    try:
+        landing_quotes(cluster_id, lang=(variants[0].get("target_language") if variants else "it") or "it")
+    except Exception as e:  # noqa: BLE001
+        log.warning("landing quotes failed: %s", e)
+    return db.get(db.OPPORTUNITY_SCORING, cluster_id)["offer"]
+
+
+class LandingQuotes(BaseModel):
+    quotes: list[dict] = Field(description="3-5 items {quote, role, source}: the quote is a faithful, cleaned, translated rendering of a REAL signal (no page chrome, no URLs, no usernames); role = who said it (e.g. 'titolare di ristorante'); source = forum|reddit|youtube|review")
+
+
+QUOTES_PROMPT = """Pick 3-5 signals that best express the pain of THIS persona, and render each as a short quote in {lang} for a landing page.
+Rules: stay faithful to what the person wrote (translate, remove page chrome / links / usernames, trim), never invent, skip off-topic signals
+(other industries), skip anything that mentions a competitor by name. Quotes must read as real people talking, first person.
+PERSONA: {persona}
+PROBLEM: {statement}
+SIGNALS (source :: text):
+{signals}
+"""
+
+
+def landing_quotes(cluster_id: str, lang: str = "it") -> list[dict]:
+    c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
+    sigs = [s for s in analysis._cluster_signals(cluster_id, limit=200) if s.get("llm_problem_statement") and not (s.get("llm_metadata") or {}).get("is_noise")]
+    sigs.sort(key=lambda s: -((s.get("llm_urgency") or 0) + (s.get("heuristic_score") or 0)))
+    txt = "\n".join(f"- {s.get('source')} :: {(s.get('text') or '')[:400].replace(chr(10), ' ')}" for s in sigs[:25])
+    data = analysis.llm_json(QUOTES_PROMPT.format(lang="Italian" if lang == "it" else "English", persona=c.get("persona"), statement=c.get("problem_statement"), signals=txt),
+                             LandingQuotes, strong=True, temperature=0.3)
+    quotes = [q for q in data.get("quotes", []) if isinstance(q, dict) and len(q.get("quote", "")) > 30][:5]
+    o = db.get(db.OPPORTUNITY_SCORING, cluster_id) or {}
+    db.upsert(db.OPPORTUNITY_SCORING, cluster_id, {"offer": {**(o.get("offer") or {}), "quotes": quotes, "quotes_lang": lang}})
+    return quotes

@@ -66,6 +66,12 @@ if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createEl
 
 
 def render(c: dict, offer: dict, v: dict, base: str, signed_up: bool = False) -> str:
+    from app.templates.landing import render_landing
+
+    return render_landing(c, offer, v, base, pixel_html=_pixel("Lead" if signed_up else "PageView"), signed_up=signed_up)
+
+
+def _render_legacy(c: dict, offer: dict, v: dict, base: str, signed_up: bool = False) -> str:
     lang = v.get("target_language") or "en"
     t = {"it": {"how": "Come funziona", "price": "Prezzo", "mo": "/mese", "faq": "Domande frequenti", "email": "La tua email di lavoro",
                 "q": "Qual è la parte più frustrante oggi? (facoltativo)", "thanks": "Grazie! Ti scriviamo entro pochi giorni.", "founder": "Un progetto in fase di validazione: il prezzo indicato è quello reale al lancio."},
@@ -122,12 +128,12 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
 
 
 @router.post("/{cluster_id}/signup")
-def signup(cluster_id: str, email: str = Form(...), variant: str = Form("A"), answer: str = Form("")):
+def signup(cluster_id: str, email: str = Form(...), variant: str = Form("A"), answer: str = Form(""), business: str = Form("")):
     c, o, offer = _offer(cluster_id)
     lead_id = hashlib.sha256(email.strip().lower().encode()).hexdigest()[:20]
     ref = db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").document(lead_id)
     if not ref.get().exists:
-        ref.set({"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "at": db.now()})
+        ref.set({"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "at": db.now()})
         _bump(cluster_id, variant, "signups")
     base = get_settings().public_base_url.rstrip("/")
     return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1", status_code=303)
