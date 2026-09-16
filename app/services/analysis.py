@@ -1023,9 +1023,15 @@ def discover_verticals() -> dict:
         # subreddits are NOT verified until the Reddit API is live: keep them aside, not in `sources`
         unverified = {"subreddits": p.get("subreddits") or [], "apps": p.get("candidate_apps_to_review") or []}
         sources.pop("reddit", None)
+        # auto-activate only with sources that cannot be hallucinated into existence (queries, not names): youtube + reddit_search + trends
+        if p.get("hn_queries") or p.get("trend_keywords"):
+            sources["reddit_search"] = {"queries": (p.get("hn_queries") or [])[:3], "subreddits": [], "days": 365, "max_results": 8}
+            sources["youtube"] = {"queries": (p.get("hn_queries") or p.get("trend_keywords") or [])[:3], "videos_per_query": 3}
+        auto = bool(sources.get("youtube") or sources.get("reddit_search"))
         db.upsert(db.KEYWORD_SETS, None, {
             "name": p["name"], "vertical": p["vertical"], "country": p.get("country") or "", "description": p["rationale"],
-            "is_active": False, "proposed_by": "llm", "unverified": unverified, "review_note": "LLM proposal: verify every name before activating",
+            "is_active": auto, "proposed_by": "llm", "unverified": unverified,
+            "review_note": "auto-activated with query-based sources only (subreddits/apps unverified, kept aside)" if auto else "LLM proposal: verify before activating",
             "keywords": [], "sources": sources, "created_at": db.now()})
         created.append(p["name"])
     return {"proposed": created, "calls": budget.calls}
