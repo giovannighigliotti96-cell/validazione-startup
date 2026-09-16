@@ -39,14 +39,14 @@ from app.services import funnel, market
 log = logging.getLogger("analysis")
 
 FOUNDER_PROFILE = (
-    "Solo founder based in Italy, background in digital marketing and B2B sales, can build web products alone "
+    "Founder based in Italy (small team possible; with today's tools team size is not a constraint), background in digital marketing and B2B sales, builds web products "
     "(FastAPI / Next.js / Firebase), NO capital for paid acquisition beyond a few hundred euros. Speaks Italian and English. "
     "DOMAIN EDGE: certified ski instructor (maestro di sci) with years inside the sports-professional world (ski schools, "
     "instructors, coaches, guides, clubs, mountain resorts) and a real network there; already built AND sold a marketplace "
     "connecting sports professionals with customers (~10 years ago). In SPORTS verticals founder fit is structurally high: "
     "he can reach instructors, ski schools, clubs and facility managers directly. Outside sports he has no network. "
     "Reachable channels: personal sports network, LinkedIn/email outbound, SEO/content, vertical communities, trade associations. "
-    "Reaching the FIRST 20 paying customers alone matters more than total market size. "
+    "Reaching the FIRST 20 paying customers quickly matters more than total market size. "
     "Penalize: enterprise sales cycles, heavy regulation, capital-intensive or hardware businesses. Two-sided marketplaces: "
     "he has done one before, so the barrier is lower than for most, but the economics rule still applies (both sides must be reachable and cheap)."
 )

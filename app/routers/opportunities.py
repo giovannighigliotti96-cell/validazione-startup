@@ -375,3 +375,19 @@ def execution_gap_run(min_signals: int = 10, max_clusters: int = 8):
 
     analysis.budget.reset()
     return eg.run_all(min_signals=min_signals, max_clusters=max_clusters)
+
+
+@router.post("/discover/arbitrage")
+def arbitrage_run(days: int = 30, max_items: int = 12):
+    """Third path: recent US launches/fundings -> problem -> Italian equivalent? -> Italian demand signals -> candidate/watchlist."""
+    from app.services import arbitrage
+
+    analysis.budget.reset()
+    return arbitrage.run(days=days, max_items=max_items)
+
+
+@router.get("/discover/arbitrage")
+def arbitrage_list(verdict: str | None = None, limit: int = 50):
+    rows = db.list_all("us_launches", limit=limit, **({"verdict": verdict} if verdict else {}))
+    rows.sort(key=lambda r: str(r.get("checked_at") or ""), reverse=True)
+    return [{k: r.get(k) for k in ("name", "url", "problem", "persona", "category", "audience", "verdict", "italian_signals", "italy", "why_now", "replicable_solo", "checked_at")} for r in rows]

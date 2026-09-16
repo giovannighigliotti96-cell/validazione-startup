@@ -11,7 +11,7 @@ STAGE_LABELS = {
     "problem_clustered": "2 · Problema ricorrente",
     "market_sized": "3 · Mercato stimato",
     "competition_checked": "4 · Competizione verificata",
-    "founder_fit_checked": "5 · Founder fit",
+    "founder_fit_checked": "5 · Economia e barriere",
     "interviews_done": "6 · Interviste fatte",
     "presale_validation": "7 · Verifica che paghino",
     "validated": "8 · Validata",

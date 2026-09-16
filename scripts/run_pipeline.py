@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("command", choices=["scrape", "analyze", "funnel", "all", "export", "seed", "digest", "discover", "whynow"])
+    p.add_argument("command", choices=["scrape", "analyze", "funnel", "all", "export", "seed", "digest", "discover", "whynow", "arbitrage"])
     p.add_argument("--sources", default=None)
     p.add_argument("--sets", default=None)
     p.add_argument("--out", default="exports/signals.csv")
@@ -46,6 +46,11 @@ def main() -> None:
 
         res = analysis.run_full_analysis(send_notifications=not a.no_notify)
         print(json.dumps(res, indent=2, default=str))
+    if a.command == "arbitrage":
+        from app.services import analysis, arbitrage
+
+        analysis.budget.reset()
+        print(json.dumps(arbitrage.run(), indent=2, default=str, ensure_ascii=False))
     if a.command == "digest":
         print(funnel.send_weekly_digest())
     if a.command in ("discover", "whynow"):

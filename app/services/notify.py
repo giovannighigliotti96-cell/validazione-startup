@@ -258,6 +258,7 @@ def render_digest_email(d: dict) -> tuple[str, str]:
   </p>
   <h2 style="margin:0 0 10px;font-size:15px;color:#374151">I {len(d['top'])} problemi più promettenti</h2>
   {''.join(cards) or '<p style="color:#6b7280">Nessun cluster ancora.</p>'}
+  {("<h2 style='margin:24px 0 10px;font-size:15px;color:#374151'>Lanci USA recenti senza equivalente in Italia</h2>" + "".join(f"<div style='border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:0 0 10px;background:#fff'><b>{escape(a.get('name') or '')}</b> <span style='font-size:12px;color:#6b7280'>· {escape(a.get('audience') or '')} · {'candidato (segnali IT: ' + str(a.get('italian_signals')) + ')' if a.get('verdict')=='candidate' else 'in osservazione: nessun segnale italiano ancora'}</span><div style='font-size:13px;color:#374151;margin-top:4px'>{escape(a.get('problem') or '')}</div><div style='font-size:12px;color:#6b7280;margin-top:4px'>{escape((a.get('italy') or {}).get('gap_note') or '')} <a href='{escape(a.get('url') or '')}' style='color:#1d4ed8'>sito</a></div></div>" for a in d.get('arbitrage') or [])) if d.get('arbitrage') else ""}
   <p style="margin:8px 0 0;font-size:12px;color:#6b7280;line-height:1.5">
     <b>Legenda fasi:</b> 1 segnali → 2 problema di tanti → 3 mercato → 4 concorrenza → 5 founder fit → 6 interviste → 7 pagano? → 8 validata.<br>
     Se un problema in cima è rumore, archivialo (PATCH /opportunities/{{id}} con is_archived=true e il motivo): serve a tarare i filtri.

@@ -14,10 +14,11 @@ on:
     - cron: "45 * * * *"        # solo funnel ogni ora
     - cron: "0 7 * * 1"         # digest settimanale (lunedì 07:00 UTC)
     - cron: "30 6 * * 3"        # discovery nuovi verticali + why-now scan (ogni mercoledì)
+    - cron: "30 6 * * 4"        # arbitraggio USA -> Italia (ogni giovedì)
   workflow_dispatch:
     inputs:
       command:
-        description: "scrape | analyze | funnel | all | digest | discover"
+        description: "scrape | analyze | funnel | all | digest | discover | arbitrage"
         default: "all"
       sources:
         description: "comma-separated sources (empty = all)"
@@ -75,6 +76,8 @@ jobs:
             echo "command=digest" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "30 6 * * 3" ]; then
             echo "command=discover" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "30 6 * * 4" ]; then
+            echo "command=arbitrage" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             echo "command=${{ github.event.client_payload.command || 'all' }}" >> "$GITHUB_OUTPUT"
           else
