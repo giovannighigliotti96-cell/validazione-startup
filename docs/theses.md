@@ -36,3 +36,10 @@ Aggiornamento automatico: la discovery settimanale legge il feed a16z (RSS) e la
 
 ## Seedcamp
 Nessuna RFS pubblica; portafoglio: fintech infra, AI agents, enterprise/healthcare AI. Conferma che in Europa si finanzia B2B/fintech; non è una lista di problemi.
+
+## Pear VC — Request for Startups, agosto 2026
+| tema | adottato | nota |
+|---|---|---|
+| Agente che "intervista l'azienda" e cattura la conoscenza tacita (Ghodsi) | conferma della tesi "company brain", versione PMI | in Italia: la conoscenza vive nella testa del titolare/dello studio |
+| AI operating system for work, governance sandbox, evaluation infra (Naga, Tafvizi, Fang) | no | enterprise: barriera |
+| Coach personale (Schlosser), Lovable for kids (London) | no | B2C, CAC alto |
