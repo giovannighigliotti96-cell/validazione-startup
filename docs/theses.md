@@ -10,3 +10,13 @@ Fonte: Y Combinator Requests for Startups, Summer 2026 (https://www.ycombinator.
 | Agricoltura low-pesticide, discovery engines, medicina personalizzata, chip, spazio, difesa, F100 sales, software per agenti, interfacce dinamiche | no | capitale, hardware, regolatorio o developer-only |
 
 Le tesi NON creano cluster: orientano dove cercare. Un cluster nasce solo da segnali reali (regola "reale, non inventato").
+
+## a16z (news & content, settembre 2026)
+| tema | adottato | angolo italiano |
+|---|---|---|
+| AI per le piccole imprese ("AI for America's Small Businesses") | sì | PMI italiane: micro-imprese e studi, dove il software non è mai arrivato |
+| Applicazioni AI verticali per dominio; sistemi agentici che fanno il lavoro | sì | coincide con "AI-native service" di YC |
+| Datori di lavoro che cambiano piano sanitario (benefits) | parziale | welfare aziendale e broker in Italia: mercato regolato, verificare |
+| Physical AI / robotica, difesa, media generativi, creator economy | no | hardware/capitale o B2C |
+
+Aggiornamento automatico: la discovery settimanale legge il feed a16z (RSS) e la pagina YC RFS e passa i titoli recenti al modello come contesto di tesi.
