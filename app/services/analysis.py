@@ -984,7 +984,11 @@ THESES = (
     "(1) AI-native SERVICE companies: sell the outcome, not software, in already-outsourced services (accounting/tax, payroll consultants, "
     "condominium administration, sports-club compliance under the Riforma dello Sport, insurance brokerage, healthcare/driving-school paperwork); "
     "(2) SaaS challengers: replace legacy vertical software (desktop, 2000s) at 1/10 the price with an AI-native workflow; "
-    "(3) small-business 'company brain': turning the owner's tacit know-how into executable procedures. "
+    "(3) small-business 'company brain': turning the owner's tacit know-how into executable procedures; "
+    "(4) a16z: AI for small businesses and vertical AI applications that do the work (agentic), not copilots; employer benefits/health-plan shopping (Italy: welfare aziendale, brokers); "
+    "(5) recurring across 11 VC wishlists: aging & home-care coordination (Italy: badanti, caregivers, RSA); access to public benefits/grants "
+    "(Italy: bonus, bandi, incentivi for SMEs); SMB succession ('silver tsunami', Italy: family firms); home-buying concierge (notaio, agenzia, mutuo); "
+    "field workers with SOPs stuck in PDFs; transaction-based pricing instead of subscriptions. "
     "Prefer verticals where one of these theses applies, but only ever propose sources; clusters come from real signals."
 )
 

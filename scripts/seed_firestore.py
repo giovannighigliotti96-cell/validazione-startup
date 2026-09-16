@@ -440,6 +440,36 @@ KEYWORD_SETS = [
              "youtube": {"queries": ["youth sports club management software registration parents", "scuola calcio gestionale iscrizioni", "sports academy admin software review"], "videos_per_query": 4},
              "trends": {"keywords": ["youth sports management software", "gestionale scuola calcio", "crm software"], "geo": "", "timeframe": "today 12-m"},
          }),
+    # --- From recurring VC theses (Venture Wishlist, YC, a16z) x Italy. Query-based sources only.
+    dict(name="italia_assistenza_anziani", vertical="it_elder_care", is_active=True, country="IT",
+         description="Famiglie e agenzie che organizzano assistenza domiciliare: badanti, turni, sostituzioni, contratti, RSA. Paese più vecchio d'Europa.", keywords=[],
+         sources={
+             "reddit_search": {"queries": ["badante trovare gestire sostituzione famiglia problemi", "assistenza domiciliare anziani genitori organizzare caregiver", "agenzia badanti gestione turni contratti"], "subreddits": ["italy", "ItaliaPersonalFinance", "Genitori"], "days": 730, "max_results": 8},
+             "youtube": {"queries": ["come trovare una badante esperienza famiglia", "caregiver familiare organizzare assistenza genitore anziano"], "videos_per_query": 4, "relevance_language": "it"},
+             "trends": {"keywords": ["badante", "assistenza domiciliare", "caregiver", "crm software"], "geo": "IT", "timeframe": "today 12-m"},
+         }),
+    dict(name="italia_bonus_bandi_pmi", vertical="it_grants_incentives", is_active=True, country="IT",
+         description="PMI e professionisti che cercano/ottengono bonus, bandi, incentivi (Transizione 5.0, bandi regionali, credito d'imposta): oggi via consulenti a percentuale.", keywords=[],
+         sources={
+             "reddit_search": {"queries": ["bandi incentivi pmi come trovare consulente percentuale", "bonus imprese richiesta complicata pratica", "credito d'imposta pratica consulente costo"], "subreddits": ["italy", "ItaliaPersonalFinance", "commercialisti"], "days": 730, "max_results": 8},
+             "youtube": {"queries": ["bandi e incentivi pmi come funzionano consulente", "transizione 5.0 pratica come fare"], "videos_per_query": 4, "relevance_language": "it"},
+             "trends": {"keywords": ["bandi pmi", "incentivi imprese", "transizione 5.0", "crm software"], "geo": "IT", "timeframe": "today 12-m"},
+             "rss": {"feeds": ["https://www.fiscoetasse.com/rss/news.xml"]},
+         }),
+    dict(name="italia_passaggio_generazionale", vertical="it_smb_succession", is_active=True, country="IT",
+         description="Titolari di PMI familiari senza successore: vendita, passaggio ai figli, valutazione, cessione a dipendenti.", keywords=[],
+         sources={
+             "reddit_search": {"queries": ["vendere azienda familiare piccola come fare valutazione", "passaggio generazionale azienda padre figlio problemi", "cedere attività artigiana nessun successore"], "subreddits": ["italy", "ItaliaPersonalFinance"], "days": 730, "max_results": 8},
+             "youtube": {"queries": ["passaggio generazionale pmi come fare", "vendere piccola azienda familiare esperienza"], "videos_per_query": 4, "relevance_language": "it"},
+             "trends": {"keywords": ["passaggio generazionale", "vendere azienda", "cessione attività", "crm software"], "geo": "IT", "timeframe": "today 12-m"},
+         }),
+    dict(name="italia_acquisto_casa", vertical="it_home_buying", is_active=True, country="IT",
+         description="Chi compra casa: agenzia, mutuo, notaio, perizia, trasloco, utenze — sette interlocutori scollegati.", keywords=[],
+         sources={
+             "reddit_search": {"queries": ["comprare casa procedura notaio agenzia mutuo incubo", "prima casa passaggi burocrazia quanti soggetti", "acquisto casa errori esperienza consigli"], "subreddits": ["italy", "ItaliaPersonalFinance", "ItalyInformatica"], "days": 730, "max_results": 8},
+             "youtube": {"queries": ["comprare casa passo passo notaio mutuo agenzia", "acquisto prima casa errori da evitare"], "videos_per_query": 4, "relevance_language": "it"},
+             "trends": {"keywords": ["comprare casa", "mutuo prima casa", "notaio acquisto casa", "crm software"], "geo": "IT", "timeframe": "today 12-m"},
+         }),
     dict(name="vertical_healthcare_practices", vertical="healthcare_practices", is_active=True,
          description="Verticale: fisioterapisti, psicologi, optometristi, veterinari.", keywords=[],
          sources={
