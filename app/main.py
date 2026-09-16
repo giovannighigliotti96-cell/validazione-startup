@@ -28,6 +28,13 @@ app.mount("/static", StaticFiles(directory="public"), name="static")  # page ass
 
 @app.get("/", include_in_schema=False)
 def root():
+    from fastapi.responses import RedirectResponse
+
+    from app.config import get_settings
+
+    home = get_settings().landing_home_cluster
+    if home:
+        return RedirectResponse(f"/lp/{home}", status_code=302)
     return {"service": "validazione-startup", "docs": "/docs"}
 
 

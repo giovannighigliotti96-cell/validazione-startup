@@ -58,8 +58,15 @@ def creative(w: int, h: int, brand: str, headline: str, sub: str, badge: str, ct
     d = ImageDraw.Draw(img)
     pad = int(w * 0.08)
     scale = w / 1080
-    # brand
-    d.text((pad, pad), brand, font=_font(BOLD, int(44 * scale)), fill=ACCENT)
+    # brand: logo glyph + wordmark
+    try:
+        from scripts.make_logo import glyph
+
+        g = glyph(int(56 * scale))
+        img.paste(g, (pad, pad - int(6 * scale)), g)
+        d.text((pad + int(70 * scale), pad), brand, font=_font(BOLD, int(44 * scale)), fill=ACCENT)
+    except Exception:  # noqa: BLE001
+        d.text((pad, pad), brand, font=_font(BOLD, int(44 * scale)), fill=ACCENT)
     # badge
     bf = _font(BOLD, int(30 * scale))
     bw = d.textlength(badge, font=bf) + int(40 * scale)

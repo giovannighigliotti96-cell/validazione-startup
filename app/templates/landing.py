@@ -70,11 +70,13 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     faq = "".join(f'<details><summary>{escape(o.get("objection",""))}</summary><p>{escape(o.get("answer",""))}</p></details>' for o in v.get("objections", []))
     return f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{(escape(brand) + " — ") if brand else ""}{escape(v['headline'])}</title><meta name="description" content="{escape(v['subheadline'][:150])}">
+<link rel="icon" type="image/png" href="{base}/static/dispensa/logo_512.png"><link rel="apple-touch-icon" href="{base}/static/dispensa/logo_512.png">
+<meta property="og:title" content="{(escape(brand) + ' — ') if brand else ''}{escape(v['headline'])}"><meta property="og:description" content="{escape(v['subheadline'][:150])}"><meta property="og:image" content="{base}/static/dispensa/page_cover_1640x856.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 {pixel_html}<style>{CSS}</style></head>
 <body>
 <header class="hero"><div class="w">
-  {("<div style='font-weight:800;font-size:22px;letter-spacing:-.02em;margin-bottom:18px'>" + escape(brand) + "</div>") if brand else ""}
+  {("<div style='display:flex;align-items:center;gap:12px;margin-bottom:22px'><img src='" + base + "/static/dispensa/logo_512.png' alt='' style='width:44px;height:44px;border-radius:10px'><span style='font-weight:800;font-size:22px;letter-spacing:-.02em'>" + escape(brand) + "</span></div>") if brand else ""}
   <span class="kicker">{t['kicker']}</span>
   <h1>{escape(v['headline'])}</h1>
   <p class="sub">{escape(v['subheadline'])}</p>
