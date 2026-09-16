@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.routers import cron, keyword_sets, landing, opportunities, runs, signals
 
@@ -22,6 +23,7 @@ app.include_router(signals.router)
 app.include_router(opportunities.router)
 app.include_router(cron.router)
 app.include_router(landing.router)
+app.mount("/static", StaticFiles(directory="public"), name="static")  # page assets, ad images
 
 
 @app.get("/", include_in_schema=False)

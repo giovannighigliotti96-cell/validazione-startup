@@ -10,3 +10,4 @@ exports/
 serviceAccount.json
 *.serviceAccount*.json
 creatives/
+!public/
