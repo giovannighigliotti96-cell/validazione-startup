@@ -979,7 +979,16 @@ class DiscoveryResponse(BaseModel):
     proposals: list[ProposedSet]
 
 
-DISCOVERY_PROMPT = """You help a solo founder find BLUE-OCEAN B2B verticals: professional/trade segments with recurring workflows, budget, and
+THESES = (
+    "ACTIVE MARKET THESES (from YC RFS S26, read for Italy/EU): "
+    "(1) AI-native SERVICE companies: sell the outcome, not software, in already-outsourced services (accounting/tax, payroll consultants, "
+    "condominium administration, sports-club compliance under the Riforma dello Sport, insurance brokerage, healthcare/driving-school paperwork); "
+    "(2) SaaS challengers: replace legacy vertical software (desktop, 2000s) at 1/10 the price with an AI-native workflow; "
+    "(3) small-business 'company brain': turning the owner's tacit know-how into executable procedures. "
+    "Prefer verticals where one of these theses applies, but only ever propose sources; clusters come from real signals."
+)
+
+DISCOVERY_PROMPT = """You help a founder find BLUE-OCEAN B2B verticals: professional/trade segments with recurring workflows, budget, and
 software that is either absent or generic. Avoid: tools for founders/developers/marketers (red ocean), consumer apps, enterprise.
 Given what we already monitor and what we learned, propose 5 NEW verticals or sub-verticals to monitor, with concrete sources.
 Prefer European/Italian angles where a recent regulation or platform change creates a why-now.
@@ -1003,7 +1012,7 @@ def discover_verticals() -> dict:
     data = llm_json(DISCOVERY_PROMPT.format(
         existing=", ".join(f"{k['name']} ({k.get('vertical')})" for k in sets),
         clusters="; ".join(f"{c['name']} :: {c.get('vertical')} :: {c.get('signal_count')} :: {c.get('dominant_attack_vector')}" for c in clusters),
-        rising=", ".join(dict.fromkeys(rising))[:1500] or "(none)"), DiscoveryResponse, temperature=0.4,
+        rising=", ".join(dict.fromkeys(rising))[:1500] or "(none)") + "\n" + THESES, DiscoveryResponse, temperature=0.4,
         grounded=True, strong=True, search_queries=["new EU regulation 2026 small business compliance deadline software",
                                        "underserved vertical SaaS niches 2026 small business trades professionals"])
     existing_names = {k["name"] for k in sets}

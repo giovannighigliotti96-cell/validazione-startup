@@ -107,7 +107,8 @@ class Screened(BaseModel):
     two_sided: bool
     why_now: str = Field(default="")
     italian_search_terms: list[str] = Field(default_factory=list, description="2-3 Italian queries an Italian buyer would type when looking for this")
-    replicable_solo: bool = Field(description="Could a solo founder ship a credible version in <= 10 weeks?")
+    replicable_solo: bool = Field(description="Could a small team ship a credible version in <= 10 weeks?")
+    thesis: Literal["ai_native_service", "saas_challenger", "company_brain", "none"] = Field(default="none", description="Which active market thesis this launch fits, if any")
 
 
 class ScreenResponse(BaseModel):
@@ -117,6 +118,7 @@ class ScreenResponse(BaseModel):
 SCREEN_PROMPT = """These products were launched or funded recently (mostly US). For each, say what PROBLEM it solves and for whom, and whether it is a
 candidate for an Italy/EU localized version built by a solo founder (Italy, marketing/sales background, builds web software alone, no capital).
 Be selective: keep only products with a clear, recurring problem and a paying persona. Hype, crypto, developer tools, hardware, enterprise-only, agencies -> keep=false.
+Tag each kept item with the market thesis it fits: ai_native_service (sells the outcome of an outsourced service), saas_challenger (replaces legacy software cheaper/AI-native), company_brain, or none.
 
 LAUNCHES (idx :: source :: name :: tagline :: description):
 {items}
@@ -137,7 +139,7 @@ def screen(items: list[dict]) -> list[dict]:
             except (KeyError, ValueError, IndexError, TypeError):
                 continue
             if s.get("keep"):
-                kept.append({**it, **{k: s.get(k) for k in ("problem", "persona", "category", "audience", "two_sided", "why_now", "italian_search_terms", "replicable_solo")}})
+                kept.append({**it, **{k: s.get(k) for k in ("problem", "persona", "category", "audience", "two_sided", "why_now", "italian_search_terms", "replicable_solo", "thesis")}})
     return kept
 
 
