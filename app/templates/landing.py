@@ -4,12 +4,12 @@ from __future__ import annotations
 from html import escape
 
 T = {
-    "it": dict(kicker="Per ristoratori e gestori di locali", ricon="Ti riconosci?", ricon_sub="Frasi vere raccolte da gestori come te negli ultimi mesi.",
+    "it": dict(kicker="Per ristoratori e gestori di locali", ricon="Ti riconosci?", ricon_sub="Frasi vere di gestori come te.",
                how="Come funziona", price="Prezzo", mo="/mese", lock="Prezzo bloccato per i primi 30 locali in lista", faq="Domande frequenti",
                email="La tua email", name="Nome del locale (facoltativo)", q="Qual è la cosa che ti fa perdere più tempo oggi?",
                thanks="Sei in lista. Ti scriviamo entro pochi giorni per una chiamata di 15 minuti.", founder="Progetto in fase di validazione con un gruppo ristretto di locali. Il prezzo indicato è quello reale al lancio: nessuna sorpresa.",
                cta_note="Nessun pagamento ora. Solo la tua email.", benefits="Cosa cambia", privacy="Usiamo la tua email solo per contattarti su questo progetto. Niente newsletter, niente cessione a terzi."),
-    "en": dict(kicker="For owners and managers", ricon="Sound familiar?", ricon_sub="Real words from operators like you, collected over the last months.",
+    "en": dict(kicker="For owners and managers", ricon="Sound familiar?", ricon_sub="Real words from operators like you.",
                how="How it works", price="Pricing", mo="/month", lock="Price locked for the first 30 businesses on the list", faq="Questions",
                email="Your email", name="Business name (optional)", q="What costs you the most time today?",
                thanks="You're on the list. We'll reach out within days for a 15-minute call.", founder="Early-access project with a small group of businesses. The price shown is the real launch price.",
@@ -62,9 +62,8 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
           <button class="btn" type="submit">{escape(v['cta'])}</button>
           <span class="muted">{t['cta_note']}</span>
         </form>"""
-    src_it = {"forum": "forum di settore", "reddit": "Reddit", "youtube": "YouTube", "review": "recensione"}
-    quotes_html = "".join(f'<div class="q">&ldquo;{escape(q["quote"][:240])}&rdquo;<small>{escape(q.get("role") or "")} · {escape(src_it.get(q.get("source") or "", q.get("source") or ""))}</small></div>' for q in quotes)
-    note_q = " Testimonianze raccolte online, tradotte e anonimizzate." if lang == "it" else " Collected online, translated and anonymised."
+    quotes_html = "".join(f'<div class="q">&ldquo;{escape(q["quote"][:240])}&rdquo;<small>{escape(q.get("role") or "")}</small></div>' for q in quotes)
+    note_q = " Testimonianze raccolte online, anonimizzate." if lang == "it" else " Collected online, anonymised."
     benefits = "".join(f'<div class="card"><b>✓ {escape(b)}</b></div>' for b in v.get("benefits", []))
     steps = "".join(f'<div class="card"><span class="num">{i+1}</span><p>{escape(s)}</p></div>' for i, s in enumerate(v.get("how_it_works", [])))
     faq = "".join(f'<details><summary>{escape(o.get("objection",""))}</summary><p>{escape(o.get("answer",""))}</p></details>' for o in v.get("objections", []))
