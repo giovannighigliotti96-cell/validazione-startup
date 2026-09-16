@@ -31,6 +31,20 @@ def _unanswered_asks(signals) -> set[str]:
     return out
 
 
+def _apply_excludes(signals, keyword_set: dict):
+    """keyword_set.exclude_keywords: drop signals whose text contains any (e.g. platform-internal jargon in automation forums)."""
+    ex = [k.lower() for k in (keyword_set.get("exclude_keywords") or []) if k]
+    if not ex:
+        return signals
+    kept = []
+    for s in signals:
+        blob = f"{s.title or ''} {s.text or ''}".lower()
+        if sum(1 for k in ex if k in blob) >= 2:  # two technical terms = builder talk, not a buyer describing a job
+            continue
+        kept.append(s)
+    return kept
+
+
 def _persist_signals(signals, run_id: str, keyword_set_id: str) -> tuple[int, int]:
     docs: dict[str, dict] = {}
     unanswered = _unanswered_asks(signals)
@@ -74,7 +88,7 @@ def run_keyword_set(keyword_set: dict, sources: list[str] | None, trigger: str) 
         cfg = configured[source] or {}
         try:
             if source in SIGNAL_SCRAPERS:
-                signals = SIGNAL_SCRAPERS[source](keyword_set, cfg)
+                signals = _apply_excludes(SIGNAL_SCRAPERS[source](keyword_set, cfg), keyword_set)
                 inserted, existing = _persist_signals(signals, run_id, keyword_set["id"])
                 stats[source] = {"fetched": len(signals), "inserted": inserted, "existing": existing, "error": None}
             elif source in SIDE_SCRAPERS:
