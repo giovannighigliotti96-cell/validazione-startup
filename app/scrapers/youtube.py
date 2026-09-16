@@ -4,7 +4,9 @@ YouTube comments — official Data API v3 (free, 10,000 units/day; search = 100 
 Why it works: under "how to do X in <tool>" tutorials, the comments are practitioners saying
 "what if I need Y?" / "this doesn't work for Z" = feature gaps stated by the right persona.
 
-Config: {"queries": ["quickbooks payroll tutorial", ...], "videos_per_query": 5, "comments_per_video": 100, "relevance_language": "en"}
+Config: {"queries": ["quickbooks payroll tutorial", ...], "videos_per_query": 5, "comments_per_video": 100, "relevance_language": "en", "max_kept_per_video": 4}
+Comments are noisy ("great tutorial!"): we keep at most `max_kept_per_video` comments per video, and only those that
+mention a pain/need (heuristic flags) — one viral tutorial must never dominate a cluster.
 Budget per query: ~100 + 5 units. Keep queries few and specific.
 Key: YOUTUBE_API_KEY (Google Cloud > APIs > YouTube Data API v3 > credentials).
 """
@@ -29,6 +31,7 @@ def fetch(keyword_set: dict, config: dict) -> list[RawSignal]:
     keywords = keyword_set.get("keywords") or []
     per_q = int(config.get("videos_per_query", 5))
     per_v = min(int(config.get("comments_per_video", 100)), 100)
+    max_keep = int(config.get("max_kept_per_video", 4))
     cutoff = lookback_cutoff()
     out: list[RawSignal] = []
     seen: set[str] = set()
@@ -54,7 +57,10 @@ def fetch(keyword_set: dict, config: dict) -> list[RawSignal]:
                 except Exception as e:  # noqa: BLE001
                     log.error("youtube comments %s failed: %s", vid, e)
                     continue
+                kept_here = 0
                 for t in threads:
+                    if kept_here >= max_keep:
+                        break
                     c = t["snippet"]["topLevelComment"]["snippet"]
                     cid = t["snippet"]["topLevelComment"]["id"]
                     text = (c.get("textDisplay") or "").strip()
@@ -67,6 +73,12 @@ def fetch(keyword_set: dict, config: dict) -> list[RawSignal]:
                     kw = matches_keywords(text, keywords)
                     if kw is None:
                         continue
+                    from app.heuristics import analyze as _hx
+
+                    hx = _hx(text)
+                    if hx.heuristic_score < 2 and not (hx.asks_for_recommendation or hx.mentions_diy_workaround or hx.mentions_existing_tool):
+                        continue  # praise / questions about the tutorial itself are not signals
+                    kept_here += 1
                     out.append(RawSignal(
                         source="youtube", signal_type="comment", external_id=cid, parent_external_id=vid,
                         url=f"https://www.youtube.com/watch?v={vid}&lc={cid}", title=vtitle, text=clip(text),

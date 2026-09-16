@@ -277,6 +277,7 @@ class ExtractedItem(BaseModel):
     mentioned_tools: list[str] = Field(default_factory=list)
     quantified_pain: str = Field(default="", description="e.g. '5 hours/week', '$300/month', '' if none")
     evidence_span: str = Field(default="", description="VERBATIM excerpt (10-160 chars, copied exactly from the item text) that proves the problem. Empty if noise.")
+    persona_in_vertical: bool = Field(default=True, description="False if the person clearly belongs to a different industry than the VERTICAL given (e.g. a clothing reseller in a restaurant set)")
 
 
 class ExtractionResponse(BaseModel):
@@ -284,6 +285,9 @@ class ExtractionResponse(BaseModel):
 
 
 EXTRACT_PROMPT = """You are a market researcher looking for UNMET NEEDS people express online, to find startup opportunities.
+VERTICAL BEING RESEARCHED: {vertical}. Only people who plausibly belong to this vertical count: if the writer is clearly from another
+industry (a clothing reseller, a film crew, a generic Excel tutorial viewer), set persona_in_vertical=false and is_noise=true.
+NEVER relabel someone's persona to fit the vertical: the persona must be what the text shows.
 For each numbered item (a Reddit/HN post or comment, or a 1-2 star app review), extract a structured record.
 Be strict on `is_noise`. Reviews of a product ARE valid signals: describe the JOB the reviewer fails to get done, and classify `attack_vector`
 honestly — "the app crashes / is slow / bad support / new UI is worse" is quality_complaint, not an opportunity.
@@ -322,15 +326,17 @@ def _fmt_signal(i: int, s: dict) -> str:
     return f"{i}. {ctx} {body[:1200]}"
 
 
-def extract_batch(signals: list[dict]) -> dict[str, dict]:
+def extract_batch(signals: list[dict], vertical: str = "general") -> dict[str, dict]:
     items = "\n".join(_fmt_signal(i, s) for i, s in enumerate(signals))
-    data = llm_json(EXTRACT_PROMPT.format(items=items) + founder_negative_examples(), ExtractionResponse)
+    data = llm_json(EXTRACT_PROMPT.format(items=items, vertical=vertical) + founder_negative_examples(), ExtractionResponse)
     out: dict[str, dict] = {}
     for it in data.get("items", []):
         try:
             sig = signals[int(it["idx"])]
         except (KeyError, IndexError, ValueError, TypeError):
             continue
+        if not it.get("is_noise") and it.get("persona_in_vertical") is False:
+            it = {**it, "is_noise": True, "noise_reason": "persona outside vertical"}
         if not it.get("is_noise"):
             # REAL, NOT INVENTED: the evidence must literally exist in the text
             span = re.sub(r"\s+", " ", (it.get("evidence_span") or "")).strip().lower()
@@ -347,12 +353,22 @@ def process_unprocessed(limit: int | None = None, keyword_set_id: str | None = N
     if keyword_set_id:
         q = q.where("keyword_set_id", "==", keyword_set_id)
     pending = [db.doc_to_dict(d) for d in q.limit(limit or 5000).stream()]
-    pending.sort(key=lambda x: (x.get("heuristic_score") or 0, x.get("score") or 0), reverse=True)
+    ks_vert = {k["id"]: (k.get("vertical") or k.get("name") or "general") for k in db.list_all(db.KEYWORD_SETS)}
+    # group by keyword set so every batch carries its vertical (persona-in-vertical check)
+    pending.sort(key=lambda x: (x.get("keyword_set_id") or "", -(x.get("heuristic_score") or 0), -(x.get("score") or 0)))
     processed = noise = 0
     client = db.get_db()
-    for chunk in db.chunks(pending, s.llm_batch_size):
+    batches = []
+    cur: list[dict] = []
+    for sig in pending:
+        if cur and (sig.get("keyword_set_id") != cur[0].get("keyword_set_id") or len(cur) >= s.llm_batch_size):
+            batches.append(cur); cur = []
+        cur.append(sig)
+    if cur:
+        batches.append(cur)
+    for chunk in batches:
         try:
-            extracted = extract_batch(chunk)
+            extracted = extract_batch(chunk, vertical=ks_vert.get(chunk[0].get("keyword_set_id"), "general"))
         except BudgetExhausted as e:
             log.warning("extraction stopped: %s", e)
             break
