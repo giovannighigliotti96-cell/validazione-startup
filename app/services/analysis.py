@@ -1158,8 +1158,10 @@ SPLIT_PROMPT = """This cluster is too broad: it bundles several distinct jobs-to
 each one a single job that ONE focused product could solve for ONE persona (e.g. "reconcile B2B net-30 wholesale orders", not "store operations").
 Base them on the signals below; prefer specificity. Do NOT assign signals, just define the sub-clusters.
 
+Sub-clusters must be defined by PERSONA + JOB: a French micro-entrepreneur facing a legal deadline and a developer wanting an API are
+different sub-clusters even if the topic is the same. Group the non-developer people (business owners, freelancers, artisans) by country/job.
 PARENT: {name} :: {statement}
-SIGNALS (attack_vector :: statement):
+SIGNALS ([source/channel] attack_vector :: statement):
 {signals}
 """
 
@@ -1184,7 +1186,8 @@ def split_cluster(cluster_id: str, min_signals: int = 3) -> dict:
     sigs = [s for s in _cluster_signals(cluster_id, limit=300) if s.get("llm_problem_statement")]
     if len(sigs) < 6:
         return {"error": "too few signals to split"}
-    sample = "\n".join(f"- {(s.get('attack_vector') or '?')[:12]} :: {s['llm_problem_statement'][:120]}" for s in sigs[:60])
+    # channel shown so the model groups by WHO speaks (r/EntreprendreenFrance vs HN devs), not only by topic
+    sample = "\n".join(f"- [{s.get('source')}/{s.get('channel') or ''}] {(s.get('attack_vector') or '?')[:12]} :: {s['llm_problem_statement'][:120]}" for s in sigs[:80])
     data = llm_json(SPLIT_PROMPT.format(name=c["name"], statement=c.get("problem_statement"), signals=sample), SplitResponse, strong=True)
     children: dict[str, dict] = {}
     for sc in data.get("subclusters", []):
@@ -1214,6 +1217,7 @@ def split_cluster(cluster_id: str, min_signals: int = 3) -> dict:
                 _attach(cid, sig, float(it.get("relevance") or 0.8))
                 children[cid]["signals"] += 1
     kept = []
+    log.info("split %s proposed: %s", c["name"][:40], {ch["name"][:50]: ch["signals"] for ch in children.values()})
     for cid, ch in children.items():
         if ch["signals"] < min_signals:
             for d in db.get_db().collection(db.PROBLEM_CLUSTERS).document(cid).collection(db.CLUSTER_SIGNALS_SUB).stream():
