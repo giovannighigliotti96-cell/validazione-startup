@@ -59,3 +59,33 @@ def cron_funnel_sync():
 @router.get("/health")
 def health():
     return {"ok": True, "keyword_sets_active": db.count(db.KEYWORD_SETS, is_active=True), "signals": db.count(db.RAW_SIGNALS)}
+
+
+@router.api_route("/discover", methods=["GET", "POST"], status_code=202)
+def cron_discover(background: BackgroundTasks):
+    """Weekly: why-now scan on every active set, then thesis-guided vertical discovery (GitHub cron skipped these; cron-job.org is reliable)."""
+
+    def job():
+        analysis.budget.reset()
+        for k in db.list_all(db.KEYWORD_SETS, is_active=True):
+            try:
+                analysis.scan_why_now(k["id"])
+            except Exception as e:  # noqa: BLE001
+                analysis.log.error("whynow %s: %s", k["name"], e)
+        analysis.log.info("discover: %s", analysis.discover_verticals())
+
+    background.add_task(job)
+    return {"status": "accepted"}
+
+
+@router.api_route("/arbitrage", methods=["GET", "POST"], status_code=202)
+def cron_arbitrage(background: BackgroundTasks):
+    """Weekly: recent US launches -> Italian gap check."""
+    from app.services import arbitrage
+
+    def job():
+        analysis.budget.reset()
+        analysis.log.info("arbitrage: %s", arbitrage.run())
+
+    background.add_task(job)
+    return {"status": "accepted"}
