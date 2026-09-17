@@ -205,7 +205,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
   </div>
   <div>{form}</div>
 </div>
-<p class="muted" style="margin-top:14px">{t['founder']}</p></div></section>
+<p class="muted" style="margin-top:14px">{escape(founder_note)}</p></div></section>
 
 {("<section><div class='w'><h2>" + t['faq'] + "</h2>" + faq + "</div></section>") if faq else ""}
 
