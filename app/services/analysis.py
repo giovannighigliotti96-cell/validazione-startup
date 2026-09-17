@@ -986,6 +986,7 @@ class ProposedSet(BaseModel):
     name: str = Field(description="snake_case, prefix vertical_")
     vertical: str
     rationale: str
+    why_now_source_url: str = Field(default="", description="URL from the SEARCH RESULTS above that proves the why-now (regulation, deadline, shift). Proposals without one are discarded.")
     country: str = Field(default="", description="IT, DE, FR, EU, US or ''")
     subreddits: list[str] = Field(default_factory=list)
     hn_queries: list[str] = Field(default_factory=list)
@@ -1025,6 +1026,13 @@ GOOGLE TRENDS RISING QUERIES: {rising}
 
 
 def discover_verticals() -> dict:
+    # REAL, NOT INVENTED: without live search results the model fabricates "why now" regulations (seen 2026-09-17:
+    # invented EU fleet directive, outdated CSRD scope). No search budget -> no proposals, retry next run.
+    from app.services import search as _search
+
+    if _search.remaining("enrich") < 4:
+        log.warning("discover deferred: search budget exhausted (%s)", _search.usage())
+        return {"deferred": "search budget exhausted", "proposed": []}
     sets = db.list_all(db.KEYWORD_SETS)
     clusters = sorted(db.list_all(db.PROBLEM_CLUSTERS), key=lambda c: -(c.get("signal_count") or 0))[:25]
     rising: list[str] = []
@@ -1051,6 +1059,10 @@ def discover_verticals() -> dict:
     for p in data.get("proposals", []):
         if p["name"] in existing_names:
             continue
+        # the why-now must cite a URL that answers: an unverifiable regulation is a hallucination, not a thesis
+        if not verify_url(p.get("why_now_source_url")):
+            log.info("discover: dropped %s (why-now source not verifiable: %s)", p["name"], p.get("why_now_source_url"))
+            continue
         sources: dict[str, Any] = {}
         if p.get("subreddits"):
             sources["reddit"] = {"subreddits": p["subreddits"], "sorts": ["new", "top"], "time_filter": "month"}
@@ -1070,7 +1082,7 @@ def discover_verticals() -> dict:
         auto = bool(sources.get("youtube") or sources.get("reddit_search"))
         db.upsert(db.KEYWORD_SETS, None, {
             "name": p["name"], "vertical": p["vertical"], "country": p.get("country") or "", "description": p["rationale"],
-            "is_active": auto, "proposed_by": "llm", "unverified": unverified,
+            "is_active": auto, "proposed_by": "llm", "unverified": unverified, "why_now_source_url": p.get("why_now_source_url"),
             "review_note": "auto-activated with query-based sources only (subreddits/apps unverified, kept aside)" if auto else "LLM proposal: verify before activating",
             "keywords": [], "sources": sources, "created_at": db.now()})
         created.append(p["name"])
