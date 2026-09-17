@@ -108,7 +108,9 @@ SIGNALS (source :: text):
 
 def landing_quotes(cluster_id: str, lang: str = "it") -> list[dict]:
     c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
-    sigs = [s for s in analysis._cluster_signals(cluster_id, limit=200) if s.get("llm_problem_statement") and not (s.get("llm_metadata") or {}).get("is_noise")]
+    # public display never uses Reddit content (Data API Terms: no redistribution beyond the approved research use)
+    sigs = [s for s in analysis._cluster_signals(cluster_id, limit=200) if s.get("llm_problem_statement") and not (s.get("llm_metadata") or {}).get("is_noise")
+            and s.get("source") != "reddit" and s.get("text")]
     sigs.sort(key=lambda s: -((s.get("llm_urgency") or 0) + (s.get("heuristic_score") or 0)))
     txt = "\n".join(f"- {s.get('source')} :: {(s.get('text') or '')[:400].replace(chr(10), ' ')}" for s in sigs[:25])
     data = analysis.llm_json(QUOTES_PROMPT.format(lang="Italian" if lang == "it" else "English", persona=c.get("persona"), statement=c.get("problem_statement"), signals=txt),

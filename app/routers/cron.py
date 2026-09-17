@@ -19,8 +19,11 @@ def cron_scrape(background: BackgroundTasks, sources: str | None = None):
     src = sources.split(",") if sources else None
 
     def job():
+        from app.services import retention
+
         runner.run_all(None, src, "cron")
         analysis.run_full_analysis()  # includes funnel.evaluate_all
+        retention.apply()  # privacy policy + Reddit Data API Terms: raw Reddit text purged after 30 days
 
     background.add_task(job)
     return {"status": "accepted"}
