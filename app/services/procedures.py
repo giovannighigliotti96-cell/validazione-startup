@@ -23,12 +23,11 @@ from app import db
 from app.scrapers.base import http_client, log
 
 COLL = "procedures"
-PORTALS = {"Genova": "https://fallimentigenova.com/", "Milano": "https://fallimentimilano.com/", "Savona": "https://fallimentisavona.com/",
-           "Alessandria": "https://fallimentialessandria.com/", "La Spezia": "https://fallimentilaspezia.com/", "Imperia": "https://fallimentiimperia.com/",
-           "Pavia": "https://fallimentipavia.com/", "Varese": "https://fallimentivarese.com/", "Como": "https://fallimenticomo.com/",
-           "Piacenza": "https://fallimentipiacenza.com/", "Parma": "https://fallimentiparma.com/", "Lucca": "https://fallimentilucca.com/", "Monza": "https://fallimentimonza.com/"}
-# distance from Arenzano matters for an operator who must be on site: bonus by tribunal
-NEAR = {"Genova": 15, "Savona": 12, "Alessandria": 10, "La Spezia": 8, "Imperia": 6, "Milano": 5, "Pavia": 5, "Piacenza": 4, "Varese": 3, "Como": 3, "Monza": 3, "Parma": 3, "Lucca": 3}
+# Only where the founder can be on site the same day: Liguria + the Genova–Milano axis. (Other Fallco portals exist —
+# Pavia, Varese, Como, Piacenza, Parma, Lucca, Monza — deliberately excluded: an operator cannot run a company 200 km away.)
+PORTALS = {"Genova": "https://fallimentigenova.com/", "Savona": "https://fallimentisavona.com/", "Imperia": "https://fallimentiimperia.com/",
+           "La Spezia": "https://fallimentilaspezia.com/", "Alessandria": "https://fallimentialessandria.com/", "Milano": "https://fallimentimilano.com/"}
+NEAR = {"Genova": 15, "Savona": 12, "Alessandria": 10, "La Spezia": 8, "Imperia": 6, "Milano": 5}
 UA = {"User-Agent": "validazione-startup research bot (public insolvency lists; contact giovannighigliotti96@gmail.com)"}
 
 # The founder's rule: only businesses whose MODEL is already validated — a product, a brand, B2B customers with contracts,

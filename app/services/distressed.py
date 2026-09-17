@@ -323,6 +323,10 @@ def buyer_gate(doc: dict) -> tuple[bool, list[str]]:
     return all(ok for ok, _ in checks), [("✔ " if ok else "✘ ") + t for ok, t in checks]
 
 
+# Radius from Arenzano: Liguria, southern Piemonte, western Lombardia. Everything else is filtered out of "fresh".
+RADIUS_PROVINCES = {"GE", "SV", "IM", "SP", "AL", "AT", "CN", "TO", "NO", "VC", "MI", "PV", "MB", "VA", "LO", "PC"}
+
+
 def fresh(days: int = 45, min_score: int = 40) -> list[dict]:
     cutoff = datetime.now(timezone.utc).timestamp() - days * 86400
     out = []
@@ -330,6 +334,8 @@ def fresh(days: int = 45, min_score: int = 40) -> list[dict]:
         x = d.to_dict() | {"id": d.id}
         fs = x.get("first_seen")
         if not fs or fs.timestamp() < cutoff or (x.get("score") or 0) < min_score or x.get("cessazione"):
+            continue
+        if (x.get("province") or "") not in RADIUS_PROVINCES and not any(u.split("(")[-1].rstrip(")") in RADIUS_PROVINCES for u in (x.get("units") or [])):
             continue
         ok, checks = buyer_gate(x)
         out.append({k: x.get(k) for k in ("id", "name", "hq", "province", "sector", "score", "n_decrees", "causali", "first_seen", "news_stage", "financials")} | {"passes_gate": ok, "gate": checks})
