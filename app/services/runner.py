@@ -79,7 +79,10 @@ def run_keyword_set(keyword_set: dict, sources: list[str] | None, trigger: str) 
         {"keyword_set_id": keyword_set["id"], "keyword_set_name": keyword_set.get("name"), "trigger": trigger,
          "status": "running", "started_at": db.now(), "finished_at": None, "stats": {}, "error": None},
     )
-    configured = keyword_set.get("sources") or {}
+    configured = dict(keyword_set.get("sources") or {})
+    # every set with a PRAW `reddit` config also reads the same subreddits through Reddit's public RSS feeds
+    if "reddit" in configured and "reddit_rss" not in configured:
+        configured["reddit_rss"] = {**(configured["reddit"] or {}), "queries": (configured.get("reddit_search") or {}).get("queries") or []}
     wanted = [s for s in configured if (sources is None or s in sources) and s != "rss"]  # rss feeds are consumed by the why-now scan
     stats: dict[str, dict] = {}
     failed = 0
@@ -112,6 +115,9 @@ def run_all(keyword_set_ids: list[str] | None, sources: list[str] | None, trigge
         sets = [ks for i in keyword_set_ids if (ks := db.get(db.KEYWORD_SETS, i))]
     else:
         sets = db.list_all(db.KEYWORD_SETS, is_active=True)
+    from app.scrapers import reddit_rss
+
+    reddit_rss.reset_run_budget()  # per-run request cap for the feed reader
     results = []
     for ks in sets:
         results.append({"keyword_set": ks.get("name"), **run_keyword_set(ks, sources, trigger)})
