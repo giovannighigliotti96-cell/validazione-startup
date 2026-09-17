@@ -17,8 +17,8 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_tit
         "poi cerco tra le professioniste della tua zona e ti presento le prime 2-3 che hanno senso per te. Se preferisci, rispondi a questa email con il giorno e l'orario migliori per la chiamata." + NL2 +
         "Per te non ci sono costi: tratteniamo il 15% del canone solo nei mesi in cui la postazione è occupata, e ti giriamo il resto entro il 5 di ogni mese." + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
-    trust=["Canone incassato da noi e girato a te entro il 5 del mese", "Contratto, SUAP e sostituzione inclusi", "Zero costi fissi: paghi solo se rende"],
-    hero_photo_caption="Una postazione libera è un'entrata in più, non un problema in più.", lock_text="canone medio a Milano 500-700 € al mese, a te l'85%", form_name_label="Nome del salone (non sarà mostrato)",
+    trust=["Canone incassato da noi e girato a te entro il 5 del mese", "Contratto, SUAP e sostituzione inclusi", "Zero costi fissi: tratteniamo il 15% solo quando rende"],
+    hero_photo_caption="Una postazione libera è un'entrata in più, non un problema in più.", lock_text="", price_badge="Primi 30 saloni di Milano: 10% invece del 15% per tutto il primo anno", founder_note="Stiamo partendo a Milano con un primo gruppo di saloni. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Nome e indirizzo del salone visibili solo dopo la richiesta di contatto.", form_name_label="Nome del salone (non sarà mostrato)",
     form_question="Perché la postazione oggi è vuota? (es. dipendente andata via, non trovo personale…)",
     form_extra=[{"name": "zona", "placeholder": "Zona / quartiere di Milano", "required": True},
                 {"name": "canone", "placeholder": "Canone mensile che vorresti (€)"}, {"name": "dipendenti", "placeholder": "Quanti dipendenti hai oggi?", "type": "number"},
@@ -35,8 +35,8 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_tit
         how_it_works=["Ci affidi la postazione: 3 foto, zona, giorni, canone. Firmi un mandato di gestione di 12 mesi, senza costi.", "Selezioniamo le professioniste e organizziamo le visite in salone: incontri solo chi ha senso per te.", "Firmate il contratto preparato da noi. Da lì incassiamo noi ogni mese e ti giriamo l'85% entro il 5."],
         objections=[{"objection": "Mi porta via le clienti?", "answer": "Le sue clienti sono sue, le tue sono tue: è scritto nel contratto. In pratica una postazione occupata porta più passaggio in salone, non meno."},
                     {"objection": "È legale?", "answer": "Sì: l'affitto di poltrona è previsto dalla normativa per acconciatori ed estetisti dal 2018. Serve una comunicazione al SUAP del Comune, che prepariamo noi."},
-                    {"objection": "Quante postazioni posso affittare?", "answer": "Dipende dai tuoi dipendenti: 1 postazione fino a 3 dipendenti, 2 da 4 a 9, 3 oltre i 10."},
-                    {"objection": "Posso affittarla alla mia ex dipendente?", "answer": "No: la legge vieta di affittare a chi è stato tuo dipendente negli ultimi 5 anni. Per questo ti presentiamo professioniste che vengono da altri saloni."},
+                    {"objection": "Quante postazioni posso affidare?", "answer": "Dipende dai tuoi dipendenti: 1 postazione fino a 3 dipendenti, 2 da 4 a 9, 3 oltre i 10."},
+                    {"objection": "Posso affidarla alla mia ex dipendente?", "answer": "No: la legge vieta l'affitto di poltrona a chi è stato tuo dipendente negli ultimi 5 anni. Per questo ti presentiamo professioniste che vengono da altri saloni."},
                     {"objection": "Quanto posso chiedere?", "answer": "A Milano: 350-500 € in periferia, 500-700 in semicentro, 700-1.200 in centro. Ti aiutiamo a fissare il canone giusto."},
                     {"objection": "Quanto dura il contratto e come lo disdico?", "answer": "Il contratto standard dura 12 mesi, con 1 mese di prova iniziale in cui entrambi potete uscire senza motivo, poi disdetta con 60 giorni di preavviso via PEC o raccomandata. Cauzione di un canone, restituita alla fine."},
                     {"objection": "Perché non farlo da soli su Facebook?", "answer": "Puoi. Ma la maggior parte dei titolari non trova nessuno, e chi trova firma un accordo a voce: senza contratto e SUAP è lavoro subordinato mascherato, con contributi e sanzioni a carico tuo se passa l'ispettorato. E poi ogni mese devi chiedere i soldi. Noi facciamo tutto questo."},
@@ -53,7 +53,7 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
         "Cercare e visitare è gratis: alla firma paghi 99 € una tantum, poi solo il canone concordato, ogni mese in piattaforma." + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
     trust=["Visiti il salone prima di firmare", "Contratto a norma con un mese di prova", "Canone in piattaforma con ricevuta: niente contanti"],
-    hero_photo_caption="La tua poltrona, le tue clienti, i tuoi orari.", lock_text="postazioni da €400/mese", form_name_label="Come ti chiami",
+    hero_photo_caption="La tua poltrona, le tue clienti, i tuoi orari.", lock_text="postazioni da 400 € al mese", price_badge="Prime 30 iscritte: 99 € di attivazione azzerati alla firma", founder_note="Stiamo partendo a Milano con un primo gruppo di professioniste. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Chiedi il contatto per vedere nome e indirizzo e prenotare la visita. Gratis.", form_name_label="Come ti chiami",
     form_question="Cosa ti ha frenato finora dal metterti in proprio?",
     form_extra=[{"name": "zona", "placeholder": "Zona di Milano preferita", "required": True},
                 {"name": "specialita", "placeholder": "Specialità (colore, taglio uomo, extension…)"}, {"name": "piva", "placeholder": "Hai già la P.IVA? (sì / no)"},
@@ -103,5 +103,10 @@ if __name__ == "__main__":
         db.upsert(db.PROBLEM_CLUSTERS, cid, {"name": name, "vertical": "salons_barbers", "persona": persona, "status": "hypothesis", "problem_statement": STATEMENT,
                                              "created_by": "manual", "created_at": db.now(), "signal_count": 0, "path": "marketplace_test",
                                              "evidence_sources": ["post pubblici titolari Facebook/Instagram", "stampa Firenze", "guide CNA/CGIA/Confartigianato"]})
+        from google.cloud.firestore_v1 import DELETE_FIELD
+
+        ref = db.get_db().collection(db.OPPORTUNITY_SCORING).document(cid)
+        if ref.get().exists:
+            ref.update({"offer.listing_preview": DELETE_FIELD, "offer.hero_card_title": DELETE_FIELD})
         db.upsert(db.OPPORTUNITY_SCORING, cid, {"cluster_id": cid, "funnel_stage": "signal_collected", "offer": offer, "is_archived": False, "created_at": db.now()})
         print("ok", cid)

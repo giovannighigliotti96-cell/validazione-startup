@@ -112,7 +112,9 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     logo = offer.get("logo_url") or f"{base}/static/dispensa/logo_512.png"
     cover = offer.get("cover_url") or f"{base}/static/dispensa/page_cover_1640x856.png"
     price_text = v.get("price_text") or f"€{v['price_eur_month']:.0f}{t['mo']}"
-    lock_text = offer.get("lock_text") or t["lock"]
+    lock_text = offer.get("lock_text") if "lock_text" in offer else t["lock"]
+    badge = offer.get("price_badge") if "price_badge" in offer else "🔒 " + t["lock"]
+    founder_note = offer.get("founder_note") or t["founder"]
     kicker = offer.get("kicker") or t["kicker"]
     name_label = offer.get("form_name_label") or t["name"]
     question = offer.get("form_question") or t["q"]
@@ -133,7 +135,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     if listings:
         rail_html = (f"<section style='padding-top:40px;padding-bottom:28px'><div class='w'><h2>{escape(offer.get('listings_title') or 'Postazioni come queste')}</h2>"
                      f"<p class='railhint'>{escape(offer.get('listings_hint') or '')}</p><div class='rail'>" + "".join(_card(x) for x in listings) + "</div></div></section>")
-    lp = offer.get("listing_preview") or (listings[0] if listings else None)
+    lp = offer.get("listing_preview") or ({**listings[0], "note": offer.get("hero_note") or listings[0].get("note")} if listings else None)
     listing_html = ""
     if lp:
         tags = "".join(f"<span class='tag'>{escape(x)}</span>" for x in lp.get("tags", []))
@@ -178,7 +180,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
   <h1>{re.sub(r"\*(.+?)\*", r"<em>\1</em>", escape(v['headline']))}</h1>
   <p class="sub">{escape(v['subheadline'])}</p>
   <a class="btn" href="#lista">{escape(v['cta'])} &rarr;</a>
-  <div class="muted" style="color:#94a3b8;margin-top:12px">{escape(price_text)} · {escape(lock_text)}</div>
+  <div class="muted" style="color:#94a3b8;margin-top:12px">{escape(price_text)}{(" · " + escape(lock_text)) if lock_text else ""}</div>
   {("<div class='trust'>" + "".join("<span>" + escape(x) + "</span>" for x in offer.get("trust") or []) + "</div>") if offer.get("trust") else ""}
   </div>
   {listing_html or (("<aside class='herocard'><b>" + escape(offer.get("hero_card_title") or t["how"]) + "</b><ul>" + "".join("<li>" + escape(x) + "</li>" for x in v.get("how_it_works", [])[:3]) + "</ul></aside>") if v.get("how_it_works") else "")}
@@ -198,7 +200,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     <h2 style="margin-bottom:4px">{t['price']}</h2>
     <div class="muted">{escape(v.get('plan_name') or '')}</div>
     <div class="price" style="{'font-size:34px' if v.get('price_text') else ''}">{escape(v['price_text']) if v.get('price_text') else "€" + format(v['price_eur_month'], '.0f') + "<span>" + t['mo'] + "</span>"}</div>
-    <span class="lock">🔒 {t['lock']}</span>
+    {("<span class='lock'>" + escape(badge) + "</span>") if badge else ""}
     <p class="muted" style="margin-top:12px">{escape(v.get('price_justification') or '')}</p>
   </div>
   <div>{form}</div>
