@@ -166,7 +166,7 @@ def top(n: int = 20, tribunal: str | None = None, max_age_days: int = 120) -> li
     return [{k: x.get(k) for k in ("id", "name", "tribunal", "number", "year", "declared_at", "curatore", "giudice", "score", "score_reasons", "activity", "financials", "docs_url", "vdr_url")} for x in out[:n]]
 
 
-def run_weekly(max_teasers: int = 10) -> dict:
+def run_weekly(max_teasers: int = 25) -> dict:
     from app.services import search
 
     r = refresh()
