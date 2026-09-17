@@ -6,11 +6,11 @@ NL = chr(10)
 NL2 = NL + NL
 BASE = "https://validazione-startup-148506634481.europe-west1.run.app"
 COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/logo_512.png", cover_url=f"{BASE}/static/poltrona/cover_1640x856.png",
-              active_variants=["A"], generated_by="manual", theme="warm", hero_photo_url=f"{BASE}/static/poltrona/salone_1.jpg",
-              photo_credits="Foto: Welcome to Switzerland backstage! (Flickr, CC BY 2.0); pig1103pig (Flickr, CC BY-SA 2.0). Immagini di esempio, non dei saloni iscritti.",
+              active_variants=["A"], generated_by="manual", theme="warm", listings_title="Così appaiono gli annunci", listings_hint="Esempi di annuncio: foto reali di saloni, dati indicativi. Nome e indirizzo sempre nascosti fino alla richiesta di contatto.", hero_photo_url=f"{BASE}/static/poltrona/salone_1.jpg",
+              photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
               notes="Marketplace affitto di poltrona: due lati, due landing. Citazioni da post pubblici di titolari, ruolo senza nome.")
 
-OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", hero_card_title="In tre passi",
+OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_title="In tre passi",
     confirm_email={"subject": "Sei in lista — {brand}", "body": (
         "Ciao{nome_sp}," + NL2 + "grazie: la tua postazione è in lista su {brand}." + NL2 +
         "Cosa succede adesso: entro 2-3 giorni ti chiamo io, Giovanni, per 15 minuti. Mi racconti il salone, la postazione e il canone che vorresti; "
@@ -18,12 +18,9 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", hero
         "Per te non ci sono costi: tratteniamo il 15% del canone solo nei mesi in cui la postazione è occupata, e ti giriamo il resto entro il 5 di ogni mese." + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
     trust=["Canone incassato da noi e girato a te entro il 5 del mese", "Contratto, SUAP e sostituzione inclusi", "Zero costi fissi: paghi solo se rende"],
-    hero_photo_caption="Una postazione libera è un'entrata in più, non un problema in più.",
-    listing_preview={"photo_url": f"{BASE}/static/poltrona/postazione_1.jpg", "tags": ["Milano · Isola", "Mar–Sab", "1 postazione"], "title": "Postazione in salone di 80 mq, luce naturale",
-                     "text": "Poltrona, specchio, lavatesta condiviso, prodotti esclusi. Salone con 2 titolari, clientela 30-55 anni.", "price": "550 €", "price_note": "al mese",
-                     "note": "Nome e indirizzo del salone visibili solo dopo la richiesta di contatto."}, lock_text="canone medio Milano 500-700 € al mese, a te l'85%", form_name_label="Nome del salone (non sarà mostrato)",
+    hero_photo_caption="Una postazione libera è un'entrata in più, non un problema in più.", lock_text="canone medio a Milano 500-700 € al mese, a te l'85%", form_name_label="Nome del salone (non sarà mostrato)",
     form_question="Perché la postazione oggi è vuota? (es. dipendente andata via, non trovo personale…)",
-    form_extra=[{"name": "citta", "placeholder": "Città", "required": True}, {"name": "zona", "placeholder": "Zona / quartiere"},
+    form_extra=[{"name": "zona", "placeholder": "Zona / quartiere di Milano", "required": True},
                 {"name": "canone", "placeholder": "Canone mensile che vorresti (€)"}, {"name": "dipendenti", "placeholder": "Quanti dipendenti hai oggi?", "type": "number"},
                 {"name": "telefono", "placeholder": "Telefono (per fissare la visita)", "type": "tel"}],
     quotes=[{"quote": "Prima del Covid era facile trovare dipendenti: lo scrivevi su un social, mettevi un foglio A4 in vetrina e arrivavano. Adesso niente.", "role": "Titolare di salone"},
@@ -40,7 +37,7 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", hero
                     {"objection": "È legale?", "answer": "Sì: l'affitto di poltrona è previsto dalla normativa per acconciatori ed estetisti dal 2018. Serve una comunicazione al SUAP del Comune, che prepariamo noi."},
                     {"objection": "Quante postazioni posso affittare?", "answer": "Dipende dai tuoi dipendenti: 1 postazione fino a 3 dipendenti, 2 da 4 a 9, 3 oltre i 10."},
                     {"objection": "Posso affittarla alla mia ex dipendente?", "answer": "No: la legge vieta di affittare a chi è stato tuo dipendente negli ultimi 5 anni. Per questo ti presentiamo professioniste che vengono da altri saloni."},
-                    {"objection": "Quanto posso chiedere?", "answer": "A Milano: 350-500 € in periferia, 500-700 in semicentro, 700-1.200 in centro. A Genova un po' meno. Ti aiutiamo a fissare il canone giusto."},
+                    {"objection": "Quanto posso chiedere?", "answer": "A Milano: 350-500 € in periferia, 500-700 in semicentro, 700-1.200 in centro. Ti aiutiamo a fissare il canone giusto."},
                     {"objection": "Quanto dura il contratto e come lo disdico?", "answer": "Il contratto standard dura 12 mesi, con 1 mese di prova iniziale in cui entrambi potete uscire senza motivo, poi disdetta con 60 giorni di preavviso via PEC o raccomandata. Cauzione di un canone, restituita alla fine."},
                     {"objection": "Perché non farlo da soli su Facebook?", "answer": "Puoi. Ma la maggior parte dei titolari non trova nessuno, e chi trova firma un accordo a voce: senza contratto e SUAP è lavoro subordinato mascherato, con contributi e sanzioni a carico tuo se passa l'ispettorato. E poi ogni mese devi chiedere i soldi. Noi facciamo tutto questo."},
                     {"objection": "Cosa vi costa?", "answer": "Il 15% del canone, trattenuto solo nei mesi in cui la postazione è occupata e pagata. Niente abbonamento, niente costi se resta vuota. Su 500 € ricevi 425 €, senza fare nulla."},
@@ -56,12 +53,9 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
         "Cercare e visitare è gratis: alla firma paghi 99 € una tantum, poi solo il canone concordato, ogni mese in piattaforma." + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
     trust=["Visiti il salone prima di firmare", "Contratto a norma con un mese di prova", "Canone in piattaforma con ricevuta: niente contanti"],
-    hero_photo_caption="La tua poltrona, le tue clienti, i tuoi orari.",
-    listing_preview={"photo_url": f"{BASE}/static/poltrona/postazione_1.jpg", "tags": ["Milano · Isola", "Mar–Sab", "libera da ottobre"], "title": "Postazione in salone di 80 mq, luce naturale",
-                     "text": "Poltrona, specchio, lavatesta condiviso, prodotti esclusi. Salone con 2 titolari, clientela 30-55 anni.", "price": "550 €", "price_note": "al mese",
-                     "note": "Chiedi il contatto per vedere nome e indirizzo e prenotare la visita. Gratis."}, lock_text="postazioni da €400/mese", form_name_label="Come ti chiami",
+    hero_photo_caption="La tua poltrona, le tue clienti, i tuoi orari.", lock_text="postazioni da €400/mese", form_name_label="Come ti chiami",
     form_question="Cosa ti ha frenato finora dal metterti in proprio?",
-    form_extra=[{"name": "citta", "placeholder": "Città in cui vuoi lavorare", "required": True}, {"name": "zona", "placeholder": "Zona preferita"},
+    form_extra=[{"name": "zona", "placeholder": "Zona di Milano preferita", "required": True},
                 {"name": "specialita", "placeholder": "Specialità (colore, taglio uomo, extension…)"}, {"name": "piva", "placeholder": "Hai già la P.IVA? (sì / no)"},
                 {"name": "telefono", "placeholder": "Telefono", "type": "tel"}],
     quotes=[{"quote": "Affittiamo una postazione nel nostro salone: moderno, curato, in viale centrale. Cerchiamo una professionista indipendente.", "role": "Titolare di salone, Modena"},
@@ -69,7 +63,7 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
             {"quote": "Affitto poltrona per parrucchiere o barbiere, zona San Giovanni.", "role": "Titolare di salone, Roma"},
             {"quote": "Cerchiamo un talento indipendente che voglia condividere con noi uno spazio di lavoro.", "role": "Titolare di salone"}],
     variants=[dict(key="A", target_language="it", headline="Lavora in proprio, *senza aprire un salone*.",
-        subheadline="Postazioni in saloni veri a Milano e Genova da 400 € al mese. Guardi, visiti il salone, incontri la titolare, poi decidi. Contratto a norma, SUAP e assicurazione inclusi; il canone lo paghi in piattaforma, con ricevuta. Se non hai la P.IVA ti aiutiamo ad aprirla.",
+        subheadline="Postazioni in saloni veri a Milano da 400 € al mese. Guardi, visiti il salone, incontri la titolare, poi decidi. Contratto a norma, SUAP e assicurazione inclusi; il canone lo paghi in piattaforma, con ricevuta. Se non hai la P.IVA ti aiutiamo ad aprirla.",
         cta="Guarda le postazioni", price_eur_month=0, price_text="Guardare e visitare è gratis · 99 € alla firma, poi solo il canone, in piattaforma",
         price_justification="Guardare, chiedere il contatto e visitare non costa nulla. Alla firma paghi 99 € una tantum (contratto, SUAP, assicurazione, attivazione). Poi paghi solo il canone concordato con il salone, ogni mese in piattaforma con carta o SEPA: ricevuta automatica, niente contanti, niente discussioni.",
         benefits=["Zero investimento: niente locale, niente attrezzature, niente fideiussioni", "Tieni il 100% di quello che incassi, non il 40% di uno stipendio",
@@ -85,10 +79,25 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
                     {"objection": "Quanto dura e come disdico?", "answer": "12 mesi rinnovabili, con 1 mese di prova in cui puoi uscire senza motivo; poi 60 giorni di preavviso. Cauzione di un canone, che ti viene restituita."},
                     {"objection": "E se il salone non mi piace?", "answer": "Nel mese di prova esci senza penali e ti mostriamo un'altra postazione. Nessun vincolo lungo."}])])
 
+LISTINGS = [
+    {"photo_url": f"{BASE}/static/poltrona/postazione_1.jpg", "tags": ["Isola", "Mar–Sab", "1 postazione"], "title": "Postazione in salone di 80 mq, luce naturale",
+     "text": "Poltrona, specchio, lavatesta condiviso, prodotti esclusi. Salone con 2 titolari, clientela 30-55 anni.", "price": "550 €", "price_note": "al mese", "note": "Esempio di annuncio"},
+    {"photo_url": f"{BASE}/static/poltrona/postazione_2.jpg", "tags": ["Porta Romana", "Lun–Ven", "colore"], "title": "Postazione in salone con color bar",
+     "text": "Ideale per colorista: lavatesta dedicato, prodotti a consumo. Salone di 6 postazioni, aperto dal 2015.", "price": "700 €", "price_note": "al mese", "note": "Esempio di annuncio"},
+    {"photo_url": f"{BASE}/static/poltrona/postazione_3.jpg", "tags": ["Città Studi", "Mar–Sab", "libera da ottobre"], "title": "Postazione con lavatesta in pietra, salone storico",
+     "text": "Salone di quartiere con clientela fidelizzata; postazione vicino all'ingresso. Prodotti inclusi fino a 60 €/mese.", "price": "480 €", "price_note": "al mese", "note": "Esempio di annuncio"},
+    {"photo_url": f"{BASE}/static/poltrona/postazione_4.jpg", "tags": ["Navigli", "Gio–Sab", "anche part-time"], "title": "Mezza settimana in salone da 4 postazioni",
+     "text": "Postazione condivisa: 3 giorni a settimana, orario continuato. Perfetta per chi parte in proprio.", "price": "300 €", "price_note": "al mese", "note": "Esempio di annuncio"},
+    {"photo_url": f"{BASE}/static/poltrona/postazione_5.jpg", "tags": ["Bicocca", "Mar–Sab", "uomo/barba"], "title": "Postazione per barber in salone unisex",
+     "text": "Poltrona reclinabile, lavatesta, sterilizzatore. Il salone cerca un barber per la clientela maschile del quartiere.", "price": "420 €", "price_note": "al mese", "note": "Esempio di annuncio"},
+]
+
 STATEMENT = ("I saloni non trovano personale e restano con postazioni vuote; le professioniste che vogliono mettersi in proprio non possono aprire un salone. "
              "L'affitto di poltrona esiste dal 2018 ma si fa alla cieca su Facebook.")
 
 if __name__ == "__main__":
+    OWNERS["listings"] = LISTINGS
+    STYLISTS["listings"] = LISTINGS
     for cid, offer, name, persona in (("poltrona_libera_titolari", OWNERS, "Affitto di poltrona — lato titolari di saloni", "titolare di salone"),
                                       ("poltrona_libera_professioniste", STYLISTS, "Affitto di poltrona — lato professioniste", "parrucchiera/barbiere freelance")):
         db.upsert(db.PROBLEM_CLUSTERS, cid, {"name": name, "vertical": "salons_barbers", "persona": persona, "status": "hypothesis", "problem_statement": STATEMENT,

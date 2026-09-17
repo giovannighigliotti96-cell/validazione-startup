@@ -71,7 +71,7 @@ h1 em{font-style:italic;color:var(--acc)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--ink);color:#fff;padding:16px 26px;border-radius:999px;font-weight:700;text-decoration:none;font-size:16px;border:0;cursor:pointer;transition:background .12s ease,transform .12s ease}
 .btn:hover{background:#000;transform:translateY(-1px)}.muted{color:var(--mut);font-size:13px}
 .trust{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;color:var(--mut);font-size:14px}.trust span:before{content:"—";color:var(--acc);margin-right:6px}
-.listing{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 24px 50px rgba(28,25,23,.10);max-width:420px;margin:0 auto;transform:rotate(-1.2deg)}
+.listing{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 24px 50px rgba(28,25,23,.10);max-width:420px;margin:0 auto}
 .listing .ph{aspect-ratio:4/3;background:linear-gradient(135deg,var(--paper2),#d9cdb9);display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
 .listing .body{padding:16px 18px 18px}.listing .tag{display:inline-block;font-size:12px;background:var(--paper2);color:var(--ink);padding:4px 10px;border-radius:999px;margin:0 6px 8px 0}
 .listing h3{margin:6px 0 4px;font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:20px}.listing p{margin:0 0 10px;color:#3f3a35;font-size:14.5px}
@@ -95,6 +95,9 @@ details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointe
 summary::-webkit-details-marker{display:none}summary:after{content:"+";color:var(--mut);font-weight:400;font-size:22px}details[open] summary:after{content:"–"}details p{color:#3f3a35;margin:10px 0 0;font-size:15.5px}
 footer{padding:28px 0 44px;color:var(--mut);font-size:12px;border-top:1px solid var(--line)}
 .ok{background:#e9f1ea;color:#274a34;padding:18px 20px;border-radius:14px;font-weight:600}
+.rail{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 20px 18px;margin:0 -20px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.rail::-webkit-scrollbar{display:none}
+.rail .listing{flex:0 0 min(78vw,320px);scroll-snap-align:start;margin:0;box-shadow:0 10px 30px rgba(28,25,23,.08)}.rail .listing .ph{aspect-ratio:4/3}.rail .listing h3{font-size:18px}.rail .listing p{font-size:14px}
+.railhint{color:var(--mut);font-size:13px;margin:0 0 6px}
 .band{height:min(52vw,420px);background-size:cover;background-position:center;position:relative;display:flex;align-items:flex-end}
 .band:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,25,23,0) 40%,rgba(28,25,23,.55))}.band .w{position:relative;z-index:1;width:100%}.band p{color:#fff;font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:clamp(18px,2.6vw,26px);margin:0 0 22px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
 .sticky{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(247,242,234,.94);backdrop-filter:blur(8px);display:none;z-index:50;border-top:1px solid var(--line)}
@@ -118,7 +121,19 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     css = CSS_WARM if warm else CSS
     fonts = ("https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600;700&display=swap" if warm
              else "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap")
-    lp = offer.get("listing_preview")
+    def _card(lp: dict) -> str:
+        tags = "".join(f"<span class='tag'>{escape(x)}</span>" for x in lp.get("tags", []))
+        ph = (f"<div class='ph' style=\"background-image:url('{escape(lp['photo_url'])}');background-size:cover;background-position:center\"></div>" if lp.get("photo_url")
+              else f"<div class='ph'>{escape(lp.get('photo_label') or 'foto della postazione')}</div>")
+        return (f"<aside class='listing'>{ph}<div class='body'>{tags}<h3>{escape(lp.get('title') or '')}</h3><p>{escape(lp.get('text') or '')}</p>"
+                f"<div class='price'>{escape(lp.get('price') or '')}<span> {escape(lp.get('price_note') or '')}</span></div>"
+                f"<div class='note'>{escape(lp.get('note') or '')}</div></div></aside>")
+    listings = offer.get("listings") or []
+    rail_html = ""
+    if listings:
+        rail_html = (f"<section style='padding-top:40px;padding-bottom:28px'><div class='w'><h2>{escape(offer.get('listings_title') or 'Postazioni come queste')}</h2>"
+                     f"<p class='railhint'>{escape(offer.get('listings_hint') or '')}</p><div class='rail'>" + "".join(_card(x) for x in listings) + "</div></div></section>")
+    lp = offer.get("listing_preview") or (listings[0] if listings else None)
     listing_html = ""
     if lp:
         tags = "".join(f"<span class='tag'>{escape(x)}</span>" for x in lp.get("tags", []))
@@ -170,6 +185,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 </div></header>
 <div class="sticky"><a class="btn" href="#lista">{escape(v['cta'])}</a></div>
 
+{rail_html}
 {("<div class='band' style=\"background-image:url('" + escape(offer['hero_photo_url']) + "')\"><div class='w'><p>" + escape(offer.get('hero_photo_caption') or '') + "</p></div></div>") if offer.get('hero_photo_url') else ""}
 {("<section><div class='w'><h2>" + t['ricon'] + "</h2><p class='lead'>" + t['ricon_sub'] + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
 
