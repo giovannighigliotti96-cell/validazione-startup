@@ -24,7 +24,11 @@ from app.scrapers.base import http_client, log
 
 COLL = "procedures"
 PORTALS = {"Genova": "https://fallimentigenova.com/", "Milano": "https://fallimentimilano.com/", "Savona": "https://fallimentisavona.com/",
-           "Alessandria": "https://fallimentialessandria.com/"}
+           "Alessandria": "https://fallimentialessandria.com/", "La Spezia": "https://fallimentilaspezia.com/", "Imperia": "https://fallimentiimperia.com/",
+           "Pavia": "https://fallimentipavia.com/", "Varese": "https://fallimentivarese.com/", "Como": "https://fallimenticomo.com/",
+           "Piacenza": "https://fallimentipiacenza.com/", "Parma": "https://fallimentiparma.com/", "Lucca": "https://fallimentilucca.com/", "Monza": "https://fallimentimonza.com/"}
+# distance from Arenzano matters for an operator who must be on site: bonus by tribunal
+NEAR = {"Genova": 15, "Savona": 12, "Alessandria": 10, "La Spezia": 8, "Imperia": 6, "Milano": 5, "Pavia": 5, "Piacenza": 4, "Varese": 3, "Como": 3, "Monza": 3, "Parma": 3, "Lucca": 3}
 UA = {"User-Agent": "validazione-startup research bot (public insolvency lists; contact giovannighigliotti96@gmail.com)"}
 
 # The founder's rule: only businesses whose MODEL is already validated — a product, a brand, B2B customers with contracts,
@@ -103,6 +107,7 @@ def score(doc: dict) -> tuple[int, list[str]]:
         s -= 30; why.append(f"perdita {round(nr / rev2 * 100)}% dei ricavi: crisi strutturale, non finanziaria")
     if doc.get("vdr_url"):
         s += 10; why.append("data room aperta: vendita/affitto in corso")
+    s += NEAR.get(doc.get("tribunal") or "", 0)
     return max(0, min(100, s)), why
 
 
@@ -134,11 +139,14 @@ def teaser(pid: str) -> dict:
         return {"error": "not found"}
     name = re.sub(r"\b(in liquidazione|unipersonale|s\.?r\.?l\.?s?|s\.?a\.?s\.?|s\.?n\.?c\.?|& c\.?)\b", " ", doc["name"], flags=re.I).strip()
     res = search.search(f"{name} {doc['tribunal']} fatturato dipendenti attività", max_results=8, purpose="enrich")
-    blob = " ".join(f"{r.get('title') or ''} {r.get('content') or ''}" for r in res)
-    low = blob.lower()
-    fin = {k: (distressed._num(m.group(1)) if k != "year" else int(m.group(1))) for k, rx in distressed._FIN.items() if (m := re.search(rx, low, re.I))}
-    act = re.search(r"(?:ateco|attivit[àa])[^:]{0,20}:?\s*([^.;|]{10,120})", low)
-    upd = {"financials": fin, "activity": act.group(1).strip() if act else None, "news": [{"title": r.get("title"), "url": r.get("url")} for r in res[:5]], "enriched_at": db.now()}
+    fin = distressed.parse_financials(res, name)
+    act = None
+    for r in res:
+        if sum(1 for t in distressed._name_tokens(name) if t in (r.get("title") or "").lower()) >= 1:
+            m = re.search(r"(?:ateco|attivit[àa] prevalente|settore)[^:]{0,20}:?\s*([^.;|]{10,120})", (r.get("content") or ""), re.I)
+            if m:
+                act = m.group(1).strip(); break
+    upd = {"financials": fin, "activity": act, "news": [{"title": r.get("title"), "url": r.get("url")} for r in res[:5]], "enriched_at": db.now()}
     doc.update(upd)
     upd["score"], upd["score_reasons"] = score(doc)
     db.upsert(COLL, pid, upd)
@@ -170,6 +178,14 @@ def run_weekly(max_teasers: int = 10) -> dict:
             continue
         try:
             teaser(x["id"]); done.append(x["name"])
+            d = db.get(COLL, x["id"]) or {}
+            fin = d.get("financials") or {}
+            rev, nr = fin.get("revenue"), fin.get("net_result")
+            passes = (rev and 300_000 <= rev <= 5_000_000 and (nr is None or nr > -0.15 * rev) and (d.get("score") or 0) >= 60)
+            if passes and not d.get("alerted_at"):
+                from app.services import distressed as _dis
+
+                _dis._alert("procedure", x["id"], d)
         except Exception as e:  # noqa: BLE001
             log.warning("teaser %s: %s", x["name"], e)
     r["teasers"] = done

@@ -437,3 +437,16 @@ def procedures_teaser(pid: str):
     from app.services import procedures
 
     return procedures.teaser(pid)
+
+
+@router.get("/deal/{kind}/{target_id}")
+def deal_get(kind: str, target_id: str, rebuild: bool = False, docs: bool = True):
+    """Diagnosis, zero-capital feasibility, timers and the PEC/teaser for a target (kind = cigs | procedure)."""
+    from app import db as _db
+    from app.services import deal
+
+    coll = "distressed_companies" if kind == "cigs" else "procedures"
+    t = _db.get(coll, target_id) or {}
+    if t.get("deal") and not rebuild:
+        return t["deal"]
+    return deal.build(kind, target_id, with_docs=docs)

@@ -25,7 +25,7 @@ from app import db
 from app.config import get_settings
 from app.scrapers.base import http_client, log
 
-JINA_DAILY = 200
+JINA_DAILY = 400
 BRAVE_DAILY = 33
 TAVILY_DAILY = 33
 SCRAPE_SHARE = 0.6

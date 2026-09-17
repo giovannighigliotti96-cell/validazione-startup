@@ -259,6 +259,37 @@ def _num(x: str | None) -> float | None:
     return (-1 if neg else 1) * float(d) if d else None
 
 
+def _name_tokens(name: str) -> list[str]:
+    stop = {"srl", "spa", "sas", "snc", "srls", "soc", "societa", "in", "liquidazione", "unipersonale", "di", "e", "c", "the", "italia", "group", "international"}
+    return [t for t in re.findall(r"[a-z0-9]{3,}", name.lower()) if t not in stop]
+
+
+def parse_financials(results: list[dict], name: str) -> dict:
+    """Numbers only from pages whose TITLE names this company (never an omonimo), with sanity checks."""
+    toks = _name_tokens(name)
+    need = 1 if len(toks) <= 1 else 2
+    fin: dict = {}
+    for r in results:
+        title = (r.get("title") or "").lower()
+        if sum(1 for t in toks if t in title) < need:
+            continue
+        low = f"{title} {(r.get('content') or '').lower()}"
+        for k, rx in _FIN.items():
+            if k in fin:
+                continue
+            m = re.search(rx, low, re.I)
+            if not m:
+                continue
+            v = _num(m.group(1)) if k != "year" else int(m.group(1))
+            if v is None:
+                continue
+            if (k == "employees" and not 0 < v < 5000) or (k == "year" and not 2018 <= v <= 2026) or (k in ("revenue", "personnel_cost") and v < 1000):
+                continue
+            fin[k] = v
+        fin.setdefault("sources", []).append(r.get("url"))
+    return fin
+
+
 def financial_teaser(company_id: str) -> dict:
     from app.services import search
 
@@ -267,14 +298,7 @@ def financial_teaser(company_id: str) -> dict:
         return {"error": "not found"}
     q = f"{doc['name']} {doc.get('hq') or ''} fatturato bilancio dipendenti"
     res = search.search(q, max_results=8, purpose="enrich")
-    blob = " ".join(f"{r.get('title') or ''} {r.get('content') or ''}" for r in res)
-    low = blob.lower()
-    fin: dict = {}
-    for k, rx in _FIN.items():
-        m = re.search(rx, low, re.I)
-        if m:
-            fin[k] = _num(m.group(1)) if k != "year" else int(m.group(1))
-    fin["sources"] = [r.get("url") for r in res if r.get("url") and re.search(r"fatturato|bilanc|dipendent", (r.get("content") or "").lower())][:4]
+    fin = parse_financials(res, doc["name"])
     fin["fetched_at"] = db.now()
     db.upsert(COLL, company_id, {"financials": fin})
     return fin
@@ -328,8 +352,39 @@ def qualify_fresh(days: int = 45, max_companies: int = 12) -> dict:
             if not doc.get("enriched_at"):
                 enrich(r["id"])
             financial_teaser(r["id"])
-            ok, checks = buyer_gate(db.get(COLL, r["id"]) or {})
+            doc2 = db.get(COLL, r["id"]) or {}
+            ok, checks = buyer_gate(doc2)
             done.append((r["name"], ok))
+            if ok and not doc2.get("alerted_at"):
+                _alert("cigs", r["id"], doc2)
         except Exception as e:  # noqa: BLE001
             log.warning("qualify %s: %s", r["name"], e)
     return {"qualified": done}
+
+
+def _alert(kind: str, target_id: str, doc: dict) -> None:
+    """A target just passed the public gate: build the deal layer and email it — the window is the edge."""
+    from html import escape
+
+    from app.services import deal, notify
+
+    try:
+        d = deal.build(kind, target_id, with_docs=True)
+        fin = doc.get("financials") or {}
+        docs = d.get("docs") or {}
+        html = f"""<div style='font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:680px;margin:0 auto;color:#0f172a'>
+<h2 style='font-size:18px'>Nuovo target passa il gate: {escape(doc.get('name') or '')}</h2>
+<p style='color:#374151'>{escape(doc.get('hq') or doc.get('tribunal') or '')} · {escape(doc.get('sector') or doc.get('activity') or '')}<br>
+ricavi {fin.get('revenue')} · risultato {fin.get('net_result')} · addetti {fin.get('employees')} · stampa: {escape(doc.get('news_stage') or '')}</p>
+<p><b>Diagnosi</b>: {escape(d['diagnosis']['cause'])} ({escape(d['diagnosis']['confidence'])}) — {escape(d['diagnosis']['note'])}</p>
+<p><b>Timer</b>: {d['timers'].get('days_since')} giorni · {escape(d['timers'].get('stage') or '')} · alert {escape(d['timers'].get('alert') or '')}</p>
+<p><b>Fattibilità (stime)</b>: cassa necessaria €{d['feasibility'].get('cash_needed')} · strumenti pubblici €{d['feasibility'].get('public_instruments_cover')} · gap €{d['feasibility'].get('gap_for_partner')} · {escape(d['feasibility'].get('structure') or '')}</p>
+<h3 style='font-size:15px'>PEC pronta — {escape(docs.get('pec_subject') or '')}</h3>
+<pre style='white-space:pre-wrap;font-family:inherit;background:#f8fafc;padding:12px;border-radius:8px'>{escape(docs.get('pec_body') or '')}</pre>
+<h3 style='font-size:15px'>Domande per la prima chiamata</h3><ol>{''.join('<li>' + escape(q) + '</li>' for q in docs.get('questions_first_call') or [])}</ol>
+<h3 style='font-size:15px'>Teaser per partner</h3><pre style='white-space:pre-wrap;font-family:inherit;background:#f8fafc;padding:12px;border-radius:8px'>{escape(docs.get('teaser') or '')}</pre>
+<p style='color:#6b7280;font-size:12px'>Da verificare prima di scrivere: {escape('; '.join(d['diagnosis'].get('verify') or []))}</p></div>"""
+        notify.send_email(f"🎯 Target: {doc.get('name')} — {d['diagnosis']['cause']} · {d['timers'].get('days_since')} gg", html)
+        db.upsert("distressed_companies" if kind == "cigs" else "procedures", target_id, {"alerted_at": db.now()})
+    except Exception as e:  # noqa: BLE001
+        log.error("alert %s %s: %s", kind, target_id, e)
