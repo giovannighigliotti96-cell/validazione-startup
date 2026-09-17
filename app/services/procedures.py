@@ -23,14 +23,19 @@ from app import db
 from app.scrapers.base import http_client, log
 
 COLL = "procedures"
-PORTALS = {"Genova": "https://fallimentigenova.com/"}
+PORTALS = {"Genova": "https://fallimentigenova.com/", "Milano": "https://fallimentimilano.com/", "Savona": "https://fallimentisavona.com/",
+           "Alessandria": "https://fallimentialessandria.com/"}
 UA = {"User-Agent": "validazione-startup research bot (public insolvency lists; contact giovannighigliotti96@gmail.com)"}
 
-# what a tenant can actually run: a place, a licence, a brand, a workshop — not a real-estate shell or a one-person firm
-OPERATING = re.compile(r"ristorant|bar\b|pizzer|gelat|pasticc|dolciar|panific|hotel|albergo|b&b|officin|carrozz|impiant|termo|elettr|meccan|fibre|fiber|vetr|tipograf|"
-                       r"lavander|palestra|fitness|farmac|negozio|abbigliament|calzatur|alimentar|gastronom|salumer|macell|pescher|fiorist|parrucch|estetic|"
-                       r"trasport|logist|magazzin|falegn|serramen|infiss|cantier|naval|yacht|stampa|grafic|arredo|mobili", re.I)
-SHELL = re.compile(r"immobiliar|holding|real estate|partecipazion|s\.?s\.?\b|societ[àa] semplice", re.I)
+# The founder's rule: only businesses whose MODEL is already validated — a product, a brand, B2B customers with contracts,
+# distribution, technology. Not local manual services (bar, gelateria, parrucchiere, officina) and not real-estate shells.
+VALIDATED = re.compile(r"fabbric|produz|industri|manifattur|software|tech|digital|informatic|e-?commerce|distribuz|ingross|import|export|logistic|trasport|"
+                       r"meccan|elettron|elettr|chimic|plastic|packag|imballag|tessil|moda|brand|abbigliament|calzatur|alimentar|dolciar|farmac|medical|"
+                       r"engineering|ingegner|impiant|energ|fotovolt|automaz|robot|stamp|editor|arred|\bmobili|nautic|naval|yacht|cosmet|vino|vinicol|caseific|fibr|fiber|cabl|telecom|"
+                       r"lavorazion|serramen|infiss|metall|acciai|fonder|componen|ricambi|macchin|attrezzat|forniture", re.I)
+LOCAL_MANUAL = re.compile(r"gelat|\bbar\b|caff[eè]|ristor|pizzer|trattor|osteria|\bpub\b|parrucch|barbier|estetic|\bnail\b|lavander|palestra|tabacch|edicola|"
+                          r"ambulant|autofficin|carrozzer|gommist|pulizi|ponteggi|imbianch|idraulic|autolavagg|kebab|sushi|panific|pasticceria artigian", re.I)
+SHELL = re.compile(r"immobiliar|holding|real estate|partecipazion|\bs\.\s?s\.|societ[àa] semplice|costruzioni immobiliari", re.I)
 INDIVIDUAL = re.compile(r"\bdi [A-Z][a-z]+ [A-Z][a-z]+\b|titolare dell'impresa|ditta individuale", re.I)
 
 
@@ -76,21 +81,26 @@ def score(doc: dict) -> tuple[int, list[str]]:
     else:
         why.append(f"sentenza {age} giorni fa: probabilmente già in vendita a pezzi")
     sec = (doc.get("activity") or "") + " " + name
-    if OPERATING.search(sec):
-        s += 30; why.append("attività con sede/licenza/marchio/officina: affittabile")
+    if VALIDATED.search(sec):
+        s += 30; why.append("modello validato: prodotto/marchio/B2B/distribuzione")
+    if LOCAL_MANUAL.search(sec):
+        s -= 35; why.append("attività locale/manuale: fuori perimetro")
     if SHELL.search(name):
         s -= 40; why.append("veicolo immobiliare/holding: niente da gestire")
-    if INDIVIDUAL.search(name) and not OPERATING.search(sec):
+    if INDIVIDUAL.search(name) and not VALIDATED.search(sec):
         s -= 15; why.append("ditta individuale senza attività riconoscibile")
     fin = doc.get("financials") or {}
     rev = fin.get("revenue")
     if rev:
-        if 200_000 <= rev <= 3_000_000:
+        if 300_000 <= rev <= 5_000_000:
             s += 20; why.append(f"fatturato €{int(rev):,}: taglia da affitto d'azienda")
-        elif rev > 3_000_000:
+        elif rev > 5_000_000:
             s += 5; why.append(f"fatturato €{int(rev):,}: serve capitale")
         else:
             s -= 10; why.append(f"fatturato €{int(rev):,}: troppo piccola")
+    nr, rev2 = fin.get("net_result"), fin.get("revenue")
+    if nr is not None and rev2 and nr < -0.15 * rev2:
+        s -= 30; why.append(f"perdita {round(nr / rev2 * 100)}% dei ricavi: crisi strutturale, non finanziaria")
     if doc.get("vdr_url"):
         s += 10; why.append("data room aperta: vendita/affitto in corso")
     return max(0, min(100, s)), why
