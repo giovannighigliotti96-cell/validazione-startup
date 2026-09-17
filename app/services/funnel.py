@@ -452,7 +452,13 @@ def build_digest(top_n: int = 5) -> dict:
     reasons = Counter(k for r in rows if r["metrics"].get("dominant_attack_vector") in ("feature_gap", "no_solution_exists") for k in r["blocking"])
     arb = sorted(db.list_all("us_launches", limit=200), key=lambda r: str(r.get("checked_at") or ""), reverse=True)
     arb = [r for r in arb if r.get("verdict") in ("candidate", "watchlist_no_it_signals")][:6]
-    return {"top": top, "total_clusters": len(opps), "stage_counts": stage_counts, "new_signals_7d": new_signals, "arbitrage": arb,
+    try:
+        from app.services import distressed as _dis
+
+        dis = _dis.top(10, min_score=55)
+    except Exception:  # noqa: BLE001
+        dis = []
+    return {"top": top, "total_clusters": len(opps), "stage_counts": stage_counts, "new_signals_7d": new_signals, "arbitrage": arb, "distressed": dis,
             "attackable": attackable, "passed_stage2": sum(1 for r in rows if r["stage"] != "signal_collected"),
             "main_reasons": reasons.most_common(3)}
 

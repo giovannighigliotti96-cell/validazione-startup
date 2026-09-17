@@ -96,3 +96,12 @@ def cron_arbitrage(background: BackgroundTasks):
 
     background.add_task(job)
     return {"status": "accepted"}
+
+
+@router.api_route("/distressed", methods=["GET", "POST"], status_code=202)
+def cron_distressed(background: BackgroundTasks):
+    """Weekly: CIGS decrees -> distressed companies ranking + news enrichment for the top."""
+    from app.services import distressed
+
+    background.add_task(lambda: analysis.log.info("distressed: %s", distressed.run_weekly()))
+    return {"status": "accepted"}

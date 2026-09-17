@@ -391,3 +391,26 @@ def arbitrage_list(verdict: str | None = None, limit: int = 50):
     rows = db.list_all("us_launches", limit=limit, **({"verdict": verdict} if verdict else {}))
     rows.sort(key=lambda r: str(r.get("checked_at") or ""), reverse=True)
     return [{k: r.get(k) for k in ("name", "url", "problem", "persona", "category", "audience", "verdict", "italian_signals", "italy", "why_now", "replicable_solo", "checked_at")} for r in rows]
+
+
+@router.get("/distressed")
+def distressed_companies(n: int = 25, province: str | None = None, min_score: int = 40):
+    """Companies under CIGS (Ministero del Lavoro decrees) ranked with a turnaround lens."""
+    from app.services import distressed
+
+    return {"companies": distressed.top(n, province=province, min_score=min_score)}
+
+
+@router.get("/distressed/{company_id}")
+def distressed_company(company_id: str):
+    from app import db as _db
+
+    d = _db.get("distressed_companies", company_id)
+    return d or {"error": "not found"}
+
+
+@router.post("/distressed/{company_id}/enrich")
+def distressed_enrich(company_id: str):
+    from app.services import distressed
+
+    return distressed.enrich(company_id)
