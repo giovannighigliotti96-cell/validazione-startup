@@ -456,9 +456,12 @@ def build_digest(top_n: int = 5) -> dict:
         from app.services import distressed as _dis
 
         dis = _dis.top(10, min_score=55)
+        from app.services import procedures as _pr
+
+        procs = _pr.top(8, max_age_days=75)
     except Exception:  # noqa: BLE001
-        dis = []
-    return {"top": top, "total_clusters": len(opps), "stage_counts": stage_counts, "new_signals_7d": new_signals, "arbitrage": arb, "distressed": dis,
+        dis, procs = [], []
+    return {"top": top, "total_clusters": len(opps), "stage_counts": stage_counts, "new_signals_7d": new_signals, "arbitrage": arb, "distressed": dis, "procedures": procs,
             "attackable": attackable, "passed_stage2": sum(1 for r in rows if r["stage"] != "signal_collected"),
             "main_reasons": reasons.most_common(3)}
 

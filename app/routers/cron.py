@@ -105,3 +105,12 @@ def cron_distressed(background: BackgroundTasks):
 
     background.add_task(lambda: analysis.log.info("distressed: %s", distressed.run_weekly()))
     return {"status": "accepted"}
+
+
+@router.api_route("/procedures", methods=["GET", "POST"], status_code=202)
+def cron_procedures(background: BackgroundTasks):
+    """Weekly: judicial liquidations per tribunal -> ranking + public teaser for the freshest."""
+    from app.services import procedures
+
+    background.add_task(lambda: analysis.log.info("procedures: %s", procedures.run_weekly()))
+    return {"status": "accepted"}

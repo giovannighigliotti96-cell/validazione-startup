@@ -226,7 +226,10 @@ def enrich_top(n: int = 15, min_score: int = 55) -> dict:
 
 
 def run_weekly() -> dict:
+    from app.services import procedures
+
     r = refresh()
+    r["procedures"] = procedures.run_weekly()
     r["fresh"] = qualify_fresh()   # first: recent companies are the ones worth a negotiation
     r["enrich"] = enrich_top()
     return r

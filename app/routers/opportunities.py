@@ -422,3 +422,18 @@ def distressed_enrich(company_id: str):
     from app.services import distressed
 
     return distressed.enrich(company_id)
+
+
+@router.get("/procedures")
+def procedures_list(n: int = 20, tribunal: str | None = None, max_age_days: int = 120):
+    """Recent judicial liquidations (small companies) ranked for an affitto d'azienda from the curatore."""
+    from app.services import procedures
+
+    return {"procedures": procedures.top(n, tribunal=tribunal, max_age_days=max_age_days)}
+
+
+@router.post("/procedures/{pid}/teaser")
+def procedures_teaser(pid: str):
+    from app.services import procedures
+
+    return procedures.teaser(pid)
