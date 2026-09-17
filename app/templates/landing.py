@@ -187,7 +187,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 
 {rail_html}
 {("<div class='band' style=\"background-image:url('" + escape(offer['hero_photo_url']) + "')\"><div class='w'><p>" + escape(offer.get('hero_photo_caption') or '') + "</p></div></div>") if offer.get('hero_photo_url') else ""}
-{("<section><div class='w'><h2>" + t['ricon'] + "</h2><p class='lead'>" + t['ricon_sub'] + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
+{("<section><div class='w'><h2>" + escape(offer.get('quotes_title') or t['ricon']) + "</h2><p class='lead'>" + escape(offer.get('quotes_lead') or t['ricon_sub']) + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
 
 <section style="background:#f8fafc"><div class="w"><h2>{t['benefits']}</h2><div class="grid">{benefits}</div></div></section>
 
