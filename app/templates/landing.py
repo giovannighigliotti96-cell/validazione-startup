@@ -95,6 +95,8 @@ details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointe
 summary::-webkit-details-marker{display:none}summary:after{content:"+";color:var(--mut);font-weight:400;font-size:22px}details[open] summary:after{content:"–"}details p{color:#3f3a35;margin:10px 0 0;font-size:15.5px}
 footer{padding:28px 0 44px;color:var(--mut);font-size:12px;border-top:1px solid var(--line)}
 .ok{background:#e9f1ea;color:#274a34;padding:18px 20px;border-radius:14px;font-weight:600}
+.band{height:min(52vw,420px);background-size:cover;background-position:center;position:relative;display:flex;align-items:flex-end}
+.band:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,25,23,0) 40%,rgba(28,25,23,.55))}.band .w{position:relative;z-index:1;width:100%}.band p{color:#fff;font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:clamp(18px,2.6vw,26px);margin:0 0 22px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
 .sticky{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(247,242,234,.94);backdrop-filter:blur(8px);display:none;z-index:50;border-top:1px solid var(--line)}
 .sticky .btn{width:100%}@media(max-width:760px){.sticky{display:block}body{padding-bottom:78px}}
 """
@@ -120,7 +122,9 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     listing_html = ""
     if lp:
         tags = "".join(f"<span class='tag'>{escape(x)}</span>" for x in lp.get("tags", []))
-        listing_html = (f"<aside class='listing'><div class='ph'>{escape(lp.get('photo_label') or 'foto della postazione')}</div><div class='body'>{tags}"
+        ph = (f"<div class='ph' style=\"background-image:url('{escape(lp['photo_url'])}');background-size:cover;background-position:center\"></div>" if lp.get("photo_url")
+              else f"<div class='ph'>{escape(lp.get('photo_label') or 'foto della postazione')}</div>")
+        listing_html = (f"<aside class='listing'>{ph}<div class='body'>{tags}"
                         f"<h3>{escape(lp.get('title') or '')}</h3><p>{escape(lp.get('text') or '')}</p>"
                         f"<div class='price'>{escape(lp.get('price') or '')}<span> {escape(lp.get('price_note') or '')}</span></div>"
                         f"<div class='note'>{escape(lp.get('note') or '')}</div></div></aside>")
@@ -166,6 +170,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 </div></header>
 <div class="sticky"><a class="btn" href="#lista">{escape(v['cta'])}</a></div>
 
+{("<div class='band' style=\"background-image:url('" + escape(offer['hero_photo_url']) + "')\"><div class='w'><p>" + escape(offer.get('hero_photo_caption') or '') + "</p></div></div>") if offer.get('hero_photo_url') else ""}
 {("<section><div class='w'><h2>" + t['ricon'] + "</h2><p class='lead'>" + t['ricon_sub'] + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
 
 <section style="background:#f8fafc"><div class="w"><h2>{t['benefits']}</h2><div class="grid">{benefits}</div></div></section>
@@ -186,5 +191,5 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 
 {("<section><div class='w'><h2>" + t['faq'] + "</h2>" + faq + "</div></section>") if faq else ""}
 
-<footer><div class="w">{(escape(brand) + " · ") if brand else ""}{t['privacy']} <a href="{base}/lp/{escape(c['id'])}/privacy">Privacy</a></div></footer>
+<footer><div class="w">{("<div style='margin-bottom:8px'>" + escape(offer.get('photo_credits')) + "</div>") if offer.get('photo_credits') else ""}{(escape(brand) + " · ") if brand else ""}{t['privacy']} <a href="{base}/lp/{escape(c['id'])}/privacy">Privacy</a></div></footer>
 </body></html>"""
