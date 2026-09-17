@@ -53,32 +53,34 @@ def _relevant(query: str, text: str, min_hits: int = 2) -> bool:
 
 
 def _search(query: str, days: int, max_results: int) -> list[dict]:
-    from tavily import TavilyClient
+    from app.services import search as _s
 
-    key = get_settings().tavily_api_key
-    if not key:
-        raise RuntimeError("TAVILY_API_KEY not set")
-    res = TavilyClient(api_key=key).search(query, max_results=max_results, search_depth="basic", days=days, include_domains=["reddit.com"])
-    return res.get("results", [])
+    return _s.search(query, max_results=max_results, days=days, include_domains=["reddit.com"], purpose="scrape")
 
 
 def fetch(keyword_set: dict, config: dict) -> list[RawSignal]:
-    # budget guard: Tavily free tier = 1,000 searches/month -> at most one reddit_search pass per keyword set per day
+    # Budget guard (see services/search.py): every set gets a pass at most every 3 days, and only if today's
+    # scrape budget still covers all its queries — otherwise it keeps its turn for the next run (last_run untouched).
     from datetime import timedelta
 
     from app import db
+    from app.services import search as _budget
 
+    subs = config.get("subreddits") or []
+    n_queries = len(config.get("queries", [])) * max(1, (len(subs) + 2) // 3)
     ksid = keyword_set.get("id")
     if ksid:
         last = (db.get(db.KEYWORD_SETS, ksid) or {}).get("reddit_search_last_run")
-        if last and last > datetime.now(timezone.utc) - timedelta(hours=23):
-            log.info("reddit_search skipped for %s (ran <23h ago)", keyword_set.get("name"))
+        if last and last > datetime.now(timezone.utc) - timedelta(days=3):
+            log.info("reddit_search skipped for %s (ran <3 days ago)", keyword_set.get("name"))
+            return []
+        if _budget.remaining("scrape") < n_queries:
+            log.info("reddit_search deferred for %s (scrape budget left %d < %d)", keyword_set.get("name"), _budget.remaining("scrape"), n_queries)
             return []
         db.upsert(db.KEYWORD_SETS, ksid, {"reddit_search_last_run": datetime.now(timezone.utc)})
     keywords = keyword_set.get("keywords") or []
     days = int(config.get("days", 365))
     max_results = int(config.get("max_results", 8))
-    subs = config.get("subreddits") or []
     out: list[RawSignal] = []
     seen: set[str] = set()
     for q in config.get("queries", []):

@@ -23,6 +23,7 @@ Budget: LLM_MAX_CALLS_PER_RUN caps calls per run; LLM_RPM throttles.
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 import logging
 import re
 import time
@@ -102,12 +103,38 @@ def _tier(strong: bool) -> tuple[str, str, str, int]:
     return (s.llm_base_url, s.llm_api_key, s.llm_model, s.llm_rpm)
 
 
+_strong_state = {"day": "", "idx": 0}  # which model of the strong chain is in use today (advances on daily-limit errors)
+
+
+def _strong_chain() -> list[str]:
+    s = get_settings()
+    return [s.llm_strong_model] + [m.strip() for m in (s.llm_strong_fallback_models or "").split(",") if m.strip()]
+
+
+def _advance_strong(reason: str) -> bool:
+    """Called on a per-DAY rate limit: move to the next model of the chain (each has its own daily quota on Groq)."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if _strong_state["day"] != today:
+        _strong_state.update(day=today, idx=0)
+    chain = _strong_chain()
+    if _strong_state["idx"] + 1 < len(chain):
+        _strong_state["idx"] += 1
+        log.warning("strong model daily limit (%s): switching to %s", reason[:80], chain[_strong_state["idx"]])
+        return True
+    return False
+
+
 def _llm(strong: bool = False):
     from openai import OpenAI
 
     base, key, model, _ = _tier(strong)
     if base not in _clients:
         _clients[base] = OpenAI(api_key=key, base_url=base)
+    if strong:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if _strong_state["day"] != today:
+            _strong_state.update(day=today, idx=0)
+        model = _strong_chain()[_strong_state["idx"]]
     return _clients[base], model
 
 
@@ -118,21 +145,11 @@ def _strip_fences(text: str) -> str:
 
 
 def web_search(query: str, max_results: int = 6, topic: str = "general", days: int | None = None) -> str:
-    """Tavily (free tier) -> compact text context. '' if no key / failure."""
-    key = get_settings().tavily_api_key
-    if not key:
-        return ""
-    try:
-        from tavily import TavilyClient
+    """Budgeted web search (Google CSE + Tavily, see services/search.py) -> compact text context. '' if nothing."""
+    from app.services import search as _search
 
-        kw: dict[str, Any] = {"max_results": max_results, "search_depth": "basic", "topic": topic}
-        if days:
-            kw["days"] = days
-        res = TavilyClient(api_key=key).search(query, **kw)
-        return "\n".join(f"- {r.get('title')}: {(r.get('content') or '')[:400]} ({r.get('url')})" for r in res.get("results", []))
-    except Exception as e:  # noqa: BLE001
-        log.warning("tavily search failed: %s", e)
-        return ""
+    res = _search.search(query, max_results=max_results, days=days, purpose="enrich", topic=topic)
+    return "\n".join(f"- {r.get('title')}: {(r.get('content') or '')[:400]} ({r.get('url')})" for r in res)
 
 
 @retry(retry=retry_if_exception_type(RateLimited), stop=stop_after_attempt(5), wait=wait_exponential(multiplier=5, min=5, max=60))
@@ -174,6 +191,8 @@ def llm_json(prompt: str, schema: type[BaseModel] | None = None, grounded: bool 
             else:
                 raise
     except RateLimitError as e:
+        if strong and ("per day" in str(e).lower() or "tpd" in str(e).lower() or "rpd" in str(e).lower()):
+            _advance_strong(str(e))
         raise RateLimited(str(e)) from e
     except APIStatusError as e:
         if e.status_code in (429, 503):
