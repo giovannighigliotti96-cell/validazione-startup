@@ -27,6 +27,21 @@ from app.config import get_settings
 router = APIRouter(prefix="/lp", tags=["landing"])
 
 
+@router.get("/privacy", response_class=HTMLResponse)
+def privacy_tool():
+    """Privacy policy of the research tool itself (public posts analysis) — the URL given in API access requests."""
+    return HTMLResponse("""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy — startup problem research</title>
+<style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:720px;margin:0 auto;padding:32px 20px;color:#0f172a;line-height:1.6}h1{font-size:26px}h2{font-size:18px;margin-top:24px}</style></head><body>
+<h1>Privacy policy — startup problem research tool</h1>
+<p><b>Controller</b>: Giovanni Ghigliotti, giovannighigliotti96@gmail.com (Italy). Personal, non-commercial research project: finding recurring, unsolved problems that small businesses describe in public.</p>
+<h2>What is processed</h2><p>Publicly available posts, comments and reviews from developer/community APIs and feeds (Hacker News, app stores, public forums, YouTube comments, Reddit Data API when authorised). For each item we keep the public permalink, a machine-extracted one-sentence problem statement, numeric scores, and a salted one-way hash used only to count distinct authors. <b>We never store usernames, profile data or private messages.</b></p>
+<h2>Retention</h2><p>The original text of Reddit items is deleted 30 days after collection; only the permalink, the extracted statement and aggregate statistics remain. Items are removed on request of the author or the platform. Nothing is sold, licensed, redistributed or used to train models.</p>
+<h2>Publication</h2><p>Aggregate findings (e.g. "N distinct people describe problem X") may be used internally to decide which product ideas to test. Reddit content is never displayed on public pages.</p>
+<h2>Your rights</h2><p>Access, rectification or erasure: write to the email above. You may lodge a complaint with the Italian Data Protection Authority (Garante).</p>
+</body></html>""")
+
+
+
 def _offer(cluster_id: str) -> tuple[dict, dict, dict]:
     c = db.get(db.PROBLEM_CLUSTERS, cluster_id)
     o = db.get(db.OPPORTUNITY_SCORING, cluster_id) or {}
@@ -150,20 +165,6 @@ def stats(cluster_id: str):
     leads = [d.to_dict() for d in db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").stream()]
     out["leads"] = [{"variant": l.get("variant"), "answer": l.get("answer"), "at": l.get("at")} for l in leads]  # emails only via Firestore
     return out
-
-
-@router.get("/privacy", response_class=HTMLResponse)
-def privacy_tool():
-    """Privacy policy of the research tool itself (public posts analysis) — the URL given in API access requests."""
-    return HTMLResponse("""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy — startup problem research</title>
-<style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:720px;margin:0 auto;padding:32px 20px;color:#0f172a;line-height:1.6}h1{font-size:26px}h2{font-size:18px;margin-top:24px}</style></head><body>
-<h1>Privacy policy — startup problem research tool</h1>
-<p><b>Controller</b>: Giovanni Ghigliotti, giovannighigliotti96@gmail.com (Italy). Personal, non-commercial research project: finding recurring, unsolved problems that small businesses describe in public.</p>
-<h2>What is processed</h2><p>Publicly available posts, comments and reviews from developer/community APIs and feeds (Hacker News, app stores, public forums, YouTube comments, Reddit Data API when authorised). For each item we keep the public permalink, a machine-extracted one-sentence problem statement, numeric scores, and a salted one-way hash used only to count distinct authors. <b>We never store usernames, profile data or private messages.</b></p>
-<h2>Retention</h2><p>The original text of Reddit items is deleted 30 days after collection; only the permalink, the extracted statement and aggregate statistics remain. Items are removed on request of the author or the platform. Nothing is sold, licensed, redistributed or used to train models.</p>
-<h2>Publication</h2><p>Aggregate findings (e.g. "N distinct people describe problem X") may be used internally to decide which product ideas to test. Reddit content is never displayed on public pages.</p>
-<h2>Your rights</h2><p>Access, rectification or erasure: write to the email above. You may lodge a complaint with the Italian Data Protection Authority (Garante).</p>
-</body></html>""")
 
 
 @router.get("/{cluster_id}/privacy", response_class=HTMLResponse)

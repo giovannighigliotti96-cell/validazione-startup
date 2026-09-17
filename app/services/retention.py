@@ -29,10 +29,11 @@ def apply(now: datetime | None = None) -> dict:
     purged = 0
     batch = client.batch()
     for src in SOURCES:
-        q = client.collection(db.RAW_SIGNALS).where("source", "==", src).where("scraped_at", "<", cutoff).select(["text"])
+        q = client.collection(db.RAW_SIGNALS).where("source", "==", src).select(["text", "scraped_at"])
         for d in q.stream():
-            if not (d.to_dict() or {}).get("text"):
-                continue  # already purged
+            x = d.to_dict() or {}
+            if not x.get("text") or not x.get("scraped_at") or x["scraped_at"] >= cutoff:
+                continue  # already purged, or still inside the retention window
             batch.update(d.reference, {"text": None, "title": None, "raw": None, "retention": {"raw_purged_at": now, "policy": f"{RAW_TEXT_DAYS}d"}})
             purged += 1
             if purged % 400 == 0:
