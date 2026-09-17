@@ -20,7 +20,11 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from google.cloud.firestore_v1 import Increment
 
+import logging
+
 from app import db
+
+log = logging.getLogger("landing")
 from app.auth import require_api
 from app.config import get_settings
 
@@ -142,6 +146,34 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
     return resp
 
 
+def _notify_signup(c: dict, offer: dict, lead: dict) -> None:
+    """Two emails per signup: the founder gets the full card; the lead gets a confirmation in the founder's voice (offer.confirm_email)."""
+    from html import escape as _e
+
+    from app.services import notify
+
+    brand = offer.get("product_name") or c.get("name") or ""
+    rows = [("Email", lead["email"]), ("Nome", lead.get("business") or "-")] + [(k, v) for k, v in (lead.get("extra") or {}).items()] + [("Risposta", lead.get("answer") or "-")]
+    table = "".join(f"<tr><td style='padding:6px 10px;color:#64748b'>{_e(str(k))}</td><td style='padding:6px 10px'><b>{_e(str(v))}</b></td></tr>" for k, v in rows)
+    try:
+        notify.send_email(f"📝 {brand}: nuova iscrizione ({c.get('name', '')[:40]})",
+                          f"<div style='font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px'><h2 style='font-size:17px'>{_e(brand)} — {_e(c.get('name') or '')}</h2><table>{table}</table>"
+                          f"<p style='color:#64748b;font-size:12px'>Rispondi a questa persona entro 24h: il tasso di risposta cala dell'80% dopo il primo giorno.</p></div>")
+    except Exception as e:  # noqa: BLE001
+        log.error("signup notify failed: %s", e)
+    conf = offer.get("confirm_email")
+    if conf and conf.get("body"):
+        try:
+            name = (lead.get("business") or "").strip()
+            body = conf["body"].replace("{nome_sp}", f" {name}" if name else "").replace("{nome}", name or "").replace("{brand}", brand)
+            paras = "".join(f"<p>{_e(par)}</p>" for par in body.split("\n\n"))
+            foot = f"<p style='color:#94a3b8;font-size:12px;margin-top:24px'>Hai ricevuto questa email perché ti sei iscritto/a su {_e(brand)}. Per cancellarti basta rispondere con: cancella.</p>"
+            html = "<div style='font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px;color:#0f172a;line-height:1.6'>" + paras + foot + "</div>"
+            notify.send_email(conf.get("subject", f"Sei in lista — {brand}").replace("{brand}", brand), html, to=lead["email"], from_name=brand, reply_to=get_settings().notify_email_to)
+        except Exception as e:  # noqa: BLE001
+            log.error("confirm email failed: %s", e)
+
+
 @router.post("/{cluster_id}/signup")
 async def signup(request: Request, cluster_id: str, email: str = Form(...), variant: str = Form("A"), answer: str = Form(""), business: str = Form("")):
     c, o, offer = _offer(cluster_id)
@@ -150,8 +182,10 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
     lead_id = hashlib.sha256(email.strip().lower().encode()).hexdigest()[:20]
     ref = db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").document(lead_id)
     if not ref.get().exists:
-        ref.set({"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "at": db.now()})
+        lead = {"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "at": db.now()}
+        ref.set(lead)
         _bump(cluster_id, variant, "signups")
+        _notify_signup(c, offer, lead)
     base = get_settings().public_base_url.rstrip("/")
     return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1", status_code=303)
 

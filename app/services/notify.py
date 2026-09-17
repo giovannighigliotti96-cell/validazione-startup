@@ -132,10 +132,10 @@ def render_stage_email(cluster: dict, opp: dict, stage: dict, evidence: dict | N
     return subject, html
 
 
-def send_email(subject: str, html: str) -> tuple[str, str | None]:
-    """Returns (status, error)."""
+def send_email(subject: str, html: str, to: str | None = None, from_name: str | None = None, reply_to: str | None = None) -> tuple[str, str | None]:
+    """Returns (status, error). `to` defaults to the founder; `from_name` shows e.g. "Poltrona Libera <you@gmail.com>"."""
     s = get_settings()
-    to = s.notify_email_to
+    to = to or s.notify_email_to
     if s.email_provider == "none" or not to:
         return "skipped", "EMAIL_PROVIDER=none or NOTIFY_EMAIL_TO empty"
     try:
@@ -150,14 +150,17 @@ def send_email(subject: str, html: str) -> tuple[str, str | None]:
         else:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = s.notify_email_from or s.smtp_user
+            sender = s.notify_email_from or s.smtp_user
+            msg["From"] = f"{from_name} <{sender}>" if from_name else sender
             msg["To"] = to
+            if reply_to:
+                msg["Reply-To"] = reply_to
             msg.attach(MIMEText("Apri il client in HTML per vedere il contenuto.", "plain"))
             msg.attach(MIMEText(html, "html"))
             with smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=30) as srv:
                 srv.starttls()
                 srv.login(s.smtp_user, s.smtp_password)
-                srv.sendmail(msg["From"], [to], msg.as_string())
+                srv.sendmail(sender, [to], msg.as_string())
         return "sent", None
     except Exception as e:  # noqa: BLE001
         log.error("email failed: %s", e)

@@ -8,6 +8,23 @@ COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/
               notes="Marketplace affitto di poltrona: due lati, due landing. Citazioni da post pubblici di titolari, ruolo senza nome.")
 
 OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", hero_card_title="In tre passi",
+    confirm_email={"subject": "Sei in lista — {brand}", "body": (
+        "Ciao{nome_sp},
+
+"
+        "grazie: la tua postazione è in lista su {brand}.
+
+"
+        "Cosa succede adesso: entro 2-3 giorni ti chiamo io, Giovanni, per 15 minuti. Mi racconti il salone, la postazione e il canone che vorresti; "
+        "poi cerco tra le professioniste della tua zona e ti presento le prime 2-3 che hanno senso per te. Se preferisci, rispondi a questa email con il giorno e l'orario migliori per la chiamata.
+
+"
+        "Pubblicare e ricevere candidature è gratis: pagherai il 50% del primo canone solo se firmi un contratto con una professionista che ti ho presentato.
+
+"
+        "A presto,
+Giovanni Ghigliotti
+{brand}")},
     trust=["Affitto di poltrona previsto dalla legge dal 2018", "Contratto standard e comunicazione SUAP inclusi", "Nessuna commissione mensile"], lock_text="canone medio Milano €500-700/mese", form_name_label="Nome del salone",
     form_question="Perché la postazione oggi è vuota? (es. dipendente andata via, non trovo personale…)",
     form_extra=[{"name": "citta", "placeholder": "Città", "required": True}, {"name": "zona", "placeholder": "Zona / quartiere"},
@@ -37,6 +54,23 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", hero
                     {"objection": "Cosa vi devo?", "answer": "Il 50% del primo canone, una sola volta, quando firmi. Pubblicare e ricevere candidature è gratis. Se vuoi, tutela facoltativa a 19 €/mese: promemoria canone, assistenza su contratto e controversie, RC inclusa."}])])
 
 STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che vogliono aprirla)", hero_card_title="In tre passi",
+    confirm_email={"subject": "Sei in lista — {brand}", "body": (
+        "Ciao{nome_sp},
+
+"
+        "grazie: sei in lista su {brand}.
+
+"
+        "Cosa succede adesso: entro 2-3 giorni ti chiamo io, Giovanni, per 15 minuti. Mi dici zona, giorni e budget, e cosa ti serve (se non hai ancora la P.IVA, ti spiego come aprirla in due giorni). "
+        "Poi ti mando le postazioni disponibili che corrispondono e fissiamo le visite con le titolari. Se preferisci, rispondi a questa email con il giorno e l'orario migliori per la chiamata.
+
+"
+        "Cercare e visitare è gratis: pagherai 99 € una sola volta, quando firmi il contratto per la tua poltrona.
+
+"
+        "A presto,
+Giovanni Ghigliotti
+{brand}")},
     trust=["Postazioni in saloni veri, canone chiaro", "Contratto a norma con mese di prova", "Aiuto per P.IVA e assicurazione"], lock_text="postazioni da €400/mese", form_name_label="Come ti chiami",
     form_question="Cosa ti ha frenato finora dal metterti in proprio?",
     form_extra=[{"name": "citta", "placeholder": "Città in cui vuoi lavorare", "required": True}, {"name": "zona", "placeholder": "Zona preferita"},
