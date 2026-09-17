@@ -117,7 +117,8 @@ class ScreenResponse(BaseModel):
 
 SCREEN_PROMPT = """These products were launched or funded recently (mostly US). For each, say what PROBLEM it solves and for whom, and whether it is a
 candidate for an Italy/EU localized version built by a solo founder (Italy, marketing/sales background, builds web software alone, no capital).
-Be selective: keep only products with a clear, recurring problem and a paying persona. Hype, crypto, developer tools, hardware, enterprise-only, agencies -> keep=false.
+Be selective: keep only products with a clear, recurring problem and a paying persona who is NOT a software engineer.
+keep=false for: hype, crypto, developer tools, AI-agent infrastructure/observability/evals, anything whose buyer is an engineering team, hardware, enterprise-only, agencies.
 Tag each kept item with the market thesis it fits: ai_native_service (sells the outcome of an outsourced service), saas_challenger (replaces legacy software cheaper/AI-native), company_brain, or none.
 
 LAUNCHES (idx :: source :: name :: tagline :: description):
@@ -163,7 +164,7 @@ def italy_check(item: dict) -> dict:
     terms = item.get("italian_search_terms") or [item.get("category") or item["name"]]
     data = analysis.llm_json(ITALY_PROMPT.format(problem=item.get("problem"), category=item.get("category"), name=item["name"], url=item.get("url")),
                              ItalyCheck, grounded=True, strong=True,
-                             search_queries=[f"{terms[0]} software italiano"] + [f"site:capterra.it {t}" for t in terms[:2]] + [f"{item['name']} italia OR italiano"])
+                             search_queries=[f"{terms[0]} software italiano", f"site:capterra.it {terms[0]}"])  # 2 searches per launch: the daily budget is shared
     players = [p for p in data.get("localized_players", []) if isinstance(p, dict) and p.get("name") and analysis.verify_url(p.get("url"))]
     return {"localized_players": players, "global_serves_italy": data.get("global_player_serves_italy"), "gap_note": data.get("gap_note")}
 

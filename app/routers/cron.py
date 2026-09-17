@@ -67,12 +67,16 @@ def cron_discover(background: BackgroundTasks):
 
     def job():
         analysis.budget.reset()
+        analysis.log.info("discover: %s", analysis.discover_verticals())  # first: it is the call that matters
+        # why-now only for sets that already have a real cluster (>= 10 people): 2 searches each, shared daily budget
+        strong = {c.get("keyword_set_id") for c in db.list_all(db.PROBLEM_CLUSTERS) if (c.get("distinct_authors") or 0) >= 10}
         for k in db.list_all(db.KEYWORD_SETS, is_active=True):
+            if k["id"] not in strong:
+                continue
             try:
                 analysis.scan_why_now(k["id"])
             except Exception as e:  # noqa: BLE001
                 analysis.log.error("whynow %s: %s", k["name"], e)
-        analysis.log.info("discover: %s", analysis.discover_verticals())
 
     background.add_task(job)
     return {"status": "accepted"}

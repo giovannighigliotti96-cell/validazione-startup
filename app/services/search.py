@@ -17,6 +17,7 @@ Result shape is provider-independent: [{"title", "content", "url"}].
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any
 
@@ -24,7 +25,7 @@ from app import db
 from app.config import get_settings
 from app.scrapers.base import http_client, log
 
-JINA_DAILY = 120
+JINA_DAILY = 200
 BRAVE_DAILY = 33
 TAVILY_DAILY = 33
 SCRAPE_SHARE = 0.6
@@ -55,8 +56,14 @@ def remaining(purpose: str = "enrich") -> int:
     return max(0, allowed - used)
 
 
+_SITE_OPS = re.compile(r"\(?\s*site:\S+(\s+OR\s+site:\S+)*\s*\)?", re.I)
+
+
 def _jina(query: str, max_results: int, days: int | None, include_domains: list[str] | None) -> list[dict]:
-    q = f"{query} site:{include_domains[0]}" if include_domains else query
+    # Jina rejects "site:a OR site:b" chains (422): strip them, keep one plain site: filter
+    q = _SITE_OPS.sub("", query).strip()
+    if include_domains or "site:" in query:
+        q = f"{q} site:{(include_domains or ['reddit.com'])[0]}"
     headers = {"Authorization": f"Bearer {get_settings().jina_api_key}", "Accept": "application/json", "X-Respond-With": "no-content"}
     with http_client(timeout=30) as c:
         r = c.get("https://s.jina.ai/", params={"q": q}, headers=headers)
