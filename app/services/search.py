@@ -1,8 +1,10 @@
 """
 Web search behind ONE daily budget shared by every job (Cloud Run + local), across two free tiers:
 
-  - Google Programmable Search JSON API : 100 queries/day (resets daily -> spent first)
-  - Tavily                              : 1,000 queries/month (~33/day -> spent last, kept for what decides)
+  - Jina  (s.jina.ai)  : free token quota, no hard monthly cap -> spent first (volume: reddit_search)
+  - Brave Search API   : 2,000 queries/month (~65/day)
+  - Tavily             : 1,000 queries/month (~33/day) -> spent last
+(Google Custom Search JSON API is closed to new projects since 2025.)
 
 Usage counters live in Firestore `search_usage/{YYYY-MM-DD}` so nothing can silently burn the month in four days again
 (2026-09-17: 47 keyword sets x ~5 reddit_search queries/day did exactly that).
@@ -22,7 +24,8 @@ from app import db
 from app.config import get_settings
 from app.scrapers.base import http_client, log
 
-GOOGLE_DAILY = 100
+JINA_DAILY = 120
+BRAVE_DAILY = 65
 TAVILY_DAILY = 33
 SCRAPE_SHARE = 0.6
 COLL = "search_usage"
@@ -34,7 +37,7 @@ def _today() -> str:
 
 def usage() -> dict[str, int]:
     doc = db.get(COLL, _today()) or {}
-    return {"google": int(doc.get("google") or 0), "tavily": int(doc.get("tavily") or 0)}
+    return {"jina": int(doc.get("jina") or 0), "brave": int(doc.get("brave") or 0), "tavily": int(doc.get("tavily") or 0)}
 
 
 def _bump(provider: str) -> None:
@@ -46,25 +49,32 @@ def _bump(provider: str) -> None:
 def remaining(purpose: str = "enrich") -> int:
     u = usage()
     s = get_settings()
-    cap = (GOOGLE_DAILY if s.google_cse_id and (s.google_search_api_key or s.youtube_api_key) else 0) + (TAVILY_DAILY if s.tavily_api_key else 0)
-    used = u["google"] + u["tavily"]
+    cap = (JINA_DAILY if s.jina_api_key else 0) + (BRAVE_DAILY if s.brave_search_api_key else 0) + (TAVILY_DAILY if s.tavily_api_key else 0)
+    used = u["jina"] + u["brave"] + u["tavily"]
     allowed = int(cap * SCRAPE_SHARE) if purpose == "scrape" else cap
     return max(0, allowed - used)
 
 
-def _google(query: str, max_results: int, days: int | None, include_domains: list[str] | None) -> list[dict]:
-    s = get_settings()
-    params: dict[str, Any] = {"key": s.google_search_api_key or s.youtube_api_key, "cx": s.google_cse_id, "q": query, "num": min(max_results, 10)}
-    if days:
-        params["dateRestrict"] = f"d{days}"
-    if include_domains:
-        params["siteSearch"], params["siteSearchFilter"] = include_domains[0], "i"
-    with http_client(timeout=15) as c:
-        r = c.get("https://www.googleapis.com/customsearch/v1", params=params)
-        if r.status_code == 429:
-            raise RuntimeError("google cse daily quota")
+def _jina(query: str, max_results: int, days: int | None, include_domains: list[str] | None) -> list[dict]:
+    q = f"{query} site:{include_domains[0]}" if include_domains else query
+    headers = {"Authorization": f"Bearer {get_settings().jina_api_key}", "Accept": "application/json", "X-Respond-With": "no-content"}
+    with http_client(timeout=30) as c:
+        r = c.get("https://s.jina.ai/", params={"q": q}, headers=headers)
         r.raise_for_status()
-        return [{"title": it.get("title"), "content": it.get("snippet") or "", "url": it.get("link")} for it in r.json().get("items", [])]
+        items = (r.json().get("data") or [])[:max_results]
+        return [{"title": it.get("title"), "content": it.get("description") or it.get("content") or "", "url": it.get("url")} for it in items]
+
+
+def _brave(query: str, max_results: int, days: int | None, include_domains: list[str] | None) -> list[dict]:
+    q = f"{query} site:{include_domains[0]}" if include_domains else query
+    params: dict[str, Any] = {"q": q, "count": min(max_results, 20)}
+    if days:
+        params["freshness"] = "pd" if days <= 1 else "pw" if days <= 7 else "pm" if days <= 31 else "py"
+    headers = {"X-Subscription-Token": get_settings().brave_search_api_key, "Accept": "application/json"}
+    with http_client(timeout=20) as c:
+        r = c.get("https://api.search.brave.com/res/v1/web/search", params=params, headers=headers)
+        r.raise_for_status()
+        return [{"title": it.get("title"), "content": it.get("description") or "", "url": it.get("url")} for it in (r.json().get("web") or {}).get("results", [])]
 
 
 def _tavily(query: str, max_results: int, days: int | None, include_domains: list[str] | None, topic: str) -> list[dict]:
@@ -88,14 +98,20 @@ def search(query: str, max_results: int = 6, days: int | None = None, include_do
         return []
     u = usage()
     providers = []
-    if s.google_cse_id and (s.google_search_api_key or s.youtube_api_key) and u["google"] < GOOGLE_DAILY:
-        providers.append("google")
+    if s.jina_api_key and u["jina"] < JINA_DAILY:
+        providers.append("jina")
+    if s.brave_search_api_key and u["brave"] < BRAVE_DAILY:
+        providers.append("brave")
     if s.tavily_api_key and u["tavily"] < TAVILY_DAILY:
         providers.append("tavily")
+    if purpose == "enrich" and "brave" in providers:  # decisions get the best index first
+        providers.remove("brave"); providers.insert(0, "brave")
+    fns = {"jina": lambda: _jina(query, max_results, days, include_domains), "brave": lambda: _brave(query, max_results, days, include_domains),
+           "tavily": lambda: _tavily(query, max_results, days, include_domains, topic)}
     for p in providers:
         try:
             _bump(p)
-            return _google(query, max_results, days, include_domains) if p == "google" else _tavily(query, max_results, days, include_domains, topic)
+            return fns[p]()
         except Exception as e:  # noqa: BLE001
             log.warning("%s search failed for %r: %s", p, query[:60], str(e)[:120])
     return []

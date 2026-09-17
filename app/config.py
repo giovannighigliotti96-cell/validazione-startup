@@ -57,8 +57,8 @@ class Settings(BaseSettings):
     llm_strong_rpm: int = 20
     tavily_api_key: str = ""
     youtube_api_key: str = ""
-    google_cse_id: str = ""            # Programmable Search Engine id (cx), "search the entire web"
-    google_search_api_key: str = ""    # optional: defaults to YOUTUBE_API_KEY (same Google Cloud key, Custom Search API enabled)
+    brave_search_api_key: str = ""     # Brave Search API, Free plan: 2,000 queries/month
+    jina_api_key: str = ""             # Jina s.jina.ai search, free token quota
     llm_strong_fallback_models: str = "openai/gpt-oss-20b,qwen/qwen3.8-27b"  # each has its own daily token limit on Groq
     meta_pixel_id: str = ""
     landing_home_cluster: str = ""   # if set, "/" redirects to /lp/<cluster> (used by the product-named Cloud Run service)   # optional: injects the Meta pixel into hosted landing pages (PageView / Lead)
