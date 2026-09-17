@@ -227,5 +227,106 @@ def enrich_top(n: int = 15, min_score: int = 55) -> dict:
 
 def run_weekly() -> dict:
     r = refresh()
+    r["fresh"] = qualify_fresh()   # first: recent companies are the ones worth a negotiation
     r["enrich"] = enrich_top()
     return r
+
+
+# ----------------------------------------------------------------------------
+# Stage 3: FRESH targets + public financial teaser + buyer gate
+# "Fresh" = first decree in the last N days: the owner is still negotiating, the brand is not burnt yet.
+# Financial teaser = revenue / net result / personnel cost / employees as shown on public company-data pages
+# (search-engine snippets of Registro Imprese-derived data). The full balance sheet is bought (EUR 3-6) only for
+# companies that pass the gate.
+# ----------------------------------------------------------------------------
+_FIN = {
+    "revenue": r"fatturato[^0-9€]{0,20}€?\s*([\d.]{5,})",
+    "net_result": r"(?:risultato d'esercizio|utile netto|utile/perdita|utile)[^0-9€\-]{0,25}(-?\s?€?\s*-?[\d.]{3,})",
+    "personnel_cost": r"costo del personale[^0-9€]{0,20}€?\s*([\d.]{4,})",
+    "employees": r"dipendenti[^0-9]{0,25}(?:da\s*)?(\d{1,5})",
+    "year": r"\((20\d\d)\)",
+}
+
+
+def _num(x: str | None) -> float | None:
+    if not x:
+        return None
+    neg = "-" in x
+    d = re.sub(r"[^\d]", "", x)
+    return (-1 if neg else 1) * float(d) if d else None
+
+
+def financial_teaser(company_id: str) -> dict:
+    from app.services import search
+
+    doc = db.get(COLL, company_id)
+    if not doc:
+        return {"error": "not found"}
+    q = f"{doc['name']} {doc.get('hq') or ''} fatturato bilancio dipendenti"
+    res = search.search(q, max_results=8, purpose="enrich")
+    blob = " ".join(f"{r.get('title') or ''} {r.get('content') or ''}" for r in res)
+    low = blob.lower()
+    fin: dict = {}
+    for k, rx in _FIN.items():
+        m = re.search(rx, low, re.I)
+        if m:
+            fin[k] = _num(m.group(1)) if k != "year" else int(m.group(1))
+    fin["sources"] = [r.get("url") for r in res if r.get("url") and re.search(r"fatturato|bilanc|dipendent", (r.get("content") or "").lower())][:4]
+    fin["fetched_at"] = db.now()
+    db.upsert(COLL, company_id, {"financials": fin})
+    return fin
+
+
+def buyer_gate(doc: dict) -> tuple[bool, list[str]]:
+    """The parameters a distressed-M&A operator checks in the first 5 minutes, from public data only."""
+    fin = doc.get("financials") or {}
+    checks: list[tuple[bool, str]] = []
+    rev = fin.get("revenue")
+    checks.append((rev is not None and rev >= 2_000_000, f"fatturato {'€' + format(int(rev), ',') if rev else 'n/d'} (>= €2M)"))
+    emp = fin.get("employees")
+    checks.append((emp is not None and emp >= 10, f"dipendenti {emp if emp is not None else 'n/d'} (>= 10)"))
+    nr = fin.get("net_result")
+    checks.append((nr is not None and nr > -0.05 * (rev or 1), f"risultato {'€' + format(int(nr), ',') if nr is not None else 'n/d'} (perdita < 5% ricavi = crisi finanziaria, non strutturale)"))
+    pc = fin.get("personnel_cost")
+    checks.append((not (pc and rev) or pc / rev <= 0.45, f"personale/ricavi {round(pc / rev * 100) if (pc and rev) else 'n/d'}% (<= 45%)"))
+    checks.append((not doc.get("cessazione"), "nessuna cessazione di attività"))
+    checks.append((any("crisi" in k.lower() or "riorganizz" in k.lower() for k in (doc.get("causali") or {})), "causale: crisi o riorganizzazione"))
+    checks.append((bool(SECTOR_PLUS.search(doc.get("sector") or "")) and not SECTOR_MINUS.search(doc.get("sector") or ""), "settore con asset/clienti B2B"))
+    checks.append((doc.get("news_stage") not in ("in procedura", "chiusura annunciata"), f"stato pubblico: {doc.get('news_stage') or 'non verificato'} (non in procedura)"))
+    return all(ok for ok, _ in checks), [("✔ " if ok else "✘ ") + t for ok, t in checks]
+
+
+def fresh(days: int = 45, min_score: int = 40) -> list[dict]:
+    cutoff = datetime.now(timezone.utc).timestamp() - days * 86400
+    out = []
+    for d in db.get_db().collection(COLL).stream():
+        x = d.to_dict() | {"id": d.id}
+        fs = x.get("first_seen")
+        if not fs or fs.timestamp() < cutoff or (x.get("score") or 0) < min_score or x.get("cessazione"):
+            continue
+        ok, checks = buyer_gate(x)
+        out.append({k: x.get(k) for k in ("id", "name", "hq", "province", "sector", "score", "n_decrees", "causali", "first_seen", "news_stage", "financials")} | {"passes_gate": ok, "gate": checks})
+    out.sort(key=lambda r: (not r["passes_gate"], -(r.get("score") or 0)))
+    return out
+
+
+def qualify_fresh(days: int = 45, max_companies: int = 12) -> dict:
+    """Weekly: fresh targets -> news + financial teaser (2 searches each) -> gate. Budgeted."""
+    from app.services import search
+
+    done = []
+    for r in fresh(days):
+        if len(done) >= max_companies or search.remaining("enrich") < 2:
+            break
+        doc = db.get(COLL, r["id"]) or {}
+        if doc.get("financials") and doc.get("enriched_at"):
+            continue
+        try:
+            if not doc.get("enriched_at"):
+                enrich(r["id"])
+            financial_teaser(r["id"])
+            ok, checks = buyer_gate(db.get(COLL, r["id"]) or {})
+            done.append((r["name"], ok))
+        except Exception as e:  # noqa: BLE001
+            log.warning("qualify %s: %s", r["name"], e)
+    return {"qualified": done}

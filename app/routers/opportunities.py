@@ -401,6 +401,14 @@ def distressed_companies(n: int = 25, province: str | None = None, min_score: in
     return {"companies": distressed.top(n, province=province, min_score=min_score)}
 
 
+@router.get("/distressed/fresh")
+def distressed_fresh(days: int = 45):
+    """Companies whose FIRST CIGS decree is recent, with the buyer gate (public financial teaser + news)."""
+    from app.services import distressed
+
+    return {"companies": distressed.fresh(days)}
+
+
 @router.get("/distressed/{company_id}")
 def distressed_company(company_id: str):
     from app import db as _db
