@@ -16,3 +16,4 @@ openai>=1.50,<2
 tavily-python>=0.5,<1
 python-multipart>=0.0.9
 pillow>=10
+pypdf>=4.0

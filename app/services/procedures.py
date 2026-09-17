@@ -178,6 +178,10 @@ def run_weekly(max_teasers: int = 25) -> dict:
             continue
         try:
             teaser(x["id"]); done.append(x["name"])
+            try:
+                read_judgment(x["id"])  # the PDF says what the list does not (rented-out units, failed concordato)
+            except Exception as e:  # noqa: BLE001
+                log.info("judgment %s: %s", x["name"], e)
             d = db.get(COLL, x["id"]) or {}
             fin = d.get("financials") or {}
             rev, nr = fin.get("revenue"), fin.get("net_result")
@@ -190,3 +194,57 @@ def run_weekly(max_teasers: int = 25) -> dict:
             log.warning("teaser %s: %s", x["name"], e)
     r["teasers"] = done
     return r
+
+
+# ----------------------------------------------------------------------------
+# Judgment extract: the PDF the portal publishes ("Estratto sentenza") tells what the list does not —
+# group liquidation, a failed concordato, business units already rented to a third party, foreign creditors.
+# ----------------------------------------------------------------------------
+_RED = {
+    "concordato_respinto": r"inammissibil[ei] la domanda|revoca dell.ammissione|concordato preventivo.{0,80}(?:inammissib|revoc)",
+    "rami_gia_affittati": r"gestisce in affitto|contratto di affitto d.azienda|affitto d.azienda.{0,60}(?:in essere|gi[àa])",
+    "liquidazione_di_gruppo": r"gruppo|procedure? unitari|riunit",
+    "garanzia_sospetta": r"contraffatt|non abilitat|rinunciato all.abilitazione",
+    "creditore_estero": r"societ[àa] di diritto (?:polacco|tedesco|francese|spagnolo|inglese|svizzero|austriaco|olandese)",
+}
+_CUR = re.compile(r"NOMINA Curator[ei] (.{10,220}?)(?:soggett|,\s*\d\)|;)", re.S)
+
+
+def read_judgment(pid: str) -> dict:
+    import io
+
+    from pypdf import PdfReader
+
+    doc = db.get(COLL, pid)
+    if not doc or not doc.get("docs_url"):
+        return {"error": "no docs"}
+    with http_client(timeout=40) as c:
+        c.headers.update(UA)
+        s = BeautifulSoup(c.get(doc["docs_url"]).text, "lxml")
+        pdf = next((a["href"] for a in s.find_all("a", href=True) if "download" in a["href"]), None)
+        if not pdf:
+            return {"error": "no pdf"}
+        base = PORTALS[doc["tribunal"]]
+        r = c.get(base + pdf.lstrip("./"))
+    if b"%PDF" not in r.content[:1024]:
+        return {"error": "not a pdf"}
+    txt = re.sub(r"\s+", " ", " ".join((p.extract_text() or "") for p in PdfReader(io.BytesIO(r.content)).pages))
+    flags = {k: bool(re.search(v, txt, re.I)) for k, v in _RED.items()}
+    m = _CUR.search(txt)
+    ateco = re.search(r"attivit[àa] (?:di |prevalente[^.]{0,20})([^.;]{10,120})", txt, re.I)
+    upd = {"judgment": {"flags": flags, "curatori": re.sub(r"c\.f\.\s*\w+", "", m.group(1)).strip() if m else None,
+                        "activity_hint": ateco.group(1).strip() if ateco else None, "chars": len(txt), "read_at": db.now()}}
+    penalty = 0
+    if flags["concordato_respinto"]:
+        penalty += 25
+    if flags["rami_gia_affittati"]:
+        penalty += 40
+    if flags["garanzia_sospetta"]:
+        penalty += 20
+    d2 = {**doc, **upd}
+    sc, why = score(d2)
+    if penalty:
+        why.append(f"sentenza: {', '.join(k for k, v in flags.items() if v)} (−{penalty})")
+    upd["score"], upd["score_reasons"] = max(0, sc - penalty), why
+    db.upsert(COLL, pid, upd)
+    return upd
