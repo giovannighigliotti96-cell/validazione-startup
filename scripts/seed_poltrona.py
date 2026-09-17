@@ -7,7 +7,8 @@ COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/
               active_variants=["A"], generated_by="manual",
               notes="Marketplace affitto di poltrona: due lati, due landing. Citazioni da post pubblici di titolari, ruolo senza nome.")
 
-OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", lock_text="canone medio Milano €500-700/mese", form_name_label="Nome del salone",
+OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", hero_card_title="In tre passi",
+    trust=["Affitto di poltrona previsto dalla legge dal 2018", "Contratto standard e comunicazione SUAP inclusi", "Nessuna commissione mensile"], lock_text="canone medio Milano €500-700/mese", form_name_label="Nome del salone",
     form_question="Perché la postazione oggi è vuota? (es. dipendente andata via, non trovo personale…)",
     form_extra=[{"name": "citta", "placeholder": "Città", "required": True}, {"name": "zona", "placeholder": "Zona / quartiere"},
                 {"name": "canone", "placeholder": "Canone mensile che vorresti (€)"}, {"name": "dipendenti", "placeholder": "Quanti dipendenti hai oggi?", "type": "number"},
@@ -17,23 +18,26 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", lock
             {"quote": "Cerchiamo parrucchiera/e per affitto poltrona: salone moderno, curato, in viale centrale. Scrivici su WhatsApp.", "role": "Titolare di salone, Modena"},
             {"quote": "Affitto poltrona per parrucchiere o barbiere, zona San Giovanni. Per info chiamare.", "role": "Titolare di salone, Roma"}],
     variants=[dict(key="A", target_language="it", headline="Hai una postazione vuota? Affittala a una professionista con P.IVA.",
-        subheadline="La poltrona che oggi non usi vale €400-900 al mese. Ti presentiamo professioniste verificate della tua zona; contratto a norma, comunicazione SUAP, assicurazione e incasso mensile li facciamo noi.",
+        subheadline="La poltrona che oggi non usi vale €400-900 al mese. Ti presentiamo professioniste verificate della tua zona e ti mettiamo in regola in un giorno: contratto standard, comunicazione SUAP, assicurazione. Il canone lo incassi tu, direttamente.",
         cta="Pubblica la postazione (gratis)", price_eur_month=0, price_text="Pubblicare è gratis · 50% del primo canone solo alla firma",
         price_justification="Nessun abbonamento. Paghi una volta, solo se firmi un contratto con una professionista che ti abbiamo presentato.",
         benefits=["Contratto standard a norma di legge, già pronto", "Professionista verificata: P.IVA, qualifica di acconciatore, assicurazione RC",
-                  "Canone incassato automaticamente ogni mese", "Zero dipendenti da gestire: lei è un'impresa, con le sue clienti e i suoi orari",
+                  "Il canone lo incassi tu: nessun passaggio dalla piattaforma, nessuna commissione mensile", "Zero dipendenti da gestire: lei è un'impresa, con le sue clienti e i suoi orari",
                   "Clausole anti-furbetti: rating, cauzione e recesso chiari"],
         how_it_works=["Pubblichi la postazione: 3 foto, giorni disponibili, canone che vorresti.",
                       "Ti presentiamo 2-3 professioniste della tua zona che cercano una poltrona; le incontri in salone.",
-                      "Firmate il contratto standard: noi facciamo la comunicazione al SUAP e l'incasso del canone."],
+                      "Firmate il contratto standard: noi prepariamo la comunicazione al SUAP. Da lì il rapporto è vostro."],
         objections=[{"objection": "Mi porta via le clienti?", "answer": "Le sue clienti sono sue, le tue sono tue: è scritto nel contratto. In pratica una postazione occupata porta più passaggio in salone, non meno."},
                     {"objection": "È legale?", "answer": "Sì: l'affitto di poltrona è previsto dalla normativa per acconciatori ed estetisti dal 2018. Serve una comunicazione al SUAP del Comune, che prepariamo noi."},
                     {"objection": "Quante postazioni posso affittare?", "answer": "Dipende dai tuoi dipendenti: 1 postazione fino a 3 dipendenti, 2 da 4 a 9, 3 oltre i 10."},
                     {"objection": "Posso affittarla alla mia ex dipendente?", "answer": "No: la legge vieta di affittare a chi è stato tuo dipendente negli ultimi 5 anni. Per questo ti presentiamo professioniste che vengono da altri saloni."},
                     {"objection": "Quanto posso chiedere?", "answer": "A Milano: 350-500 € in periferia, 500-700 in semicentro, 700-1.200 in centro. A Genova un po' meno. Ti aiutiamo a fissare il canone giusto."},
-                    {"objection": "Cosa vi devo?", "answer": "Il 50% del primo canone, una sola volta, quando firmi. Pubblicare e ricevere candidature è gratis."}])])
+                    {"objection": "Quanto dura il contratto e come lo disdico?", "answer": "Il contratto standard dura 12 mesi, con 1 mese di prova iniziale in cui entrambi potete uscire senza motivo, poi disdetta con 60 giorni di preavviso via PEC o raccomandata. Cauzione di un canone, restituita alla fine."},
+                    {"objection": "Perché non farlo da soli su Facebook?", "answer": "Puoi. Ma la maggior parte dei titolari non trova nessuno, e chi trova firma un accordo a voce: senza contratto e SUAP è lavoro subordinato mascherato, con contributi e sanzioni a carico tuo se passa l'ispettorato. Noi ti portiamo la persona e ti mettiamo in regola."},
+                    {"objection": "Cosa vi devo?", "answer": "Il 50% del primo canone, una sola volta, quando firmi. Pubblicare e ricevere candidature è gratis. Se vuoi, tutela facoltativa a 19 €/mese: promemoria canone, assistenza su contratto e controversie, RC inclusa."}])])
 
-STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che vogliono aprirla)", lock_text="postazioni da €400/mese", form_name_label="Come ti chiami",
+STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che vogliono aprirla)", hero_card_title="In tre passi",
+    trust=["Postazioni in saloni veri, canone chiaro", "Contratto a norma con mese di prova", "Aiuto per P.IVA e assicurazione"], lock_text="postazioni da €400/mese", form_name_label="Come ti chiami",
     form_question="Cosa ti ha frenato finora dal metterti in proprio?",
     form_extra=[{"name": "citta", "placeholder": "Città in cui vuoi lavorare", "required": True}, {"name": "zona", "placeholder": "Zona preferita"},
                 {"name": "specialita", "placeholder": "Specialità (colore, taglio uomo, extension…)"}, {"name": "piva", "placeholder": "Hai già la P.IVA? (sì / no)"},
@@ -55,7 +59,8 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
                     {"objection": "Serve la qualifica?", "answer": "Sì, serve l'abilitazione di acconciatore (o barbiere). Se ce l'hai, sei pronta."},
                     {"objection": "Posso affittare nel salone dove lavoravo?", "answer": "No: la legge lo vieta per 5 anni. Ma nel salone accanto sì, ed è proprio per questo che esistiamo."},
                     {"objection": "Quanto guadagno davvero?", "answer": "Esempio: 4 clienti al giorno × 45 € × 20 giorni = 3.600 €/mese, meno il canone (400-700 €) e i prodotti. Il resto è tuo."},
-                    {"objection": "E se il salone non mi piace?", "answer": "Il contratto standard prevede un mese di prova e un preavviso di 30 giorni: nessun vincolo lungo."}])])
+                    {"objection": "Quanto dura e come disdico?", "answer": "12 mesi rinnovabili, con 1 mese di prova in cui puoi uscire senza motivo; poi 60 giorni di preavviso. Cauzione di un canone, che ti viene restituita."},
+                    {"objection": "E se il salone non mi piace?", "answer": "Nel mese di prova esci senza penali e ti mostriamo un'altra postazione. Nessun vincolo lungo."}])])
 
 STATEMENT = ("I saloni non trovano personale e restano con postazioni vuote; le professioniste che vogliono mettersi in proprio non possono aprire un salone. "
              "L'affitto di poltrona esiste dal 2018 ma si fa alla cieca su Facebook.")
