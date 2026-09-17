@@ -18,11 +18,12 @@ FUNNEL_STAGES = [
     # Each stage may define `criteria_execution_gap` for the second path (validated category, badly executed).
     dict(position=2, key="problem_clustered", name="Problema ricorrente",
          description="Il problema è espresso da più persone, su più fonti, non da un singolo thread.",
-         # min_sources 2 until Reddit is live (then 3). min_recent_share: >=50% of signals from the last 30 days = problem alive.
+         # min_sources 2 until Reddit is live (then 3). min_recent_share: >=50% of DATED signals from the last 90 days = problem alive.
+         # min_signals == min_authors: the volume criterion is distinct people; a higher signal count only added a redundant kill.
          # min_wtp_avg = max(regex heuristic, LLM proxy from urgency/quantified pain/tools) -> works for DE/FR/IT sources too
-         criteria={"min_signals": 20, "min_sources": 2, "min_authors": 15, "min_wtp_avg": 3.0, "min_recent_share": 0.5,
+         criteria={"min_signals": 15, "min_sources": 2, "min_authors": 15, "min_wtp_avg": 3.0, "min_recent_share": 0.5,
                    "attack_vector_in": ["feature_gap", "no_solution_exists"], "min_attackable_share": 0.5},
-         criteria_execution_gap={"min_signals": 30, "min_sources": 2, "min_authors": 20, "min_wtp_avg": 3.0, "min_recent_share": 0.4,
+         criteria_execution_gap={"min_signals": 20, "min_sources": 2, "min_authors": 20, "min_wtp_avg": 3.0, "min_recent_share": 0.4,
                                  "attack_vector_in": ["quality_complaint", "price_complaint"]},
          notify=False, is_terminal=False),
     dict(position=3, key="market_sized", name="Mercato stimato",

@@ -72,7 +72,7 @@ def collect_metrics(cluster: dict, opp: dict) -> dict[str, Any]:
         # language-agnostic willingness-to-pay: best of regex heuristic (EN) and LLM-derived proxy (any language)
         "wtp_avg": max(cluster.get("heuristic_avg") or 0.0, cluster.get("llm_wtp_avg") or 0.0),
         "velocity_30d": cluster.get("velocity_30d"),
-        "recent_share": cluster.get("recent_share_30d"),
+        "recent_share": cluster.get("recent_share_90d"),  # 90 days on real dates: a review from June still means the pain is alive
         "dominant_attack_vector": cluster.get("dominant_attack_vector"),
         "attackable_share": cluster.get("attackable_share") or 0.0,
         "unanswered_asks": cluster.get("unanswered_ask_count") or 0,
@@ -137,7 +137,7 @@ def _check(key: str, threshold: Any, m: dict[str, Any]) -> tuple[bool, str]:
         "min_heuristic_avg": lambda: ge("heuristic_avg"),
         "min_wtp_avg": lambda: ge("wtp_avg"),
         "min_velocity_30d": lambda: ge("velocity_30d"),
-        "min_recent_share": lambda: ge("recent_share"),  # share of the cluster's signals published in the last 30 days
+        "min_recent_share": lambda: ge("recent_share"),  # share of the cluster's DATED signals published in the last 90 days
         "require_market_components": lambda: req("market_components_complete"),
         "min_sam_eur": lambda: ge("sam_eur"),
         "min_tam_eur": lambda: ge("tam_eur"),
@@ -349,9 +349,15 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
         stats = {"signal_count": 0, "distinct_sources": 0, "distinct_authors": 0, "heuristic_avg": 0.0,
                  "attack_vector_dist": {}, "dominant_attack_vector": None, "attackable_share": 0.0, "unanswered_ask_count": 0}
     else:
-        dates = [s["published_at"] for s in sigs if s.get("published_at")]
+        # honest dates only: search-engine snippets (reddit_search) carry no date and were stored with the scrape time,
+        # which made every one of them "recent" while store reviews / HN with real dates looked old
+        def _real_date(s):
+            p, sc = s.get("published_at"), s.get("scraped_at")
+            return p if p and not (sc and abs((p - sc).total_seconds()) < 600) else None
+        dates = [d for d in (_real_date(s) for s in sigs) if d]
         now = db.now()
         last30 = sum(1 for d in dates if d >= now - timedelta(days=30))
+        last90 = sum(1 for d in dates if d >= now - timedelta(days=90))
         prev30 = sum(1 for d in dates if now - timedelta(days=60) <= d < now - timedelta(days=30))
         def _llm_wtp(sig: dict) -> float | None:
             md = sig.get("llm_metadata") or {}
@@ -382,6 +388,8 @@ def refresh_cluster_stats(cluster_id: str) -> dict:
             "last_seen": max(dates) if dates else None,
             "velocity_30d": (last30 / prev30) if prev30 else (float(last30) if last30 else None),
             "recent_share_30d": round(last30 / len(dates), 2) if dates else None,
+            "recent_share_90d": round(last90 / len(dates), 2) if dates else None,
+            "dated_signals": len(dates),
         }
     db.upsert(db.PROBLEM_CLUSTERS, cluster_id, stats)
     return stats

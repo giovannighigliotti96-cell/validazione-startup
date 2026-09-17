@@ -57,7 +57,7 @@ def explain(key: str, threshold: Any, m: dict[str, Any]) -> dict[str, str]:
         "min_sources": dict(label="Fonti indipendenti", current=f"{src_n} ({'una sola fonte' if src_n == 1 else 'fonti'})", required=f"≥ {threshold}",
                             why="Se tutti i segnali vengono da un unico sito, può essere un bias di quella community. Due fonti diverse (es. forum + YouTube, o Reddit + recensioni) lo escludono.",
                             action="Aggiungi una fonte al keyword set (Reddit quando attivo, YouTube, un altro forum) o attendi che ne arrivi una."),
-        "min_recent_share": dict(label="Problema vivo oggi", current=_pct(m.get("recent_share")) + " dei segnali negli ultimi 30 gg", required=f"≥ {_pct(threshold)}",
+        "min_recent_share": dict(label="Problema vivo oggi", current=_pct(m.get("recent_share")) + " dei segnali datati negli ultimi 90 gg", required=f"≥ {_pct(threshold)}",
                                  why="Un problema discusso tre anni fa e non più oggi è probabilmente già risolto da qualcuno.",
                                  action="Nessuna azione: se la fonte è viva, la quota sale da sola al prossimo scrape."),
         "min_wtp_avg": dict(label="Disponibilità a pagare", current=_num(m.get("wtp_avg")) + "/10", required=f"≥ {threshold}",
