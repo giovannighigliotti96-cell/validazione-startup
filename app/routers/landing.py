@@ -143,12 +143,14 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
 
 
 @router.post("/{cluster_id}/signup")
-def signup(cluster_id: str, email: str = Form(...), variant: str = Form("A"), answer: str = Form(""), business: str = Form("")):
+async def signup(request: Request, cluster_id: str, email: str = Form(...), variant: str = Form("A"), answer: str = Form(""), business: str = Form("")):
     c, o, offer = _offer(cluster_id)
+    form = await request.form()
+    extra = {k: str(form.get(k) or "")[:300] for k in {f["name"] for f in (offer.get("form_extra") or [])} if form.get(k)}
     lead_id = hashlib.sha256(email.strip().lower().encode()).hexdigest()[:20]
     ref = db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").document(lead_id)
     if not ref.get().exists:
-        ref.set({"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "at": db.now()})
+        ref.set({"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "at": db.now()})
         _bump(cluster_id, variant, "signups")
     base = get_settings().public_base_url.rstrip("/")
     return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1", status_code=303)

@@ -47,6 +47,14 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     lang = v.get("target_language") if v.get("target_language") in T else "en"
     t = T[lang]
     brand = offer.get("product_name") or ""
+    logo = offer.get("logo_url") or f"{base}/static/dispensa/logo_512.png"
+    cover = offer.get("cover_url") or f"{base}/static/dispensa/page_cover_1640x856.png"
+    price_text = v.get("price_text") or f"€{v['price_eur_month']:.0f}{t['mo']}"
+    lock_text = offer.get("lock_text") or t["lock"]
+    kicker = offer.get("kicker") or t["kicker"]
+    name_label = offer.get("form_name_label") or t["name"]
+    question = offer.get("form_question") or t["q"]
+    extra = "".join(f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>' for f in (offer.get("form_extra") or []))
     quotes = offer.get("quotes") or []  # curated (cleaned, translated, anonymised) from real signals; never raw scraped text on a public page
     pay = offer.get("payment_link_url")
     if signed_up:
@@ -57,8 +65,9 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
         form = f"""<form method="post" action="{base}/lp/{escape(c['id'])}/signup">
           <input type="hidden" name="variant" value="{escape(v['key'])}">
           <input name="email" type="email" required placeholder="{t['email']}">
-          <input name="business" placeholder="{t['name']}">
-          <textarea name="answer" rows="2" placeholder="{t['q']}"></textarea>
+          <input name="business" placeholder="{escape(name_label)}">
+          {extra}
+          <textarea name="answer" rows="2" placeholder="{escape(question)}"></textarea>
           <button class="btn" type="submit">{escape(v['cta'])}</button>
           <span class="muted">{t['cta_note']}</span>
         </form>"""
@@ -69,18 +78,18 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     faq = "".join(f'<details><summary>{escape(o.get("objection",""))}</summary><p>{escape(o.get("answer",""))}</p></details>' for o in v.get("objections", []))
     return f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{(escape(brand) + " — ") if brand else ""}{escape(v['headline'])}</title><meta name="description" content="{escape(v['subheadline'][:150])}">
-<link rel="icon" type="image/png" href="{base}/static/dispensa/logo_512.png"><link rel="apple-touch-icon" href="{base}/static/dispensa/logo_512.png">
-<meta property="og:title" content="{(escape(brand) + ' — ') if brand else ''}{escape(v['headline'])}"><meta property="og:description" content="{escape(v['subheadline'][:150])}"><meta property="og:image" content="{base}/static/dispensa/page_cover_1640x856.png">
+<link rel="icon" type="image/png" href="{logo}"><link rel="apple-touch-icon" href="{logo}">
+<meta property="og:title" content="{(escape(brand) + ' — ') if brand else ''}{escape(v['headline'])}"><meta property="og:description" content="{escape(v['subheadline'][:150])}"><meta property="og:image" content="{cover}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 {pixel_html}<style>{CSS}</style></head>
 <body>
 <header class="hero"><div class="w">
-  {("<div style='display:flex;align-items:center;gap:12px;margin-bottom:22px'><img src='" + base + "/static/dispensa/logo_512.png' alt='' style='width:44px;height:44px;border-radius:10px'><span style='font-weight:800;font-size:22px;letter-spacing:-.02em'>" + escape(brand) + "</span></div>") if brand else ""}
-  <span class="kicker">{t['kicker']}</span>
+  {("<div style='display:flex;align-items:center;gap:12px;margin-bottom:22px'><img src='" + logo + "' alt='' style='width:44px;height:44px;border-radius:10px'><span style='font-weight:800;font-size:22px;letter-spacing:-.02em'>" + escape(brand) + "</span></div>") if brand else ""}
+  <span class="kicker">{escape(kicker)}</span>
   <h1>{escape(v['headline'])}</h1>
   <p class="sub">{escape(v['subheadline'])}</p>
   <a class="btn" href="#lista">{escape(v['cta'])}</a>
-  <div class="muted" style="color:#94a3b8;margin-top:12px">€{v['price_eur_month']:.0f}{t['mo']} · {t['lock'].lower()}</div>
+  <div class="muted" style="color:#94a3b8;margin-top:12px">{escape(price_text)} · {escape(lock_text)}</div>
 </div></header>
 
 {("<section><div class='w'><h2>" + t['ricon'] + "</h2><p class='lead'>" + t['ricon_sub'] + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
@@ -93,7 +102,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
   <div>
     <h2 style="margin-bottom:4px">{t['price']}</h2>
     <div class="muted">{escape(v.get('plan_name') or '')}</div>
-    <div class="price">€{v['price_eur_month']:.0f}<span>{t['mo']}</span></div>
+    <div class="price" style="{'font-size:34px' if v.get('price_text') else ''}">{escape(v['price_text']) if v.get('price_text') else "€" + format(v['price_eur_month'], '.0f') + "<span>" + t['mo'] + "</span>"}</div>
     <span class="lock">🔒 {t['lock']}</span>
     <p class="muted" style="margin-top:12px">{escape(v.get('price_justification') or '')}</p>
   </div>
