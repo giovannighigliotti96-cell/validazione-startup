@@ -48,7 +48,7 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano e Genova", hero
                     {"objection": "Quanto dura il contratto e come lo disdico?", "answer": "Il contratto standard dura 12 mesi, con 1 mese di prova iniziale in cui entrambi potete uscire senza motivo, poi disdetta con 60 giorni di preavviso via PEC o raccomandata. Cauzione di un canone, restituita alla fine."},
                     {"objection": "Perché non farlo da soli su Facebook?", "answer": "Puoi. Ma la maggior parte dei titolari non trova nessuno, e chi trova firma un accordo a voce: senza contratto e SUAP è lavoro subordinato mascherato, con contributi e sanzioni a carico tuo se passa l'ispettorato. Noi ti portiamo la persona e ti mettiamo in regola."},
                     {"objection": "Cosa vi devo?", "answer": "Niente. Il salone non paga mai. Paga la professionista alla firma (la metà del primo canone), che al momento del contatto accetta che il salone le è stato presentato da noi."},
-                    {"objection": "Chi vede il mio annuncio?", "answer": "Chiunque vede foto, zona, giorni e canone. Nome del salone, indirizzo e telefono li vedono solo le professioniste che hanno sbloccato il contatto."}])])
+                    {"objection": "Chi vede il mio annuncio?", "answer": "Chiunque vede foto, zona, giorni e canone. Nome del salone, indirizzo e telefono li vedono solo le professioniste che hanno chiesto il contatto e accettato le condizioni."}])])
 
 STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che vogliono aprirla)", hero_card_title="In tre passi",
     confirm_email={"subject": "Sei in lista — {brand}", "body": (
