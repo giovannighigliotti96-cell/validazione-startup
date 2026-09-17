@@ -2,7 +2,7 @@
 Web search behind ONE daily budget shared by every job (Cloud Run + local), across two free tiers:
 
   - Jina  (s.jina.ai)  : free token quota, no hard monthly cap -> spent first (volume: reddit_search)
-  - Brave Search API   : 2,000 queries/month (~65/day)
+  - Brave Search API   : $5/month free credit = 1,000 queries/month (~33/day)
   - Tavily             : 1,000 queries/month (~33/day) -> spent last
 (Google Custom Search JSON API is closed to new projects since 2025.)
 
@@ -25,7 +25,7 @@ from app.config import get_settings
 from app.scrapers.base import http_client, log
 
 JINA_DAILY = 120
-BRAVE_DAILY = 65
+BRAVE_DAILY = 33
 TAVILY_DAILY = 33
 SCRAPE_SHARE = 0.6
 COLL = "search_usage"

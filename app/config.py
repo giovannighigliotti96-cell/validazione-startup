@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     llm_strong_rpm: int = 20
     tavily_api_key: str = ""
     youtube_api_key: str = ""
-    brave_search_api_key: str = ""     # Brave Search API, Free plan: 2,000 queries/month
+    brave_search_api_key: str = ""     # Brave Search API: $5 free monthly credit = 1,000 queries/month
     jina_api_key: str = ""             # Jina s.jina.ai search, free token quota
     llm_strong_fallback_models: str = "openai/gpt-oss-20b,qwen/qwen3.8-27b"  # each has its own daily token limit on Groq
     meta_pixel_id: str = ""
