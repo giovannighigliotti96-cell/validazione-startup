@@ -28,25 +28,24 @@ log = logging.getLogger("adlib")
 MIN_AGE_DAYS = 180
 MAX_SCROLLS = 120
 SEED_TERMS = [
-    # generic EN: how digital-product sellers describe what they sell
-    "instant download", "digital download", "digital product", "digital file", "download now", "printable", "printables", "printable pdf",
-    "pdf guide", "pdf download", "ebook", "e-book", "editable template", "editable", "template", "templates bundle", "bundle", "mega bundle",
-    "done for you", "swipe file", "script library", "scripts", "worksheets", "workbook", "planner", "digital planner", "checklist", "toolkit",
-    "kit", "pack", "library", "vault", "presets", "lifetime access", "one time payment", "commercial license", "plr", "master resell rights",
-    "canva template", "notion template", "excel template", "google sheets template", "spreadsheet", "airtable template", "powerpoint template",
-    "pitch deck template", "study guide", "study notes", "cheat sheet", "flashcards", "exam prep", "practice questions", "course", "online course",
-    "masterclass", "mini course", "video training", "prompts", "prompt pack", "patterns", "pattern pdf", "plans pdf", "forms", "contract template",
-    "agreement template", "trackers", "journal printable", "recipes ebook", "meal plan pdf", "workout plan pdf", "training program pdf",
-    "resume template", "invoice template", "svg", "svg bundle", "fonts bundle", "lightroom presets", "procreate brushes", "lut pack", "sample pack",
-    "midi pack", "sheet music", "crochet pattern", "sewing pattern", "embroidery pattern", "cross stitch pattern", "knitting pattern", "3d print files",
-    "stl files", "cricut", "sublimation designs", "wall art printable", "coloring pages", "kids printables", "lesson plans", "homeschool printables",
-    "teacher resources", "therapy worksheets", "counseling worksheets", "coaching templates", "budget spreadsheet", "wedding templates",
-    "real estate templates", "small business forms", "social media templates", "email templates", "sales scripts", "guided meditation scripts",
-    # generic IT
-    "prodotto digitale", "file digitale", "download immediato", "scarica subito", "stampabile", "modello editabile", "modelli", "fac simile",
-    "guida pdf", "ebook pdf", "dispense", "appunti", "quiz", "corso online", "videocorso", "kit completo", "pacchetto", "accesso a vita",
-    "pagamento unico", "fogli di lavoro", "schede stampabili", "modelli canva", "fogli excel", "planner digitale", "ricettario pdf",
-    "scheda allenamento pdf", "contratto modello", "preset lightroom", "cartamodello", "schema uncinetto", "file stl", "schede didattiche",
+    # only words that a seller of DOWNLOADABLE files uses (no courses, no generic nouns)
+    "instant download", "digital download", "digital product", "printable", "printables", "printable pdf", "pdf guide", "pdf download",
+    "ebook", "editable template", "templates bundle", "done for you", "swipe file", "script library", "worksheets", "workbook",
+    "digital planner", "checklist pdf", "toolkit pdf", "presets", "lifetime access", "one time payment", "commercial license", "plr",
+    "master resell rights", "canva template", "notion template", "excel template", "google sheets template", "spreadsheet template",
+    "powerpoint template", "pitch deck template", "study guide pdf", "study notes", "cheat sheet", "flashcards pdf", "exam prep pdf",
+    "practice questions pdf", "prompt pack", "pattern pdf", "plans pdf", "contract template", "agreement template", "recipes ebook",
+    "meal plan pdf", "workout plan pdf", "training program pdf", "resume template", "invoice template", "svg bundle", "fonts bundle",
+    "lightroom presets", "procreate brushes", "lut pack", "sample pack", "midi pack", "sheet music pdf", "crochet pattern", "sewing pattern",
+    "embroidery pattern", "cross stitch pattern", "knitting pattern", "3d print files", "stl files", "cricut files", "sublimation designs",
+    "wall art printable", "coloring pages", "kids printables", "lesson plans pdf", "homeschool printables", "teacher resources",
+    "therapy worksheets", "counseling worksheets", "coaching templates", "budget spreadsheet", "wedding templates", "real estate templates",
+    "small business forms", "social media templates", "email templates", "sales scripts", "guided meditation scripts",
+    # IT
+    "prodotto digitale", "download immediato", "scarica subito", "stampabile", "modello editabile", "fac simile", "guida pdf", "ebook pdf",
+    "kit completo pdf", "pagamento unico", "fogli di lavoro", "schede stampabili", "modelli canva", "fogli excel", "planner digitale",
+    "ricettario pdf", "scheda allenamento pdf", "contratto modello", "preset lightroom", "cartamodello", "schema uncinetto", "file stl",
+    "schede didattiche",
 ]
 APP_HOSTS = ("play.google.com", "apps.apple.com", "itunes.apple.com")
 MONTHS = {"gen": 1, "feb": 2, "mar": 3, "apr": 4, "mag": 5, "giu": 6, "lug": 7, "ago": 8, "set": 9, "ott": 10, "nov": 11, "dic": 12}
@@ -172,9 +171,9 @@ class PageVerdict(BaseModel):
 
 CLASSIFY_PROMPT = (
     "Ad Library research on digital products. Advertiser page: '{page}'. Destination site: '{host}'. Ad texts:\n{texts}\n\n"
-    "digital_product: true only if the ads sell a DOWNLOADABLE/online-access product (pdf, templates, printables, scripts, ebook, presets, "
-    "patterns, spreadsheets, self-paced course or bundle) - not apps/SaaS, not physical goods, not live services, not coaching calls, "
-    "not free lead magnets for an agency or a service. product: what exactly is sold (<=12 words). niche: a short generic English label "
+    "digital_product: true only if the ads sell a DOWNLOADABLE FILE product delivered instantly (pdf, templates, printables, scripts, ebook, "
+    "presets, patterns, spreadsheets, fonts, svg, stl, audio packs, or a bundle of such files) - NOT courses/video courses/masterclasses/"
+    "memberships, not apps/SaaS, not physical goods, not live services, not coaching calls, not free lead magnets for an agency or a service. product: what exactly is sold (<=12 words). niche: a short generic English label "
     "of the market, product type + audience (2-5 words, e.g. 'divorce agreement templates', 'therapy worksheets', 'lightroom presets'). "
     "audience: who buys. format: pdf|template|course|bundle|app|physical|service|other. faceless: true if sold by a brand/shop with no named "
     "expert; false if a named person or professional (lawyer, MD, therapist, coach, teacher with credentials) is the selling point. "
