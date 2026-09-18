@@ -212,7 +212,12 @@ async def event(cluster_id: str, request: Request):
     agg = {f"behavior.{day}.{var}.{re.sub(r'[^a-z0-9_]', '_', e['e'].lower())[:40]}": Increment(1) for e in events if not e["e"].startswith("field_")}
     fields = {f"behavior_fields.{var}.{re.sub(r'[^a-z0-9_]', '_', (e.get('d') or {}).get('field', ''))[:30]}": Increment(1) for e in events if e["e"].startswith("field_")}
     if agg or fields:
-        client.collection(db.VALIDATION_EXPERIMENTS).document(f"lp_{cluster_id}").set({**agg, **fields}, merge=True)
+        ref = client.collection(db.VALIDATION_EXPERIMENTS).document(f"lp_{cluster_id}")
+        try:
+            ref.update({**agg, **fields})  # update() treats dotted keys as nested field paths; set() would store them literally
+        except Exception:  # noqa: BLE001 - experiment doc not created yet (no visit counted so far)
+            ref.set({"cluster_id": cluster_id, "started_at": db.now(), "metrics": {"visitors": 0, "signups": 0, "by_variant": {}}}, merge=True)
+            ref.update({**agg, **fields})
     client.collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("lp_sessions").document(sid).set(
         {"variant": var, "utm": utm, "width": payload.get("w"), "last_at": db.now(), "events": firestore_array_union(events)}, merge=True)
     return {"ok": True, "n": len(events)}
