@@ -171,7 +171,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 <link rel="icon" type="image/png" href="{logo}"><link rel="apple-touch-icon" href="{logo}">
 <meta property="og:title" content="{(escape(brand) + ' — ') if brand else ''}{escape(v['headline'])}"><meta property="og:description" content="{escape(v['subheadline'][:150])}"><meta property="og:image" content="{cover}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="{fonts}" rel="stylesheet">
-{pixel_html}<style>{css}</style></head>
+{pixel_html}<style>{css}{(":root{--acc:" + escape(v["accent"]) + ";--acc2:" + escape(v["accent"]) + "}") if v.get("accent") else ""}{(".btn{background:" + escape(v["cta_bg"]) + "}.btn:hover{background:" + escape(v["cta_bg"]) + ";filter:brightness(.92)}") if v.get("cta_bg") else ""}</style></head>
 <body>
 <header class="hero"><div class="w">
   {("<div style='display:flex;align-items:center;gap:12px;margin-bottom:22px'><img src='" + logo + "' alt='' style='width:44px;height:44px;border-radius:10px'><span style='font-weight:800;font-size:22px;letter-spacing:-.02em'>" + escape(brand) + "</span></div>") if brand else ""}

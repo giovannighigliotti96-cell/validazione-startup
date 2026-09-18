@@ -1,5 +1,7 @@
 """Poltrona Libera — two-sided landing test for the chair-rental marketplace hypothesis (titolari / professioniste).
 Quotes are from public posts by salon owners (Facebook/Instagram/press), role only, no names. Run: python -m scripts.seed_poltrona"""
+import copy
+
 from app import db
 
 NL = chr(10)
@@ -98,6 +100,9 @@ STATEMENT = ("I saloni non trovano personale e restano con postazioni vuote; le 
 if __name__ == "__main__":
     OWNERS["listings"] = LISTINGS
     STYLISTS["listings"] = LISTINGS
+    for offer in (OWNERS, STYLISTS):  # variant B: same copy, bronze accent + bronze CTA (A/B on colour only)
+        b = copy.deepcopy(offer["variants"][0]); b.update(key="B", accent="#8a6a3d", cta_bg="#5b4526")
+        offer["variants"] = [offer["variants"][0], b]; offer["active_variants"] = ["A", "B"]
     for cid, offer, name, persona in (("poltrona_libera_titolari", OWNERS, "Affitto di poltrona — lato titolari di saloni", "titolare di salone"),
                                       ("poltrona_libera_professioniste", STYLISTS, "Affitto di poltrona — lato professioniste", "parrucchiera/barbiere freelance")):
         db.upsert(db.PROBLEM_CLUSTERS, cid, {"name": name, "vertical": "salons_barbers", "persona": persona, "status": "hypothesis", "problem_statement": STATEMENT,
