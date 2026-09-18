@@ -114,3 +114,23 @@ def cron_procedures(background: BackgroundTasks):
 
     background.add_task(lambda: analysis.log.info("procedures: %s", procedures.run_weekly()))
     return {"status": "accepted"}
+
+
+@router.api_route("/meta/activate", methods=["GET", "POST"])
+def cron_meta_activate(campaign_id: str):
+    """One-shot: activate a Meta campaign (all ad sets + ads). Scheduled from cron-job.org because Meta refuses start_time edits."""
+    import os
+    import sys
+
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    from scripts.meta_campaign import env, call
+
+    tok = env()["META_ACCESS_TOKEN"]
+    out = []
+    for a in call("GET", f"{campaign_id}/adsets", tok, fields="id,name").get("data", []):
+        for ad in call("GET", f"{a['id']}/ads", tok, fields="id").get("data", []):
+            call("POST", ad["id"], tok, status="ACTIVE")
+        call("POST", a["id"], tok, status="ACTIVE"); out.append(a["name"])
+    call("POST", campaign_id, tok, status="ACTIVE")
+    analysis.log.info("meta campaign %s activated: %s", campaign_id, out)
+    return {"status": "ACTIVE", "campaign_id": campaign_id, "adsets": out}

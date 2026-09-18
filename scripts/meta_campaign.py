@@ -23,11 +23,14 @@ G = "https://graph.facebook.com/v21.0"
 
 
 def env() -> dict:
-    d = {}
-    for line in open(".env", encoding="utf-8"):
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, v = line.split("=", 1); d[k] = v.split("  #")[0].strip()
+    import os
+
+    d = {k: v for k, v in os.environ.items() if k.startswith(("META_", "CRONJOB_"))}  # Cloud Run: service env vars
+    if os.path.exists(".env"):
+        for line in open(".env", encoding="utf-8"):
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1); d[k] = v.split("  #")[0].strip()
     return d
 
 
