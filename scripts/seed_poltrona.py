@@ -9,7 +9,7 @@ NL2 = NL + NL
 BASE = "https://validazione-startup-148506634481.europe-west1.run.app"
 COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/logo_512.png", cover_url=f"{BASE}/static/poltrona/cover_1640x856.png",
               active_variants=["A"], generated_by="manual", theme="warm", listings_title="Così appaiono gli annunci", listings_hint="Esempi di annuncio: foto reali di saloni, dati indicativi. Nome e indirizzo sempre nascosti fino alla richiesta di contatto.", hero_photo_url=f"{BASE}/static/poltrona/salone_1.jpg",
-              photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
+              photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), Phalinn Ooi (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
               notes="Marketplace affitto di poltrona: due lati, due landing. Citazioni da post pubblici di titolari, ruolo senza nome.")
 
 OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_title="In tre passi", quotes_title="Ti riconosci?", quotes_lead="Frasi vere di titolari di salone.",
@@ -22,9 +22,10 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_tit
     trust=["Canone incassato da noi e girato a te entro il 5 del mese", "Contratto registrato, SCIA al SUAP e sostituzione inclusi", "Zero costi fissi: tratteniamo il 15% solo quando rende"],
     hero_photo_caption="Una postazione libera è un'entrata in più, non un problema in più.", lock_text="", price_badge="Primi 30 saloni di Milano: 10% invece del 15% per tutto il primo anno", founder_note="Stiamo partendo a Milano con un primo gruppo di saloni. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Nome e indirizzo del salone visibili solo dopo la richiesta di contatto.", form_name_label="Nome del salone (non sarà mostrato)",
     form_question="Perché la postazione oggi è vuota? (es. dipendente andata via, non trovo personale…)",
-    form_extra=[{"name": "zona", "placeholder": "Zona / quartiere di Milano", "required": True},
+    form_positions=["hero", "bottom"], form_hero_title="Dimmi dov'è la postazione: ti richiamo entro 2 giorni",
+    form_extra=[{"name": "zona", "placeholder": "Zona / quartiere di Milano", "required": True, "short": True},
                 {"name": "canone", "placeholder": "Canone mensile che vorresti (€)"}, {"name": "dipendenti", "placeholder": "Quanti dipendenti hai oggi?", "type": "number"},
-                {"name": "telefono", "placeholder": "Telefono (per fissare la visita)", "type": "tel"}],
+                {"name": "telefono", "placeholder": "Telefono (per fissare la visita)", "type": "tel", "short": True}],
     quotes=[{"quote": "Prima del Covid era facile trovare dipendenti: lo scrivevi su un social, mettevi un foglio A4 in vetrina e arrivavano. Adesso niente.", "role": "Titolare di salone"},
             {"quote": "Dieci ore al giorno per 1.200 euro: i giovani non vogliono più farlo. E io resto sola a mandare avanti il negozio.", "role": "Titolare di salone, Firenze"},
             {"quote": "Cerchiamo parrucchiera/e per affitto poltrona: salone moderno, curato, in viale centrale. Scrivici su WhatsApp.", "role": "Titolare di salone, Modena"},
@@ -60,7 +61,8 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
     trust=["Visiti il salone prima di firmare", "Contratto a norma con un mese di prova", "Canone in piattaforma con ricevuta: niente contanti"],
     hero_photo_caption="La tua poltrona, le tue clienti, i tuoi orari.", lock_text="postazioni da 400 € al mese", price_badge="Prime 30 iscritte: 99 € di attivazione azzerati alla firma", founder_note="Stiamo partendo a Milano con un primo gruppo di professioniste. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Chiedi il contatto per vedere nome e indirizzo e prenotare la visita. Gratis.", form_name_label="Come ti chiami",
     form_question="Cosa ti ha frenato finora dal metterti in proprio?",
-    form_positions=["top", "mid", "bottom"], form_top_title="Dimmi dove vuoi lavorare: ti mando le postazioni disponibili", form_mid_title="Vuoi vedere queste postazioni dal vivo? Lascia zona e telefono",
+    form_positions=["hero", "mid", "bottom"], form_hero_title="Ti mando le postazioni disponibili nella tua zona", form_mid_title="Vuoi vedere queste postazioni dal vivo? Lascia zona e telefono",
+    hero_photo_url=f"{BASE}/static/poltrona/salone_2.jpg",
     form_extra=[{"name": "zona", "placeholder": "Zona di Milano preferita", "required": True, "short": True},
                 {"name": "specialita", "placeholder": "Specialità (colore, taglio uomo, extension…)"}, {"name": "piva", "placeholder": "Hai già la P.IVA? (sì / no)", "short": True},
                 {"name": "telefono", "placeholder": "Telefono", "type": "tel", "short": True}],
