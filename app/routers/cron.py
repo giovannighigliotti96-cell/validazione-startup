@@ -117,6 +117,29 @@ def cron_adlib(background: BackgroundTasks, max_terms: int = 4):
     return {"status": "accepted"}
 
 
+@router.get("/adlib/debug")
+def adlib_debug(term: str = "printable", scrolls: int = 10):
+    """What the Ad Library page looks like from this server (language, wall, card count)."""
+    import time as _t
+
+    from playwright.sync_api import sync_playwright
+
+    from app.services import adlib
+
+    with sync_playwright() as p:
+        b = p.chromium.launch(args=["--no-sandbox", "--disable-dev-shm-usage"])
+        pg = b.new_page(viewport={"width": 1300, "height": 900}, locale="it-IT")
+        pg.goto(adlib.library_url(term), wait_until="domcontentloaded")
+        _t.sleep(6)
+        for _ in range(scrolls):
+            pg.mouse.wheel(0, 5000)
+            _t.sleep(1.3)
+        txt = pg.inner_text("body")
+        b.close()
+    return {"url": adlib.library_url(term), "len": len(txt), "id_libreria": txt.count("ID libreria"), "library_id": txt.count("Library ID"),
+            "sponsorizzato": txt.count("Sponsorizzato"), "sponsored": txt.count("Sponsored"), "head": txt[:1500]}
+
+
 @router.get("/adlib/report", dependencies=[Depends(require_api)])
 def adlib_report(limit: int = 80):
     from app.services import adlib
