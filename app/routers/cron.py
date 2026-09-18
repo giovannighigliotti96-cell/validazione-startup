@@ -109,35 +109,56 @@ def cron_distressed(background: BackgroundTasks):
 
 
 @router.api_route("/adlib", methods=["GET", "POST"], status_code=202)
-def cron_adlib(background: BackgroundTasks, max_terms: int = 4):
-    """Hourly, 24/7: Meta Ad Library broad-first digital-product discovery (proven ads only: active 6m+)."""
+def cron_adlib(background: BackgroundTasks, max_terms: int = 4, harvest: int = 0):
+    """Hourly, 24/7: classify/snowball/verdicts for the Ad Library discovery. Harvesting (browser) runs on Giovanni's PC
+    (scripts/adlib_local.cmd, hourly task): Facebook rate-limits pagination from datacenter IPs."""
     from app.services import adlib
 
-    background.add_task(lambda: adlib.run_cycle(max_terms=max_terms))
+    background.add_task(lambda: adlib.run_cycle(max_terms=max_terms, harvest=bool(harvest)))
     return {"status": "accepted"}
 
 
 @router.get("/adlib/debug")
-def adlib_debug(term: str = "printable", scrolls: int = 10):
-    """What the Ad Library page looks like from this server (language, wall, card count)."""
+def adlib_debug(term: str = "printable", scrolls: int = 10, mode: str = "wheel"):
+    """What the Ad Library page looks like from this server (language, wall, card count, pagination responses)."""
     import time as _t
 
     from playwright.sync_api import sync_playwright
 
     from app.services import adlib
 
+    gql = []
     with sync_playwright() as p:
         b = p.chromium.launch(args=["--no-sandbox", "--disable-dev-shm-usage"])
-        pg = b.new_page(viewport={"width": 1300, "height": 900}, locale="it-IT")
+        ctx = b.new_context(viewport={"width": 1300, "height": 900}, locale="it-IT",
+                            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
+        pg = ctx.new_page()
+
+        def on_resp(r):
+            if "graphql" in r.url or "ads/library/async" in r.url:
+                try:
+                    body = r.text()[:300]
+                except Exception:  # noqa: BLE001
+                    body = "?"
+                gql.append({"status": r.status, "url": r.url[:80], "body": body})
+
+        pg.on("response", on_resp)
         pg.goto(adlib.library_url(term), wait_until="domcontentloaded")
         _t.sleep(6)
-        for _ in range(scrolls):
-            pg.mouse.wheel(0, 5000)
-            _t.sleep(1.3)
+        counts = []
+        for i in range(scrolls):
+            if mode == "wheel":
+                pg.mouse.wheel(0, 5000)
+            elif mode == "scrollto":
+                pg.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+            elif mode == "end":
+                pg.keyboard.press("End")
+            _t.sleep(2)
+            if i % 5 == 4:
+                counts.append(pg.evaluate("() => document.body.innerText.split('ID libreria:').length - 1"))
         txt = pg.inner_text("body")
         b.close()
-    return {"url": adlib.library_url(term), "len": len(txt), "id_libreria": txt.count("ID libreria"), "library_id": txt.count("Library ID"),
-            "sponsorizzato": txt.count("Sponsorizzato"), "sponsored": txt.count("Sponsored"), "head": txt[:1500]}
+    return {"mode": mode, "counts": counts, "id_libreria": txt.count("ID libreria"), "gql": gql[-8:], "n_gql": len(gql)}
 
 
 @router.get("/adlib/report", dependencies=[Depends(require_api)])

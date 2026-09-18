@@ -115,13 +115,19 @@ def parse_card(c: dict, term: str) -> dict | None:
             "dest": (c.get("dest") or "")[:300], "host": host, "video": bool(c["video"]), "term": term, "seen_at": now()}
 
 
+class RateLimited(RuntimeError):
+    """Facebook refuses pagination to this IP (datacenter IPs get 'Rate limit exceeded'); harvest from a home IP."""
+
+
 def harvest_term(term: str, max_scrolls: int = MAX_SCROLLS) -> tuple[int, int, str | None]:
     """Returns (cards seen, ads saved, results reported by the library)."""
     from playwright.sync_api import sync_playwright
 
+    limited = []
     with sync_playwright() as p:
         b = p.chromium.launch(args=["--no-sandbox", "--disable-dev-shm-usage"])
         pg = b.new_page(viewport={"width": 1300, "height": 900}, locale="it-IT")
+        pg.on("response", lambda r: limited.append(1) if "graphql" in r.url and "Rate limit exceeded" in (r.text() if r.status == 200 else "") else None)
         try:
             pg.goto(library_url(term), wait_until="domcontentloaded")
             time.sleep(6)
@@ -143,6 +149,8 @@ def harvest_term(term: str, max_scrolls: int = MAX_SCROLLS) -> tuple[int, int, s
             cards = pg.evaluate(JS_CARDS)
         finally:
             b.close()
+    if limited and len(cards) < 40:
+        raise RateLimited(term)
     col = db.get_db().collection("adlib_ads")
     batch, nb, saved = db.get_db().batch(), 0, 0
     for c in cards:
@@ -319,19 +327,22 @@ def deep_check(limit: int = 5) -> int:
 
 
 # ----------------------------------------------------------------------------- cycle
-def run_cycle(max_terms: int = 4, max_minutes: int = 40) -> dict:
-    """One hourly cycle: harvest a few queued terms, classify new pages, snowball niche labels into the queue,
-    refresh niche verdicts, deep-check a few sweet spots."""
+def run_cycle(max_terms: int = 4, max_minutes: int = 40, harvest: bool = True) -> dict:
+    """One hourly cycle: harvest a few queued terms (home IP only: datacenters are rate-limited), classify new pages,
+    snowball niche labels into the queue, refresh niche verdicts, deep-check a few sweet spots."""
     budget.reset()
     t0 = time.time()
     client = db.get_db()
     seeded = seed_queue()
     done_terms = []
-    for t in next_terms(max_terms):
+    for t in next_terms(max_terms) if harvest else []:
         if (time.time() - t0) / 60 > max_minutes:
             break
         try:
             cards, saved, reported = harvest_term(t["term"])
+        except RateLimited:
+            log.warning("adlib: rate limited on %r, harvesting stops for this cycle", t["term"])
+            break
         except Exception as e:  # noqa: BLE001
             log.error("harvest %s: %s", t["term"], e)
             client.collection("adlib_queue").document(slug(t["term"])).update({"status": "error", "error": str(e)[:200], "done_at": now()})

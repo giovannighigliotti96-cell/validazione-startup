@@ -11,3 +11,4 @@ serviceAccount.json
 *.serviceAccount*.json
 creatives/
 !public/
+adlib_local.log
