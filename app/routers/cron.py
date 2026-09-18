@@ -7,6 +7,7 @@ Endpoints for cron-job.org (header X-Cron-Token). Suggested schedule:
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app import db
+from app.auth import require_api
 from app.auth import require_cron
 from app.services import analysis, funnel, runner
 
@@ -105,6 +106,22 @@ def cron_distressed(background: BackgroundTasks):
 
     background.add_task(lambda: analysis.log.info("distressed: %s", distressed.run_weekly()))
     return {"status": "accepted"}
+
+
+@router.api_route("/adlib", methods=["GET", "POST"], status_code=202)
+def cron_adlib(background: BackgroundTasks, max_terms: int = 4):
+    """Hourly, 24/7: Meta Ad Library broad-first digital-product discovery (proven ads only: active 6m+)."""
+    from app.services import adlib
+
+    background.add_task(lambda: adlib.run_cycle(max_terms=max_terms))
+    return {"status": "accepted"}
+
+
+@router.get("/adlib/report", dependencies=[Depends(require_api)])
+def adlib_report(limit: int = 80):
+    from app.services import adlib
+
+    return adlib.report(limit)
 
 
 @router.api_route("/procedures", methods=["GET", "POST"], status_code=202)
