@@ -216,7 +216,9 @@ def classify_new_pages(limit: int = 250) -> list[dict]:
             except BudgetExhausted:
                 break
             except Exception as e:  # noqa: BLE001
-                log.warning("classify %s: %s", page, e)
+                log.warning("classify %s: %s", page, str(e)[:120])
+                client.collection("adlib_pages").document(ps).set({"page": page, "digital_product": False, "niche": "unknown", "niche_slug": "unknown",
+                                                                   "error": str(e)[:200], "classified_at": now()}, merge=True)
                 continue
         starts = sorted(a["start"] for a in items if a["start"])
         days = (date.today() - date.fromisoformat(starts[0])).days if starts else 0
