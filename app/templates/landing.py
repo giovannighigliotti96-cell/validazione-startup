@@ -60,7 +60,7 @@ footer{padding:28px 0 44px;color:#94a3b8;font-size:12px;border-top:1px solid var
 .heroform{margin:0}.heroform .btn{width:100%}.heroform form{display:flex;flex-direction:column;gap:10px}
 .heroprice{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px}.heroprice small{display:block;color:var(--mut);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
 .heroprice .pt{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:22px;line-height:1.25;margin:4px 0 6px}.heroprice p{margin:8px 0 0;color:#3f3a35;font-size:14px}
-.hero .w.has-form{grid-template-columns:1fr}@media(min-width:880px){.hero .w.has-form{grid-template-columns:.9fr 1.1fr}.hero .w.has-form .heroform{order:1}.hero .w.has-form .text{order:2}}
+.hero .w.has-form{grid-template-columns:1fr;align-items:start}@media(min-width:880px){.hero .w.has-form{grid-template-columns:.9fr 1.1fr}.hero .w.has-form .heroform{order:1}.hero .w.has-form .text{order:2;padding-top:6px}}
 @media(max-width:879px){.hero .w.has-form .heroform{order:2;margin-top:6px}.hero .w.has-form .text{order:1}}.formcard b{display:block;font-size:17px;margin-bottom:12px}
 form.compact{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:760px){form.compact{grid-template-columns:1fr 1fr 1fr 1fr auto;align-items:center}form.compact .muted{grid-column:1/-1}}
 """
@@ -115,7 +115,7 @@ footer{padding:28px 0 44px;color:var(--mut);font-size:12px;border-top:1px solid 
 .heroform{margin:0}.heroform .btn{width:100%}.heroform form{display:flex;flex-direction:column;gap:10px}
 .heroprice{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px}.heroprice small{display:block;color:var(--mut);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
 .heroprice .pt{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:22px;line-height:1.25;margin:4px 0 6px}.heroprice p{margin:8px 0 0;color:#3f3a35;font-size:14px}
-.hero .w.has-form{grid-template-columns:1fr}@media(min-width:880px){.hero .w.has-form{grid-template-columns:.9fr 1.1fr}.hero .w.has-form .heroform{order:1}.hero .w.has-form .text{order:2}}
+.hero .w.has-form{grid-template-columns:1fr;align-items:start}@media(min-width:880px){.hero .w.has-form{grid-template-columns:.9fr 1.1fr}.hero .w.has-form .heroform{order:1}.hero .w.has-form .text{order:2;padding-top:6px}}
 @media(max-width:879px){.hero .w.has-form .heroform{order:2;margin-top:6px}.hero .w.has-form .text{order:1}}.formcard b{display:block;font-size:17px;margin-bottom:12px}
 form.compact{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:760px){form.compact{grid-template-columns:1fr 1fr 1fr 1fr auto;align-items:center}form.compact .muted{grid-column:1/-1}}
 """
@@ -183,7 +183,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     if "hero" in positions:
         price_block = (f"<div class='heroprice'><small>{escape(t['price'])}</small><div class='pt'>{escape(price_text)}</div>"
                        + (f"<span class='lock'>{escape(badge)}</span>" if badge else "")
-                       + f"<p>{escape(v.get('price_justification') or '')}</p></div>")
+                       + (f"<p>{escape(v.get('price_justification') or '')}</p>" if offer.get("hero_show_justification", True) else "") + "</div>")
         hero_form = f"<aside class='formcard heroform'>{price_block}{_form('lista-hero', False)}</aside>"
     mid_form = (f"<section style='padding-top:0'><div class='w'><div class='formcard'><b>{escape(offer.get('form_mid_title') or v['cta'])}</b>{_form('lista-mid', True)}</div></div></section>") if "mid" in positions else ""
     quotes = offer.get("quotes") or []  # curated (cleaned, translated, anonymised) from real signals; never raw scraped text on a public page

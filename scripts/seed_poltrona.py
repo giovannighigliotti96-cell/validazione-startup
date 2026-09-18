@@ -9,7 +9,7 @@ NL2 = NL + NL
 BASE = "https://validazione-startup-148506634481.europe-west1.run.app"
 COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/logo_512.png", cover_url=f"{BASE}/static/poltrona/cover_1640x856.png",
               active_variants=["A"], generated_by="manual", theme="warm", listings_title="Così appaiono gli annunci", listings_hint="Esempi di annuncio: foto reali di saloni, dati indicativi. Nome e indirizzo sempre nascosti fino alla richiesta di contatto.", hero_photo_url=f"{BASE}/static/poltrona/salone_1.jpg",
-              photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), Phalinn Ooi (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
+              photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), Phalinn Ooi (CC BY 2.0), Haldane Martin / Micky Hoyle (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
               notes="Marketplace affitto di poltrona: due lati, due landing. Citazioni da post pubblici di titolari, ruolo senza nome.")
 
 OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_title="In tre passi", quotes_title="Ti riconosci?", quotes_lead="Frasi vere di titolari di salone.",
@@ -27,7 +27,7 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_tit
                 {"name": "telefono", "placeholder": "Cellulare", "type": "tel", "required": True},
                 {"name": "piva", "placeholder": "Partita IVA del salone", "required": True},
                 {"name": "zona", "placeholder": "Zona / quartiere di Milano", "required": True},
-                {"name": "canone", "placeholder": "Canone mensile che vorresti (€)"}, {"name": "dipendenti", "placeholder": "Quanti dipendenti hai oggi?", "type": "number"}],
+],
     quotes=[{"quote": "Prima del Covid era facile trovare dipendenti: lo scrivevi su un social, mettevi un foglio A4 in vetrina e arrivavano. Adesso niente.", "role": "Titolare di salone"},
             {"quote": "Dieci ore al giorno per 1.200 euro: i giovani non vogliono più farlo. E io resto sola a mandare avanti il negozio.", "role": "Titolare di salone, Firenze"},
             {"quote": "Cerchiamo parrucchiera/e per affitto poltrona: salone moderno, curato, in viale centrale. Scrivici su WhatsApp.", "role": "Titolare di salone, Modena"},
@@ -109,6 +109,7 @@ STATEMENT = ("I saloni non trovano personale e restano con postazioni vuote; le 
 
 if __name__ == "__main__":
     STYLISTS["hero_photo_url"] = f"{BASE}/static/poltrona/salone_2.jpg"  # newer, brighter salon for the professionals page
+    OWNERS["hero_photo_url"] = f"{BASE}/static/poltrona/salone_3.jpg"  # modern salon (Glam 5, CC BY) for the owners page
     OWNERS["listings"] = LISTINGS
     STYLISTS["listings"] = LISTINGS
     for offer in (OWNERS, STYLISTS):  # variant B: same copy, bronze accent + bronze CTA (A/B on colour only)
