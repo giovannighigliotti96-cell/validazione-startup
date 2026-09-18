@@ -218,6 +218,9 @@ def _validate_lenient(schema: type[BaseModel], data: Any) -> dict:
     """
     from pydantic import ValidationError
 
+    if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict) and not any(
+            getattr(f.annotation, "__origin__", None) is list for f in schema.model_fields.values()):
+        data = data[0]  # small models wrap a single object in a list
     try:
         return schema.model_validate(data).model_dump()
     except ValidationError as first_err:

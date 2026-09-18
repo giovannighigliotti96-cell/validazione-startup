@@ -128,14 +128,17 @@ def harvest_term(term: str, max_scrolls: int = MAX_SCROLLS) -> tuple[int, int, s
             reported = None
             mm = re.search(r"~?([\d.]+) risultat", pg.inner_text("body"))
             reported = mm.group(1) if mm else None
-            last = 0
+            last, stale = 0, 0
             for i in range(max_scrolls):
                 pg.mouse.wheel(0, 5000)
                 time.sleep(1.3)
-                if i % 12 == 11:
-                    n = pg.evaluate("() => document.querySelectorAll('div,span').length")
-                    if n == last:
+                if i % 10 == 9:
+                    n = pg.evaluate("() => document.body.innerText.split('ID libreria:').length")
+                    stale = stale + 1 if n == last else 0
+                    if stale >= 2:  # two checks (20 scrolls) without new cards: the list is exhausted
                         break
+                    if n == last:
+                        time.sleep(4)  # slow network: give the next batch time to arrive
                     last = n
             cards = pg.evaluate(JS_CARDS)
         finally:
