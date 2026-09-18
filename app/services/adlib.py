@@ -191,7 +191,7 @@ CLASSIFY_PROMPT = (
     "who_is_behind: brand or person (<=10 words). price: as written in the ads, else ''.")
 
 
-FREE_RE = re.compile(r"(free|gratis|gratuit[oa]|no cost|0 ?[€$]|[€$] ?0)", re.I)
+FREE_RE = re.compile(r"\b(free|gratis|gratuit[oa]|no cost|0 ?[€$]|[€$] ?0)\b", re.I)
 PAID_RE = re.compile(r"[€$£]\s?\d|\d\s?[€$£]|\d+[.,]\d{2}")
 
 
@@ -285,6 +285,9 @@ def rebuild_niches(only: set[str] | None = None) -> list[dict]:
             groups[p["niche_slug"]].append(p)
     searched = {d.id: d.to_dict() for d in client.collection("adlib_queue").where("status", "==", "done").stream()}
     out = []
+    for d in client.collection("adlib_niches").stream():
+        if d.id not in groups:
+            d.reference.delete()  # every member was excluded by the rules
     for ns, items in groups.items():
         if only and ns not in only:
             continue
