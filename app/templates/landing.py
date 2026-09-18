@@ -55,6 +55,8 @@ footer{padding:28px 0 44px;color:#94a3b8;font-size:12px;border-top:1px solid var
 .ok{background:#ecfdf5;color:#065f46;padding:18px 20px;border-radius:14px;font-weight:600}
 .sticky{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(15,23,42,.92);backdrop-filter:blur(8px);display:none;z-index:50}
 .sticky .btn{width:100%}@media(max-width:760px){.sticky{display:block}body{padding-bottom:78px}}
+.formcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin:22px 0 0;box-shadow:0 12px 40px rgba(28,25,23,.08)}.formcard b{display:block;font-size:17px;margin-bottom:12px}
+form.compact{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:760px){form.compact{grid-template-columns:1fr 1fr 1fr 1fr auto;align-items:center}form.compact .muted{grid-column:1/-1}}
 """
 
 CSS_WARM = """
@@ -102,6 +104,8 @@ footer{padding:28px 0 44px;color:var(--mut);font-size:12px;border-top:1px solid 
 .band:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,25,23,0) 40%,rgba(28,25,23,.55))}.band .w{position:relative;z-index:1;width:100%}.band p{color:#fff;font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:clamp(18px,2.6vw,26px);margin:0 0 22px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
 .sticky{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(247,242,234,.94);backdrop-filter:blur(8px);display:none;z-index:50;border-top:1px solid var(--line)}
 .sticky .btn{width:100%}@media(max-width:760px){.sticky{display:block}body{padding-bottom:78px}}
+.formcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin:22px 0 0;box-shadow:0 12px 40px rgba(28,25,23,.08)}.formcard b{display:block;font-size:17px;margin-bottom:12px}
+form.compact{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:760px){form.compact{grid-template-columns:1fr 1fr 1fr 1fr auto;align-items:center}form.compact .muted{grid-column:1/-1}}
 """
 
 
@@ -145,6 +149,22 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
                         f"<h3>{escape(lp.get('title') or '')}</h3><p>{escape(lp.get('text') or '')}</p>"
                         f"<div class='price'>{escape(lp.get('price') or '')}<span> {escape(lp.get('price_note') or '')}</span></div>"
                         f"<div class='note'>{escape(lp.get('note') or '')}</div></div></aside>")
+    positions = offer.get("form_positions") or ["bottom"]
+    short_fields = [f for f in (offer.get("form_extra") or []) if f.get("short")]
+
+    def _form(anchor: str, compact: bool) -> str:
+        if signed_up:
+            return f'<div id="{anchor}" class="ok">{t["thanks"]}</div>'
+        fields = "".join(f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>' for f in (short_fields if compact else (offer.get("form_extra") or [])))
+        q = "" if compact else f'<textarea name="answer" rows="2" placeholder="{escape(question)}"></textarea>'
+        nm = "" if compact else f'<input name="business" placeholder="{escape(name_label)}">'
+        return f"""<form id="{anchor}" class="{'compact' if compact else ''}" method="post" action="{base}/lp/{escape(c['id'])}/signup">
+          <input type="hidden" name="variant" value="{escape(v['key'])}"><input type="hidden" name="placement" value="{anchor}">
+          <input name="email" type="email" required placeholder="{t['email']}">{nm}{fields}{q}
+          <button class="btn" type="submit">{escape(v['cta'])}</button><span class="muted">{t['cta_note']}</span></form>"""
+
+    top_form = (f"<div class='w'><div class='formcard'><b>{escape(offer.get('form_top_title') or v['cta'])}</b>{_form('lista-top', True)}</div></div>") if "top" in positions else ""
+    mid_form = (f"<section style='padding-top:0'><div class='w'><div class='formcard'><b>{escape(offer.get('form_mid_title') or v['cta'])}</b>{_form('lista-mid', True)}</div></div></section>") if "mid" in positions else ""
     quotes = offer.get("quotes") or []  # curated (cleaned, translated, anonymised) from real signals; never raw scraped text on a public page
     pay = offer.get("payment_link_url")
     if signed_up:
@@ -185,9 +205,11 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
   </div>
   {listing_html or (("<aside class='herocard'><b>" + escape(offer.get("hero_card_title") or t["how"]) + "</b><ul>" + "".join("<li>" + escape(x) + "</li>" for x in v.get("how_it_works", [])[:3]) + "</ul></aside>") if v.get("how_it_works") else "")}
 </div></header>
-<div class="sticky"><a class="btn" href="#lista">{escape(v['cta'])}</a></div>
+<div class="sticky"><a class="btn" href="#{'lista-top' if 'top' in positions else 'lista'}">{escape(v['cta'])}</a></div>
+{top_form}
 
 {rail_html}
+{mid_form}
 {("<div class='band' style=\"background-image:url('" + escape(offer['hero_photo_url']) + "')\"><div class='w'><p>" + escape(offer.get('hero_photo_caption') or '') + "</p></div></div>") if offer.get('hero_photo_url') else ""}
 {("<section><div class='w'><h2>" + escape(offer.get('quotes_title') or t['ricon']) + "</h2><p class='lead'>" + escape(offer.get('quotes_lead') or t['ricon_sub']) + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
 

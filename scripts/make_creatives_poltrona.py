@@ -70,7 +70,7 @@ def ad_photo(subject, photo, headline, sub, badge, size_key):
     return im
 
 
-def ad_typo(headline, sub, size_key, accent_word=None):
+def ad_typo(headline, sub, size_key, accent_word=None, cta_text=None):
     w, h = SIZES[size_key]; im = Image.new("RGB", (w, h), PAPER); d = ImageDraw.Draw(im)
     s = w / 1080
     d.rectangle((0, 0, w, int(14 * s)), fill=ACC)
@@ -88,7 +88,7 @@ def ad_typo(headline, sub, size_key, accent_word=None):
         y += int(116 * s)
     y = draw_lines(d, 72, y + 24, wrap(d, sub, F(SANS, int(40 * s)), w - 160), F(SANS, int(40 * s)), (63, 58, 53), int(54 * s))
     d.rounded_rectangle((72, y + 40, 72 + int(520 * s), y + 40 + int(92 * s)), radius=999, fill=INK)
-    d.text((72 + int(48 * s), y + 40 + int(22 * s)), "Affitta la tua postazione →", font=F(SANS_B, int(34 * s)), fill=PAPER)
+    d.text((72 + int(48 * s), y + 40 + int(22 * s)), (cta_text or "Affitta la tua postazione →"), font=F(SANS_B, int(34 * s)), fill=PAPER)
     brand_bar(d, w, h, False)
     return im
 
@@ -140,6 +140,12 @@ def main():
     # 3) zero sbattimento — photo 2, different angle
     for k in SIZES:
         ad_photo("gestito", P(3), "Incasso gestito. Sostituzione inclusa.", "Se la professionista lascia, la sostituiamo noi. Se non paga, non rincorri nessuno. 15% solo quando la postazione rende.", "NESSUN COSTO FISSO", k).save(f"{OUT}/gestito_{k}.png")
+    # 3b) professioniste — already freelance / a domicilio (typographic, different kicker)
+    for k in SIZES:
+        im = ad_typo("Lavori a domicilio? Prenditi una poltrona vera.", "Postazioni in saloni di Milano da 400 € al mese: lavatesta, luce, specchio, clienti che vengono da te. Hai già la P.IVA: ti manca solo il posto.", k, "poltrona vera.", "Guarda le postazioni →")
+        ImageDraw.Draw(im).rectangle((72, 84 - 4, 720, 84 + 40), fill=PAPER)
+        ImageDraw.Draw(im).text((72, 84), "PER PARRUCCHIERE A DOMICILIO · MILANO", font=F(SANS_B, int(28 * (SIZES[k][0] / 1080))), fill=ACC)
+        im.save(f"{OUT}/domicilio_{k}.png")
     # 4) carousel: how it works
     cards = [("Ci dai in gestione la postazione", "3 foto, zona, giorni, canone. Mandato di 12 mesi, senza costi.", 1, None),
              ("Selezioniamo e organizziamo le visite", "Solo professioniste con P.IVA, qualifica e assicurazione. Incontri chi ha senso per te.", 2, None),

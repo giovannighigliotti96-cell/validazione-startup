@@ -182,7 +182,7 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
     lead_id = hashlib.sha256(email.strip().lower().encode()).hexdigest()[:20]
     ref = db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").document(lead_id)
     if not ref.get().exists:
-        lead = {"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "at": db.now()}
+        lead = {"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "placement": str(form.get("placement") or "lista")[:20], "at": db.now()}
         ref.set(lead)
         _bump(cluster_id, variant, "signups")
         _notify_signup(c, offer, lead)

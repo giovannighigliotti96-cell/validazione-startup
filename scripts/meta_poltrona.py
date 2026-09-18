@@ -47,8 +47,8 @@ ADSETS = {
         ],
     },
     "professioniste": {
-        "name": "Professioniste · Milano 25km · 22-45 · job title + interessi pro", "landing": f"{BASE}/lp/poltrona_libera_professioniste", "age": (22, 45),
-        "flexible_spec": [{"interests": PRO_INTERESTS, "work_positions": STYLIST_JOBS}],
+        "name": "Professioniste · Milano 25km · 22-50 · freelance/domicilio + job title + interessi pro", "landing": f"{BASE}/lp/poltrona_libera_professioniste", "age": (22, 50),
+        "flexible_spec": [{"interests": PRO_INTERESTS + [{"id": "6003299177301", "name": "Mobile Hairdresser"}], "work_positions": STYLIST_JOBS + [{"id": "121890827856661", "name": "Mobile Hairdresser"}]}],
         "ads": [
             {"subject": "reddito", "primary": "Lavora in proprio senza aprire un salone: postazioni a Milano da 400 € al mese, in saloni veri. Le clienti sono tue, gli orari sono tuoi, l'incasso è tuo. Guardi, visiti, poi decidi.",
              "headline": "In proprio, senza aprire un salone", "description": "Postazioni da 400 €/mese."},
@@ -56,6 +56,8 @@ ADSETS = {
              "headline": "Tieni il 100% di quello che incassi", "description": "Contratto a norma, mese di prova."},
             {"subject": "gestito", "primary": "Zero investimento: niente locale, niente attrezzature, niente fideiussioni. Solo una postazione in un salone di Milano, con canone chiaro e cosa è incluso. Visita gratis, firmi solo se ti convince.",
              "headline": "Zero investimento, una postazione tua", "description": "Visite gratis a Milano."},
+            {"subject": "domicilio", "primary": "Lavori a domicilio e hai già la P.IVA? Ti manca solo il posto. Postazioni in saloni veri di Milano da 400 € al mese: lavatesta, luce, specchio, e le clienti vengono da te. Contratto a norma, SCIA e registrazione li facciamo noi.",
+             "headline": "A domicilio? Prenditi una poltrona vera", "description": "Saloni di Milano, da 400 €/mese."},
         ],
     },
 }
