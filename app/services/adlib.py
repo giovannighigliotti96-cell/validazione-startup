@@ -191,6 +191,19 @@ CLASSIFY_PROMPT = (
     "who_is_behind: brand or person (<=10 words). price: as written in the ads, else ''.")
 
 
+FREE_RE = re.compile(r"(free|gratis|gratuit[oa]|no cost|0 ?[€$]|[€$] ?0)", re.I)
+PAID_RE = re.compile(r"[€$£]\s?\d|\d\s?[€$£]|\d+[.,]\d{2}")
+
+
+def apply_rules(v: PageVerdict) -> PageVerdict:
+    """Hard rules after the LLM: only files sold for money count (no courses/services, no free lead magnets)."""
+    if v.format in ("course", "service", "app", "physical") or re.search(r"(course|corso|masterclass|webinar|membership|coaching|training videos?)", v.product, re.I):
+        v.digital_product = False
+    if FREE_RE.search(v.price or "") and not PAID_RE.search(v.price or ""):
+        v.digital_product = False  # a free download running for months is a lead magnet for something else
+    return v
+
+
 def classify_new_pages(limit: int = 250) -> list[dict]:
     """One LLM call per advertiser page not yet classified. Returns the classified page docs."""
     client = db.get_db()
@@ -220,6 +233,7 @@ def classify_new_pages(limit: int = 250) -> list[dict]:
                 client.collection("adlib_pages").document(ps).set({"page": page, "digital_product": False, "niche": "unknown", "niche_slug": "unknown",
                                                                    "error": str(e)[:200], "classified_at": now()}, merge=True)
                 continue
+        v = apply_rules(v)
         starts = sorted(a["start"] for a in items if a["start"])
         days = (date.today() - date.fromisoformat(starts[0])).days if starts else 0
         doc = {**v.model_dump(), "page": page, "niche_slug": slug(v.niche), "host": host, "ads": len(items), "video_ads": sum(a["video"] for a in items),
