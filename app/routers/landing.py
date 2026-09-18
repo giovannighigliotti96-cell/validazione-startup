@@ -13,6 +13,7 @@ Meta pixel: set META_PIXEL_ID to inject the pixel (PageView on load, Lead on sig
 from __future__ import annotations
 
 import hashlib
+import re
 import secrets
 from html import escape
 
@@ -141,6 +142,8 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
             seen_ref.set({"variant": var["key"], "at": db.now()})
             _bump(cluster_id, var["key"], "visitors")
     base = get_settings().public_base_url.rstrip("/")
+    q = request.query_params
+    offer = {**offer, "_utm": re.sub(r"[^A-Za-z0-9_./-]", "", "/".join(x for x in (q.get("utm_source"), q.get("utm_campaign"), q.get("utm_content")) if x) or ("meta" if q.get("fbclid") else "diretto"))[:80]}
     resp = HTMLResponse(render(c, offer, var, base, signed_up=bool(ok)))
     resp.set_cookie(f"lpv_{cluster_id}", var["key"], max_age=60 * 60 * 24 * 30, samesite="lax")
     return resp
@@ -190,6 +193,37 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
     return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1", status_code=303)
 
 
+@router.post("/{cluster_id}/event")
+async def event(cluster_id: str, request: Request):
+    """Behaviour beacon: anonymous session id, variant, utm, events (scroll, sections, form start/fields/submit, time).
+    Aggregated per day+variant in validation_experiments.lp_{id}.behavior; raw kept 30 days under the cluster."""
+    from google.cloud.firestore_v1 import Increment
+
+    try:
+        payload = await request.json()
+    except Exception:  # noqa: BLE001
+        return {"ok": False}
+    events = [e for e in (payload.get("events") or []) if isinstance(e, dict) and isinstance(e.get("e"), str)][:60]
+    if not events:
+        return {"ok": True, "n": 0}
+    sid = str(payload.get("sid") or "na")[:40]; var = str(payload.get("v") or "A")[:3]; utm = str(payload.get("utm") or "")[:80]
+    day = db.now().strftime("%Y-%m-%d")
+    client = db.get_db()
+    agg = {f"behavior.{day}.{var}.{re.sub(r'[^a-z0-9_]', '_', e['e'].lower())[:40]}": Increment(1) for e in events if not e["e"].startswith("field_")}
+    fields = {f"behavior_fields.{var}.{re.sub(r'[^a-z0-9_]', '_', (e.get('d') or {}).get('field', ''))[:30]}": Increment(1) for e in events if e["e"].startswith("field_")}
+    if agg or fields:
+        client.collection(db.VALIDATION_EXPERIMENTS).document(f"lp_{cluster_id}").set({**agg, **fields}, merge=True)
+    client.collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("lp_sessions").document(sid).set(
+        {"variant": var, "utm": utm, "width": payload.get("w"), "last_at": db.now(), "events": firestore_array_union(events)}, merge=True)
+    return {"ok": True, "n": len(events)}
+
+
+def firestore_array_union(items):
+    from google.cloud.firestore_v1 import ArrayUnion
+
+    return ArrayUnion([{"e": i["e"][:40], "t": i.get("t"), "d": {k: str(v)[:40] for k, v in (i.get("d") or {}).items()}} for i in items])
+
+
 @router.get("/{cluster_id}/stats", dependencies=[Depends(require_api)])
 def stats(cluster_id: str):
     exp = db.get(db.VALIDATION_EXPERIMENTS, f"lp_{cluster_id}") or {}
@@ -198,6 +232,16 @@ def stats(cluster_id: str):
            "signup_rate": round(m.get("signups", 0) / m["visitors"], 3) if m.get("visitors") else 0.0, "by_variant": {}}
     for k, v in (m.get("by_variant") or {}).items():
         out["by_variant"][k] = {**v, "signup_rate": round(v.get("signups", 0) / v["visitors"], 3) if v.get("visitors") else 0.0}
+    beh = exp.get("behavior") or {}
+    tot: dict = {}
+    for day, per_var in beh.items():
+        for var, counts in (per_var or {}).items():
+            for k, n in (counts or {}).items():
+                tot.setdefault(var, {})[k] = tot.get(var, {}).get(k, 0) + n
+    out["funnel"] = {var: {"visite": c.get("view", 0), "scroll50": c.get("scroll50", 0), "scroll100": c.get("scroll100", 0), "annunci_visti": c.get("see_annunci", 0),
+                          "faq_viste": c.get("see_faq", 0), "cta_click": c.get("cta_click", 0), "form_iniziato": c.get("form_start", 0), "form_inviato": c.get("form_submit", 0),
+                          "oltre_60s": c.get("time60", 0)} for var, c in tot.items()}
+    out["campi_toccati"] = exp.get("behavior_fields") or {}
     leads = [d.to_dict() for d in db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").stream()]
     out["leads"] = [{"variant": l.get("variant"), "answer": l.get("answer"), "at": l.get("at")} for l in leads]  # emails only via Firestore
     return out

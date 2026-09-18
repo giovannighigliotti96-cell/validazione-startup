@@ -120,6 +120,17 @@ footer{padding:28px 0 44px;color:var(--mut);font-size:12px;border-top:1px solid 
 form.compact{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:760px){form.compact{grid-template-columns:1fr 1fr 1fr 1fr auto;align-items:center}form.compact .muted{grid-column:1/-1}}
 """
 
+BEHAVIOR_JS = """<script>(function(){var C='%(cid)s',V='%(variant)s',U='%(utm)s',B='%(base)s';var sid=(function(){try{var k='lps_'+C,x=sessionStorage.getItem(k);if(!x){x=Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem(k,x)}return x}catch(e){return 'na'}})();
+var t0=Date.now(),sent={},q=[],tq=null;function ev(n,d){if(sent[n]&&!(d&&d.field))return;sent[n]=1;q.push({e:n,d:d||{},t:Math.round((Date.now()-t0)/1000)});clearTimeout(tq);tq=setTimeout(function(){flush(false)},2000)}
+function flush(final){if(!q.length)return;var body=JSON.stringify({sid:sid,v:V,utm:U,w:window.innerWidth,events:q.splice(0)});try{if(final&&navigator.sendBeacon){navigator.sendBeacon(B+'/lp/'+C+'/event',new Blob([body],{type:'application/json'}))}else{fetch(B+'/lp/'+C+'/event',{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true})}}catch(e){}}
+ev('view');var marks=[25,50,75,100];function onScroll(){var h=document.documentElement,p=Math.round((h.scrollTop+window.innerHeight)/h.scrollHeight*100);marks.forEach(function(m){if(p>=m)ev('scroll'+m)})}window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){ev('see_'+x.target.getAttribute('data-sec'))}})},{threshold:.4});document.querySelectorAll('[data-sec]').forEach(function(el){io.observe(el)})}
+document.querySelectorAll('a.btn,button.btn').forEach(function(b){b.addEventListener('click',function(){ev('cta_click',{id:(b.closest('form')||b.closest('[id]')||{}).id||'hero'})})});
+document.querySelectorAll('form').forEach(function(f){var started=false;f.querySelectorAll('input,textarea').forEach(function(i){i.addEventListener('focus',function(){if(!started){started=true;ev('form_start',{form:f.id||'bottom'})}ev('field_'+i.name,{field:i.name,form:f.id||'bottom'})})});f.addEventListener('submit',function(){ev('form_submit',{form:f.id||'bottom'});flush(true)})});
+var tm=[10,30,60,120];tm.forEach(function(x){setTimeout(function(){ev('time'+x)},x*1000)});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'){ev('leave',{after:Math.round((Date.now()-t0)/1000)});flush(true)}});
+})();</script>"""
+
 
 def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "", signed_up: bool = False) -> str:
     lang = v.get("target_language") if v.get("target_language") in T else "en"
@@ -149,7 +160,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     listings = offer.get("listings") or []
     rail_html = ""
     if listings:
-        rail_html = (f"<section style='padding-top:40px;padding-bottom:28px'><div class='w'><h2>{escape(offer.get('listings_title') or 'Postazioni come queste')}</h2>"
+        rail_html = (f"<section data-sec='annunci' style='padding-top:40px;padding-bottom:28px'><div class='w'><h2>{escape(offer.get('listings_title') or 'Postazioni come queste')}</h2>"
                      f"<p class='railhint'>{escape(offer.get('listings_hint') or '')}</p><div class='rail'>" + "".join(_card(x) for x in listings) + "</div></div></section>")
     lp = offer.get("listing_preview") or ({**listings[0], "note": offer.get("hero_note") or listings[0].get("note")} if listings else None)
     listing_html = ""
@@ -186,6 +197,11 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
                        + (f"<p>{escape(v.get('price_justification') or '')}</p>" if offer.get("hero_show_justification", True) else "") + "</div>")
         hero_form = f"<aside class='formcard heroform'>{price_block}{_form('lista-hero', False)}</aside>"
     mid_form = (f"<section style='padding-top:0'><div class='w'><div class='formcard'><b>{escape(offer.get('form_mid_title') or v['cta'])}</b>{_form('lista-mid', True)}</div></div></section>") if "mid" in positions else ""
+    import json as _json
+    utm = offer.get("_utm") or ""
+    behavior = BEHAVIOR_JS % {"cid": c["id"], "variant": v["key"], "utm": utm, "base": base}
+    clarity = (f"<script type='text/javascript'>(function(c,l,a,r,i,t,y){{c[a]=c[a]||function(){{(c[a].q=c[a].q||[]).push(arguments)}};t=l.createElement(r);t.async=1;t.src='https://www.clarity.ms/tag/'+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);}})(window,document,'clarity','script','{escape(offer['clarity_id'])}');</script>"
+               if offer.get("clarity_id") else "")
     quotes = offer.get("quotes") or []  # curated (cleaned, translated, anonymised) from real signals; never raw scraped text on a public page
     pay = offer.get("payment_link_url")
     if signed_up:
@@ -193,7 +209,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     elif pay:
         form = f'<a class="btn" href="{escape(pay)}" onclick="try{{fbq(\'track\',\'InitiateCheckout\')}}catch(e){{}}">{escape(v["cta"])}</a>'
     else:
-        form = f"""<form method="post" action="{base}/lp/{escape(c['id'])}/signup">
+        form = f"""<form id="lista" method="post" action="{base}/lp/{escape(c['id'])}/signup">
           <input type="hidden" name="variant" value="{escape(v['key'])}">
           {"".join(f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>' for f in (offer.get("form_extra") or []) if f.get("first"))}<input name="email" type="email" required placeholder="{t['email']}">
           {("<input name='business' placeholder='" + escape(name_label) + "'>") if name_label else ""}
@@ -212,7 +228,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 <link rel="icon" type="image/png" href="{logo}"><link rel="apple-touch-icon" href="{logo}">
 <meta property="og:title" content="{(escape(brand) + ' — ') if brand else ''}{escape(v['headline'])}"><meta property="og:description" content="{escape(v['subheadline'][:150])}"><meta property="og:image" content="{cover}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="{fonts}" rel="stylesheet">
-{pixel_html}<style>{css}{(":root{--acc:" + escape(v["accent"]) + ";--acc2:" + escape(v["accent"]) + "}") if v.get("accent") else ""}{(".btn{background:" + escape(v["cta_bg"]) + "}.btn:hover{background:" + escape(v["cta_bg"]) + ";filter:brightness(.92)}") if v.get("cta_bg") else ""}</style></head>
+{pixel_html}{clarity}<style>{css}{(":root{--acc:" + escape(v["accent"]) + ";--acc2:" + escape(v["accent"]) + "}") if v.get("accent") else ""}{(".btn{background:" + escape(v["cta_bg"]) + "}.btn:hover{background:" + escape(v["cta_bg"]) + ";filter:brightness(.92)}") if v.get("cta_bg") else ""}</style></head>
 <body>
 {("<div class='topbar'><div class='w'><img src='" + logo + "' alt=''><span>" + escape(brand) + "</span></div></div>") if brand else ""}
 <header class="hero"><div class="w{' has-form' if hero_form else ''}">
@@ -232,11 +248,11 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 {rail_html}
 {mid_form}
 {("<div class='band' style=\"background-image:url('" + escape(offer['hero_photo_url']) + "')\"><div class='w'><p>" + escape(offer.get('hero_photo_caption') or '') + "</p></div></div>") if offer.get('hero_photo_url') else ""}
-{("<section><div class='w'><h2>" + escape(offer.get('quotes_title') or t['ricon']) + "</h2><p class='lead'>" + escape(offer.get('quotes_lead') or t['ricon_sub']) + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
+{("<section data-sec='citazioni'><div class='w'><h2>" + escape(offer.get('quotes_title') or t['ricon']) + "</h2><p class='lead'>" + escape(offer.get('quotes_lead') or t['ricon_sub']) + "</p><div class='quotes'>" + quotes_html + "</div></div></section>") if quotes_html else ""}
 
-<section style="background:#f8fafc"><div class="w"><h2>{t['benefits']}</h2><div class="grid">{benefits}</div></div></section>
+<section data-sec="benefici" style="background:#f8fafc"><div class="w"><h2>{t['benefits']}</h2><div class="grid">{benefits}</div></div></section>
 
-<section><div class="w"><h2>{t['how']}</h2><div class="grid">{steps}</div></div></section>
+<section data-sec="come"><div class="w"><h2>{t['how']}</h2><div class="grid">{steps}</div></div></section>
 
 <section id="lista"><div class="w"><div class="pricing">
   <div>
@@ -250,7 +266,8 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 </div>
 <p class="muted" style="margin-top:14px">{escape(founder_note)}</p></div></section>
 
-{("<section><div class='w'><h2>" + t['faq'] + "</h2>" + faq + "</div></section>") if faq else ""}
+{("<section data-sec='faq'><div class='w'><h2>" + t['faq'] + "</h2>" + faq + "</div></section>") if faq else ""}
 
+{behavior}
 <footer><div class="w">{("<div style='margin-bottom:8px'>" + escape(offer.get('photo_credits')) + "</div>") if offer.get('photo_credits') else ""}{(escape(brand) + " · ") if brand else ""}{t['privacy']} <a href="{base}/lp/{escape(c['id'])}/privacy">Privacy</a></div></footer>
 </body></html>"""
