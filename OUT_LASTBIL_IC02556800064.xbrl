@@ -1,0 +1,814 @@
+<!--XBRLCOMPILER;COMPNAME=Wolters Kluwer Italia srl;COMPCODE=10209790152;TOOL=Bilancio Genya;VER=7.2.15.0;TS=02/07/2026 17:10:16-->
+<xbrl xmlns:iso4217="http://www.xbrl.org/2003/iso4217" xmlns:itcc-ci="http://www.infocamere.it/itnn/fr/itcc/ci/2018-11-04" xmlns:itcc-ci-abb="http://www.infocamere.it/itnn/fr/itcc/ci/abb/2018-11-04" xmlns:link="http://www.xbrl.org/2003/linkbase" xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.xbrl.org/2003/instance" xsi:schemaLocation="http://xbrl.org/2006/xbrldi http://www.xbrl.org/2006/xbrldi-2006.xsd">
+  <link:schemaRef xlink:href="itcc-ci-abb-2018-11-04.xsd" xlink:type="simple" />
+  <context id="I_20251231">
+    <entity>
+      <identifier scheme="http://www.infocamere.it">10209790152</identifier>
+    </entity>
+    <period>
+      <instant>2025-12-31</instant>
+    </period>
+    <scenario>
+      <itcc-ci-abb:scen>Depositato</itcc-ci-abb:scen>
+    </scenario>
+  </context>
+  <context id="D_20251231">
+    <entity>
+      <identifier scheme="http://www.infocamere.it">10209790152</identifier>
+    </entity>
+    <period>
+      <startDate>2025-01-01</startDate>
+      <endDate>2025-12-31</endDate>
+    </period>
+    <scenario>
+      <itcc-ci-abb:scen>Depositato</itcc-ci-abb:scen>
+    </scenario>
+  </context>
+  <context id="I_20241231">
+    <entity>
+      <identifier scheme="http://www.infocamere.it">10209790152</identifier>
+    </entity>
+    <period>
+      <instant>2024-12-31</instant>
+    </period>
+    <scenario>
+      <itcc-ci-abb:scen>Depositato</itcc-ci-abb:scen>
+    </scenario>
+  </context>
+  <context id="D_20241231">
+    <entity>
+      <identifier scheme="http://www.infocamere.it">10209790152</identifier>
+    </entity>
+    <period>
+      <startDate>2024-01-01</startDate>
+      <endDate>2024-12-31</endDate>
+    </period>
+    <scenario>
+      <itcc-ci-abb:scen>Depositato</itcc-ci-abb:scen>
+    </scenario>
+  </context>
+  <unit id="EUR">
+    <measure>iso4217:EUR</measure>
+  </unit>
+  <unit id="shares">
+    <measure>xbrli:shares</measure>
+  </unit>
+  <unit id="pure">
+    <measure>xbrli:pure</measure>
+  </unit>
+  <itcc-ci:DatiAnagraficiDenominazione contextRef="I_20251231">DARK LIGHT SRL</itcc-ci:DatiAnagraficiDenominazione>
+  <itcc-ci:DatiAnagraficiSede contextRef="I_20251231">Novi Ligure</itcc-ci:DatiAnagraficiSede>
+  <itcc-ci:DatiAnagraficiCapitaleSociale contextRef="I_20251231" decimals="0" unitRef="EUR">2500</itcc-ci:DatiAnagraficiCapitaleSociale>
+  <itcc-ci:DatiAnagraficiCapitaleSocialeInteramenteVersato contextRef="I_20251231">true</itcc-ci:DatiAnagraficiCapitaleSocialeInteramenteVersato>
+  <itcc-ci:DatiAnagraficiCodiceCciaa contextRef="I_20251231">ALESSANDRIA - ASTI</itcc-ci:DatiAnagraficiCodiceCciaa>
+  <itcc-ci:DatiAnagraficiPartitaIva contextRef="I_20251231">02556800064</itcc-ci:DatiAnagraficiPartitaIva>
+  <itcc-ci:DatiAnagraficiCodiceFiscale contextRef="I_20251231">02556800064</itcc-ci:DatiAnagraficiCodiceFiscale>
+  <itcc-ci:DatiAnagraficiNumeroRea contextRef="I_20251231">265696</itcc-ci:DatiAnagraficiNumeroRea>
+  <itcc-ci:DatiAnagraficiFormaGiuridica contextRef="I_20251231">Societ&amp;#224; a responsabilit&amp;#224; limitata</itcc-ci:DatiAnagraficiFormaGiuridica>
+  <itcc-ci:DatiAnagraficiSettoreAttivitaPrevalenteAteco contextRef="I_20251231">274009</itcc-ci:DatiAnagraficiSettoreAttivitaPrevalenteAteco>
+  <itcc-ci:DatiAnagraficiSocietaLiquidazione contextRef="I_20251231">false</itcc-ci:DatiAnagraficiSocietaLiquidazione>
+  <itcc-ci:DatiAnagraficiSocietaSocioUnico contextRef="I_20251231">false</itcc-ci:DatiAnagraficiSocietaSocioUnico>
+  <itcc-ci:DatiAnagraficiSocietaSottopostaAltruiAttivitaDirezioneCoordinamento contextRef="I_20251231">false</itcc-ci:DatiAnagraficiSocietaSottopostaAltruiAttivitaDirezioneCoordinamento>
+  <itcc-ci:DatiAnagraficiAppartenenzaGruppo contextRef="I_20251231">false</itcc-ci:DatiAnagraficiAppartenenzaGruppo>
+  <itcc-ci:DatiAnagraficiNumeroIscrizioneAlboCooperative contextRef="I_20251231"></itcc-ci:DatiAnagraficiNumeroIscrizioneAlboCooperative>
+  <itcc-ci:ValoreProduzioneRicaviVenditePrestazioni contextRef="D_20251231" decimals="0" unitRef="EUR">4761641</itcc-ci:ValoreProduzioneRicaviVenditePrestazioni>
+  <itcc-ci:ValoreProduzioneRicaviVenditePrestazioni contextRef="D_20241231" decimals="0" unitRef="EUR">4095425</itcc-ci:ValoreProduzioneRicaviVenditePrestazioni>
+  <itcc-ci:ValoreProduzioneAltriRicaviProventiAltri contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:ValoreProduzioneAltriRicaviProventiAltri>
+  <itcc-ci:ValoreProduzioneAltriRicaviProventiAltri contextRef="D_20241231" decimals="0" unitRef="EUR">1898</itcc-ci:ValoreProduzioneAltriRicaviProventiAltri>
+  <itcc-ci:ValoreProduzioneAltriRicaviProventiTotaleAltriRicaviProventi contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:ValoreProduzioneAltriRicaviProventiTotaleAltriRicaviProventi>
+  <itcc-ci:ValoreProduzioneAltriRicaviProventiTotaleAltriRicaviProventi contextRef="D_20241231" decimals="0" unitRef="EUR">1898</itcc-ci:ValoreProduzioneAltriRicaviProventiTotaleAltriRicaviProventi>
+  <itcc-ci:TotaleValoreProduzione contextRef="D_20251231" decimals="0" unitRef="EUR">4761641</itcc-ci:TotaleValoreProduzione>
+  <itcc-ci:TotaleValoreProduzione contextRef="D_20241231" decimals="0" unitRef="EUR">4097323</itcc-ci:TotaleValoreProduzione>
+  <itcc-ci:CostiProduzioneMateriePrimeSussidiarieConsumoMerci contextRef="D_20251231" decimals="0" unitRef="EUR">908086</itcc-ci:CostiProduzioneMateriePrimeSussidiarieConsumoMerci>
+  <itcc-ci:CostiProduzioneMateriePrimeSussidiarieConsumoMerci contextRef="D_20241231" decimals="0" unitRef="EUR">1220814</itcc-ci:CostiProduzioneMateriePrimeSussidiarieConsumoMerci>
+  <itcc-ci:CostiProduzioneServizi contextRef="D_20251231" decimals="0" unitRef="EUR">1712177</itcc-ci:CostiProduzioneServizi>
+  <itcc-ci:CostiProduzioneServizi contextRef="D_20241231" decimals="0" unitRef="EUR">347001</itcc-ci:CostiProduzioneServizi>
+  <itcc-ci:CostiProduzioneGodimentoBeniTerzi contextRef="D_20251231" decimals="0" unitRef="EUR">254460</itcc-ci:CostiProduzioneGodimentoBeniTerzi>
+  <itcc-ci:CostiProduzioneGodimentoBeniTerzi contextRef="D_20241231" decimals="0" unitRef="EUR">207467</itcc-ci:CostiProduzioneGodimentoBeniTerzi>
+  <itcc-ci:CostiProduzionePersonaleSalariStipendi contextRef="D_20251231" decimals="0" unitRef="EUR">1290818</itcc-ci:CostiProduzionePersonaleSalariStipendi>
+  <itcc-ci:CostiProduzionePersonaleSalariStipendi contextRef="D_20241231" decimals="0" unitRef="EUR">1589070</itcc-ci:CostiProduzionePersonaleSalariStipendi>
+  <itcc-ci:CostiProduzionePersonaleOneriSociali contextRef="D_20251231" decimals="0" unitRef="EUR">373057</itcc-ci:CostiProduzionePersonaleOneriSociali>
+  <itcc-ci:CostiProduzionePersonaleOneriSociali contextRef="D_20241231" decimals="0" unitRef="EUR">389175</itcc-ci:CostiProduzionePersonaleOneriSociali>
+  <itcc-ci:CostiProduzionePersonaleTrattamentoFineRapportoTrattamentoQuiescenzaAltriCostiPersonale contextRef="D_20251231" decimals="0" unitRef="EUR">20434</itcc-ci:CostiProduzionePersonaleTrattamentoFineRapportoTrattamentoQuiescenzaAltriCostiPersonale>
+  <itcc-ci:CostiProduzionePersonaleTrattamentoFineRapportoTrattamentoQuiescenzaAltriCostiPersonale contextRef="D_20241231" decimals="0" unitRef="EUR">22312</itcc-ci:CostiProduzionePersonaleTrattamentoFineRapportoTrattamentoQuiescenzaAltriCostiPersonale>
+  <itcc-ci:CostiProduzionePersonaleTrattamentoFineRapporto contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:CostiProduzionePersonaleTrattamentoFineRapporto>
+  <itcc-ci:CostiProduzionePersonaleTrattamentoFineRapporto contextRef="D_20241231" decimals="0" unitRef="EUR">14485</itcc-ci:CostiProduzionePersonaleTrattamentoFineRapporto>
+  <itcc-ci:CostiProduzionePersonaleAltriCosti contextRef="D_20251231" decimals="0" unitRef="EUR">20434</itcc-ci:CostiProduzionePersonaleAltriCosti>
+  <itcc-ci:CostiProduzionePersonaleAltriCosti contextRef="D_20241231" decimals="0" unitRef="EUR">7827</itcc-ci:CostiProduzionePersonaleAltriCosti>
+  <itcc-ci:CostiProduzionePersonaleTotaleCostiPersonale contextRef="D_20251231" decimals="0" unitRef="EUR">1684309</itcc-ci:CostiProduzionePersonaleTotaleCostiPersonale>
+  <itcc-ci:CostiProduzionePersonaleTotaleCostiPersonale contextRef="D_20241231" decimals="0" unitRef="EUR">2000557</itcc-ci:CostiProduzionePersonaleTotaleCostiPersonale>
+  <itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniImmaterialiMaterialiAltreSvalutazioniImmobilizzazioni contextRef="D_20251231" decimals="0" unitRef="EUR">27669</itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniImmaterialiMaterialiAltreSvalutazioniImmobilizzazioni>
+  <itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniImmaterialiMaterialiAltreSvalutazioniImmobilizzazioni contextRef="D_20241231" decimals="0" unitRef="EUR">0</itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniImmaterialiMaterialiAltreSvalutazioniImmobilizzazioni>
+  <itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniMateriali contextRef="D_20251231" decimals="0" unitRef="EUR">27669</itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniMateriali>
+  <itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniMateriali contextRef="D_20241231" decimals="0" unitRef="EUR">0</itcc-ci:CostiProduzioneAmmortamentiSvalutazioniAmmortamentoImmobilizzazioniMateriali>
+  <itcc-ci:CostiProduzioneAmmortamentiSvalutazioniTotaleAmmortamentiSvalutazioni contextRef="D_20251231" decimals="0" unitRef="EUR">27669</itcc-ci:CostiProduzioneAmmortamentiSvalutazioniTotaleAmmortamentiSvalutazioni>
+  <itcc-ci:CostiProduzioneAmmortamentiSvalutazioniTotaleAmmortamentiSvalutazioni contextRef="D_20241231" decimals="0" unitRef="EUR">0</itcc-ci:CostiProduzioneAmmortamentiSvalutazioniTotaleAmmortamentiSvalutazioni>
+  <itcc-ci:CostiProduzioneVariazioniRimanenzeMateriePrimeSussidiarieConsumoMerci contextRef="D_20251231" decimals="0" unitRef="EUR">-1995</itcc-ci:CostiProduzioneVariazioniRimanenzeMateriePrimeSussidiarieConsumoMerci>
+  <itcc-ci:CostiProduzioneVariazioniRimanenzeMateriePrimeSussidiarieConsumoMerci contextRef="D_20241231" decimals="0" unitRef="EUR">-7040</itcc-ci:CostiProduzioneVariazioniRimanenzeMateriePrimeSussidiarieConsumoMerci>
+  <itcc-ci:CostiProduzioneOneriDiversiGestione contextRef="D_20251231" decimals="0" unitRef="EUR">13006</itcc-ci:CostiProduzioneOneriDiversiGestione>
+  <itcc-ci:CostiProduzioneOneriDiversiGestione contextRef="D_20241231" decimals="0" unitRef="EUR">137284</itcc-ci:CostiProduzioneOneriDiversiGestione>
+  <itcc-ci:TotaleCostiProduzione contextRef="D_20251231" decimals="0" unitRef="EUR">4597712</itcc-ci:TotaleCostiProduzione>
+  <itcc-ci:TotaleCostiProduzione contextRef="D_20241231" decimals="0" unitRef="EUR">3906083</itcc-ci:TotaleCostiProduzione>
+  <itcc-ci:DifferenzaValoreCostiProduzione contextRef="D_20251231" decimals="0" unitRef="EUR">163929</itcc-ci:DifferenzaValoreCostiProduzione>
+  <itcc-ci:DifferenzaValoreCostiProduzione contextRef="D_20241231" decimals="0" unitRef="EUR">191240</itcc-ci:DifferenzaValoreCostiProduzione>
+  <itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariAltri contextRef="D_20251231" decimals="0" unitRef="EUR">44250</itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariAltri>
+  <itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariAltri contextRef="D_20241231" decimals="0" unitRef="EUR">62827</itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariAltri>
+  <itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariTotaleInteressiAltriOneriFinanziari contextRef="D_20251231" decimals="0" unitRef="EUR">44250</itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariTotaleInteressiAltriOneriFinanziari>
+  <itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariTotaleInteressiAltriOneriFinanziari contextRef="D_20241231" decimals="0" unitRef="EUR">62827</itcc-ci:ProventiOneriFinanziariInteressiAltriOneriFinanziariTotaleInteressiAltriOneriFinanziari>
+  <itcc-ci:TotaleProventiOneriFinanziari contextRef="D_20251231" decimals="0" unitRef="EUR">-44250</itcc-ci:TotaleProventiOneriFinanziari>
+  <itcc-ci:TotaleProventiOneriFinanziari contextRef="D_20241231" decimals="0" unitRef="EUR">-62827</itcc-ci:TotaleProventiOneriFinanziari>
+  <itcc-ci:TotaleRettificheValoreAttivitaPassivitaFinanziarie contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleRettificheValoreAttivitaPassivitaFinanziarie>
+  <itcc-ci:TotaleRettificheValoreAttivitaPassivitaFinanziarie contextRef="D_20241231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleRettificheValoreAttivitaPassivitaFinanziarie>
+  <itcc-ci:RisultatoPrimaImposte contextRef="D_20251231" decimals="0" unitRef="EUR">119679</itcc-ci:RisultatoPrimaImposte>
+  <itcc-ci:RisultatoPrimaImposte contextRef="D_20241231" decimals="0" unitRef="EUR">128413</itcc-ci:RisultatoPrimaImposte>
+  <itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateImposteCorrenti contextRef="D_20251231" decimals="0" unitRef="EUR">20169</itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateImposteCorrenti>
+  <itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateImposteCorrenti contextRef="D_20241231" decimals="0" unitRef="EUR">37866</itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateImposteCorrenti>
+  <itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateTotaleImposteRedditoEsercizioCorrentiDifferiteAnticipate contextRef="D_20251231" decimals="0" unitRef="EUR">20169</itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateTotaleImposteRedditoEsercizioCorrentiDifferiteAnticipate>
+  <itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateTotaleImposteRedditoEsercizioCorrentiDifferiteAnticipate contextRef="D_20241231" decimals="0" unitRef="EUR">37866</itcc-ci:ImposteRedditoEsercizioCorrentiDifferiteAnticipateTotaleImposteRedditoEsercizioCorrentiDifferiteAnticipate>
+  <itcc-ci:UtilePerditaEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">99510</itcc-ci:UtilePerditaEsercizio>
+  <itcc-ci:UtilePerditaEsercizio contextRef="D_20241231" decimals="0" unitRef="EUR">90547</itcc-ci:UtilePerditaEsercizio>
+  <itcc-ci:TotaleCreditiVersoSociVersamentiAncoraDovuti contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleCreditiVersoSociVersamentiAncoraDovuti>
+  <itcc-ci:TotaleCreditiVersoSociVersamentiAncoraDovuti contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleCreditiVersoSociVersamentiAncoraDovuti>
+  <itcc-ci:TotaleImmobilizzazioniImmateriali contextRef="I_20251231" decimals="0" unitRef="EUR">6498</itcc-ci:TotaleImmobilizzazioniImmateriali>
+  <itcc-ci:TotaleImmobilizzazioniImmateriali contextRef="I_20241231" decimals="0" unitRef="EUR">6300</itcc-ci:TotaleImmobilizzazioniImmateriali>
+  <itcc-ci:TotaleImmobilizzazioniMateriali contextRef="I_20251231" decimals="0" unitRef="EUR">584722</itcc-ci:TotaleImmobilizzazioniMateriali>
+  <itcc-ci:TotaleImmobilizzazioniMateriali contextRef="I_20241231" decimals="0" unitRef="EUR">588536</itcc-ci:TotaleImmobilizzazioniMateriali>
+  <itcc-ci:TotaleImmobilizzazioniFinanziarie contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleImmobilizzazioniFinanziarie>
+  <itcc-ci:TotaleImmobilizzazioniFinanziarie contextRef="I_20241231" decimals="0" unitRef="EUR">1817</itcc-ci:TotaleImmobilizzazioniFinanziarie>
+  <itcc-ci:TotaleImmobilizzazioni contextRef="I_20251231" decimals="0" unitRef="EUR">591220</itcc-ci:TotaleImmobilizzazioni>
+  <itcc-ci:TotaleImmobilizzazioni contextRef="I_20241231" decimals="0" unitRef="EUR">596653</itcc-ci:TotaleImmobilizzazioni>
+  <itcc-ci:TotaleRimanenze contextRef="I_20251231" decimals="0" unitRef="EUR">130715</itcc-ci:TotaleRimanenze>
+  <itcc-ci:TotaleRimanenze contextRef="I_20241231" decimals="0" unitRef="EUR">128720</itcc-ci:TotaleRimanenze>
+  <itcc-ci:CreditiEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">1054437</itcc-ci:CreditiEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:CreditiEsigibiliEntroEsercizioSuccessivo contextRef="I_20241231" decimals="0" unitRef="EUR">1681588</itcc-ci:CreditiEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:CreditiEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">540302</itcc-ci:CreditiEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:CreditiEsigibiliOltreEsercizioSuccessivo contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:CreditiEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:TotaleCrediti contextRef="I_20251231" decimals="0" unitRef="EUR">1594739</itcc-ci:TotaleCrediti>
+  <itcc-ci:TotaleCrediti contextRef="I_20241231" decimals="0" unitRef="EUR">1681588</itcc-ci:TotaleCrediti>
+  <itcc-ci:TotaleAttivitaFinanziarieNonCostituisconoImmobilizzazioni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleAttivitaFinanziarieNonCostituisconoImmobilizzazioni>
+  <itcc-ci:TotaleAttivitaFinanziarieNonCostituisconoImmobilizzazioni contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleAttivitaFinanziarieNonCostituisconoImmobilizzazioni>
+  <itcc-ci:TotaleDisponibilitaLiquide contextRef="I_20251231" decimals="0" unitRef="EUR">57009</itcc-ci:TotaleDisponibilitaLiquide>
+  <itcc-ci:TotaleDisponibilitaLiquide contextRef="I_20241231" decimals="0" unitRef="EUR">107551</itcc-ci:TotaleDisponibilitaLiquide>
+  <itcc-ci:TotaleAttivoCircolante contextRef="I_20251231" decimals="0" unitRef="EUR">1782463</itcc-ci:TotaleAttivoCircolante>
+  <itcc-ci:TotaleAttivoCircolante contextRef="I_20241231" decimals="0" unitRef="EUR">1917859</itcc-ci:TotaleAttivoCircolante>
+  <itcc-ci:AttivoRateiRisconti contextRef="I_20251231" decimals="0" unitRef="EUR">7879</itcc-ci:AttivoRateiRisconti>
+  <itcc-ci:AttivoRateiRisconti contextRef="I_20241231" decimals="0" unitRef="EUR">7879</itcc-ci:AttivoRateiRisconti>
+  <itcc-ci:TotaleAttivo contextRef="I_20251231" decimals="0" unitRef="EUR">2381562</itcc-ci:TotaleAttivo>
+  <itcc-ci:TotaleAttivo contextRef="I_20241231" decimals="0" unitRef="EUR">2522391</itcc-ci:TotaleAttivo>
+  <itcc-ci:PatrimonioNettoCapitale contextRef="I_20251231" decimals="0" unitRef="EUR">50000</itcc-ci:PatrimonioNettoCapitale>
+  <itcc-ci:PatrimonioNettoCapitale contextRef="I_20241231" decimals="0" unitRef="EUR">2500</itcc-ci:PatrimonioNettoCapitale>
+  <itcc-ci:PatrimonioNettoRiservaSoprapprezzoAzioni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaSoprapprezzoAzioni>
+  <itcc-ci:PatrimonioNettoRiservaSoprapprezzoAzioni contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaSoprapprezzoAzioni>
+  <itcc-ci:PatrimonioNettoRiserveRivalutazione contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiserveRivalutazione>
+  <itcc-ci:PatrimonioNettoRiserveRivalutazione contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiserveRivalutazione>
+  <itcc-ci:PatrimonioNettoRiservaLegale contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaLegale>
+  <itcc-ci:PatrimonioNettoRiservaLegale contextRef="I_20241231" decimals="0" unitRef="EUR">10012</itcc-ci:PatrimonioNettoRiservaLegale>
+  <itcc-ci:PatrimonioNettoRiserveStatutarie contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiserveStatutarie>
+  <itcc-ci:PatrimonioNettoRiserveStatutarie contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiserveStatutarie>
+  <itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateTotaleAltreRiserve contextRef="I_20251231" decimals="0" unitRef="EUR">55142</itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateTotaleAltreRiserve>
+  <itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateTotaleAltreRiserve contextRef="I_20241231" decimals="0" unitRef="EUR">172537</itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateTotaleAltreRiserve>
+  <itcc-ci:PatrimonioNettoRiservaOperazioniCoperturaFlussiFinanziariAttesi contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaOperazioniCoperturaFlussiFinanziariAttesi>
+  <itcc-ci:PatrimonioNettoRiservaOperazioniCoperturaFlussiFinanziariAttesi contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaOperazioniCoperturaFlussiFinanziariAttesi>
+  <itcc-ci:PatrimonioNettoUtiliPerditePortatiNuovo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoUtiliPerditePortatiNuovo>
+  <itcc-ci:PatrimonioNettoUtiliPerditePortatiNuovo contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoUtiliPerditePortatiNuovo>
+  <itcc-ci:PatrimonioNettoUtilePerditaEsercizio contextRef="I_20251231" decimals="0" unitRef="EUR">99510</itcc-ci:PatrimonioNettoUtilePerditaEsercizio>
+  <itcc-ci:PatrimonioNettoUtilePerditaEsercizio contextRef="I_20241231" decimals="0" unitRef="EUR">90547</itcc-ci:PatrimonioNettoUtilePerditaEsercizio>
+  <itcc-ci:PatrimonioNettoRiservaNegativaAzioniPropriePortafoglio contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaNegativaAzioniPropriePortafoglio>
+  <itcc-ci:PatrimonioNettoRiservaNegativaAzioniPropriePortafoglio contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaNegativaAzioniPropriePortafoglio>
+  <itcc-ci:TotalePatrimonioNetto contextRef="I_20251231" decimals="0" unitRef="EUR">204652</itcc-ci:TotalePatrimonioNetto>
+  <itcc-ci:TotalePatrimonioNetto contextRef="I_20241231" decimals="0" unitRef="EUR">275596</itcc-ci:TotalePatrimonioNetto>
+  <itcc-ci:TotaleFondiRischiOneri contextRef="I_20251231" decimals="0" unitRef="EUR">58349</itcc-ci:TotaleFondiRischiOneri>
+  <itcc-ci:TotaleFondiRischiOneri contextRef="I_20241231" decimals="0" unitRef="EUR">58349</itcc-ci:TotaleFondiRischiOneri>
+  <itcc-ci:TrattamentoFineRapportoLavoroSubordinato contextRef="I_20251231" decimals="0" unitRef="EUR">137605</itcc-ci:TrattamentoFineRapportoLavoroSubordinato>
+  <itcc-ci:TrattamentoFineRapportoLavoroSubordinato contextRef="I_20241231" decimals="0" unitRef="EUR">173216</itcc-ci:TrattamentoFineRapportoLavoroSubordinato>
+  <itcc-ci:DebitiEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">1980956</itcc-ci:DebitiEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiEsigibiliEntroEsercizioSuccessivo contextRef="I_20241231" decimals="0" unitRef="EUR">1915230</itcc-ci:DebitiEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:DebitiEsigibiliOltreEsercizioSuccessivo contextRef="I_20241231" decimals="0" unitRef="EUR">100000</itcc-ci:DebitiEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:TotaleDebiti contextRef="I_20251231" decimals="0" unitRef="EUR">1980956</itcc-ci:TotaleDebiti>
+  <itcc-ci:TotaleDebiti contextRef="I_20241231" decimals="0" unitRef="EUR">2015230</itcc-ci:TotaleDebiti>
+  <itcc-ci:PassivoRateiRisconti contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PassivoRateiRisconti>
+  <itcc-ci:PassivoRateiRisconti contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:PassivoRateiRisconti>
+  <itcc-ci:TotalePassivo contextRef="I_20251231" decimals="0" unitRef="EUR">2381562</itcc-ci:TotalePassivo>
+  <itcc-ci:TotalePassivo contextRef="I_20241231" decimals="0" unitRef="EUR">2522391</itcc-ci:TotalePassivo>
+  <itcc-ci:CostoTotaleImmobilizzazioniImmateriali contextRef="I_20241231" decimals="0" unitRef="EUR">7793</itcc-ci:CostoTotaleImmobilizzazioniImmateriali>
+  <itcc-ci:CostoTotaleImmobilizzazioniMateriali contextRef="I_20241231" decimals="0" unitRef="EUR">593846</itcc-ci:CostoTotaleImmobilizzazioniMateriali>
+  <itcc-ci:CostoImmobilizzazioniFinanziarie contextRef="I_20241231" decimals="0" unitRef="EUR">1817</itcc-ci:CostoImmobilizzazioniFinanziarie>
+  <itcc-ci:CostoTotaleImmobilizzazioni contextRef="I_20241231" decimals="0" unitRef="EUR">603456</itcc-ci:CostoTotaleImmobilizzazioni>
+  <itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniImmateriali contextRef="I_20241231" decimals="0" unitRef="EUR">1493</itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniImmateriali>
+  <itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniMateriali contextRef="I_20241231" decimals="0" unitRef="EUR">5310</itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniMateriali>
+  <itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioni contextRef="I_20241231" decimals="0" unitRef="EUR">6803</itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioni>
+  <itcc-ci:VariazioniEsercizioAmmortamentoEsercizioTotaleImmobilizzazioniImmateriali contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:VariazioniEsercizioAmmortamentoEsercizioTotaleImmobilizzazioniImmateriali>
+  <itcc-ci:VariazioniEsercizioAmmortamentoEsercizioTotaleImmobilizzazioniMateriali contextRef="D_20251231" decimals="0" unitRef="EUR">27669</itcc-ci:VariazioniEsercizioAmmortamentoEsercizioTotaleImmobilizzazioniMateriali>
+  <itcc-ci:VariazioniEsercizioAmmortamentoEsercizioTotaleImmobilizzazioni contextRef="D_20251231" decimals="0" unitRef="EUR">27669</itcc-ci:VariazioniEsercizioAmmortamentoEsercizioTotaleImmobilizzazioni>
+  <itcc-ci:VariazioniEsercizioAltreVariazioniTotaleImmobilizzazioniImmateriali contextRef="D_20251231" decimals="0" unitRef="EUR">198</itcc-ci:VariazioniEsercizioAltreVariazioniTotaleImmobilizzazioniImmateriali>
+  <itcc-ci:VariazioniEsercizioAltreVariazioniTotaleImmobilizzazioniMateriali contextRef="D_20251231" decimals="0" unitRef="EUR">23855</itcc-ci:VariazioniEsercizioAltreVariazioniTotaleImmobilizzazioniMateriali>
+  <itcc-ci:VariazioniEsercizioAltreVariazioniImmobilizzazioniFinanziarie contextRef="D_20251231" decimals="0" unitRef="EUR">-1817</itcc-ci:VariazioniEsercizioAltreVariazioniImmobilizzazioniFinanziarie>
+  <itcc-ci:VariazioniEsercizioAltreVariazioniTotaleImmobilizzazioni contextRef="D_20251231" decimals="0" unitRef="EUR">22236</itcc-ci:VariazioniEsercizioAltreVariazioniTotaleImmobilizzazioni>
+  <itcc-ci:VariazioniEsercizioTotaleVariazioniTotaleImmobilizzazioniImmateriali contextRef="D_20251231" decimals="0" unitRef="EUR">198</itcc-ci:VariazioniEsercizioTotaleVariazioniTotaleImmobilizzazioniImmateriali>
+  <itcc-ci:VariazioniEsercizioTotaleVariazioniTotaleImmobilizzazioniMateriali contextRef="D_20251231" decimals="0" unitRef="EUR">-3814</itcc-ci:VariazioniEsercizioTotaleVariazioniTotaleImmobilizzazioniMateriali>
+  <itcc-ci:VariazioniEsercizioTotaleVariazioniImmobilizzazioniFinanziarie contextRef="D_20251231" decimals="0" unitRef="EUR">-1817</itcc-ci:VariazioniEsercizioTotaleVariazioniImmobilizzazioniFinanziarie>
+  <itcc-ci:VariazioniEsercizioTotaleVariazioniTotaleImmobilizzazioni contextRef="D_20251231" decimals="0" unitRef="EUR">-5433</itcc-ci:VariazioniEsercizioTotaleVariazioniTotaleImmobilizzazioni>
+  <itcc-ci:CostoTotaleImmobilizzazioniImmateriali contextRef="I_20251231" decimals="0" unitRef="EUR">7991</itcc-ci:CostoTotaleImmobilizzazioniImmateriali>
+  <itcc-ci:CostoTotaleImmobilizzazioniMateriali contextRef="I_20251231" decimals="0" unitRef="EUR">608903</itcc-ci:CostoTotaleImmobilizzazioniMateriali>
+  <itcc-ci:CostoImmobilizzazioniFinanziarie contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:CostoImmobilizzazioniFinanziarie>
+  <itcc-ci:CostoTotaleImmobilizzazioni contextRef="I_20251231" decimals="0" unitRef="EUR">616894</itcc-ci:CostoTotaleImmobilizzazioni>
+  <itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniImmateriali contextRef="I_20251231" decimals="0" unitRef="EUR">1493</itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniImmateriali>
+  <itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniMateriali contextRef="I_20251231" decimals="0" unitRef="EUR">24181</itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioniMateriali>
+  <itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioni contextRef="I_20251231" decimals="0" unitRef="EUR">25674</itcc-ci:AmmortamentiFondoAmmortamentoTotaleImmobilizzazioni>
+  <itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriTotaleCreditiVersoAltri contextRef="I_20241231" decimals="0" unitRef="EUR">1817</itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriTotaleCreditiVersoAltri>
+  <itcc-ci:CreditiImmobilizzatiVersoAltriVariazioniEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-1817</itcc-ci:CreditiImmobilizzatiVersoAltriVariazioniEsercizio>
+  <itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriTotaleCreditiVersoAltri contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriTotaleCreditiVersoAltri>
+  <itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:ImmobilizzazioniFinanziarieCreditiVersoAltriEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:CreditiImmobilizzatiVersoAltriQuotaScadenteOltre5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:CreditiImmobilizzatiVersoAltriQuotaScadenteOltre5Anni>
+  <itcc-ci:ImmobilizzazioniFinanziarieCreditiTotaleCrediti contextRef="I_20241231" decimals="0" unitRef="EUR">1817</itcc-ci:ImmobilizzazioniFinanziarieCreditiTotaleCrediti>
+  <itcc-ci:TotaleCreditiImmobilizzatiVariazioniEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-1817</itcc-ci:TotaleCreditiImmobilizzatiVariazioniEsercizio>
+  <itcc-ci:ImmobilizzazioniFinanziarieCreditiTotaleCrediti contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:ImmobilizzazioniFinanziarieCreditiTotaleCrediti>
+  <itcc-ci:TotaleCreditiImmobilizzatiQuotaScadenteEntroEsercizio contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleCreditiImmobilizzatiQuotaScadenteEntroEsercizio>
+  <itcc-ci:TotaleCreditiImmobilizzatiQuotaScadenteOltreEsercizio contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleCreditiImmobilizzatiQuotaScadenteOltreEsercizio>
+  <itcc-ci:TotaleCreditiImmobilizzatiQuotaScadenteOltre5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleCreditiImmobilizzatiQuotaScadenteOltre5Anni>
+  <itcc-ci:CreditiVersoClientiTotaleCreditiVersoClienti contextRef="I_20241231" decimals="0" unitRef="EUR">1681588</itcc-ci:CreditiVersoClientiTotaleCreditiVersoClienti>
+  <itcc-ci:CreditiVersoClientiIscrittiAttivoCircolanteVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-150112</itcc-ci:CreditiVersoClientiIscrittiAttivoCircolanteVariazioneEsercizio>
+  <itcc-ci:CreditiVersoClientiTotaleCreditiVersoClienti contextRef="I_20251231" decimals="0" unitRef="EUR">1531476</itcc-ci:CreditiVersoClientiTotaleCreditiVersoClienti>
+  <itcc-ci:CreditiVersoClientiEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">991174</itcc-ci:CreditiVersoClientiEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:CreditiVersoClientiEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">540302</itcc-ci:CreditiVersoClientiEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:CreditiVersoClientiIscrittiAttivoCircolanteQuotaScadenteOltre5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:CreditiVersoClientiIscrittiAttivoCircolanteQuotaScadenteOltre5Anni>
+  <itcc-ci:CreditiCreditiTributariTotaleCreditiTributari contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:CreditiCreditiTributariTotaleCreditiTributari>
+  <itcc-ci:CreditiTributariIscrittiAttivoCircolanteVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">63263</itcc-ci:CreditiTributariIscrittiAttivoCircolanteVariazioneEsercizio>
+  <itcc-ci:CreditiCreditiTributariTotaleCreditiTributari contextRef="I_20251231" decimals="0" unitRef="EUR">63263</itcc-ci:CreditiCreditiTributariTotaleCreditiTributari>
+  <itcc-ci:CreditiCreditiTributariEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">63263</itcc-ci:CreditiCreditiTributariEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:CreditiCreditiTributariEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:CreditiCreditiTributariEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:CreditiTributariIscrittiAttivoCircolanteQuotaScadenteOltre5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:CreditiTributariIscrittiAttivoCircolanteQuotaScadenteOltre5Anni>
+  <itcc-ci:TotaleCreditiIscrittiAttivoCircolanteVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-86849</itcc-ci:TotaleCreditiIscrittiAttivoCircolanteVariazioneEsercizio>
+  <itcc-ci:TotaleCreditiIscrittiAttivoCircolanteQuotaScadenteEntroEsercizio contextRef="I_20251231" decimals="0" unitRef="EUR">1054437</itcc-ci:TotaleCreditiIscrittiAttivoCircolanteQuotaScadenteEntroEsercizio>
+  <itcc-ci:TotaleCreditiIscrittiAttivoCircolanteQuotaScadenteOltreEsercizio contextRef="I_20251231" decimals="0" unitRef="EUR">540302</itcc-ci:TotaleCreditiIscrittiAttivoCircolanteQuotaScadenteOltreEsercizio>
+  <itcc-ci:TotaleCreditiIscrittiAttivoCircolanteQuotaScadenteOltre5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleCreditiIscrittiAttivoCircolanteQuotaScadenteOltre5Anni>
+  <itcc-ci:PatrimonioNettoCapitaleAttribuzioneDividendi contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoCapitaleAttribuzioneDividendi>
+  <itcc-ci:PatrimonioNettoCapitaleAltreDestinazioni contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoCapitaleAltreDestinazioni>
+  <itcc-ci:PatrimonioNettoIncrementiCapitale contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoIncrementiCapitale>
+  <itcc-ci:PatrimonioNettoDecrementiCapitale contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoDecrementiCapitale>
+  <itcc-ci:PatrimonioNettoRiclassificheCapitale contextRef="D_20251231" decimals="0" unitRef="EUR">47500</itcc-ci:PatrimonioNettoRiclassificheCapitale>
+  <itcc-ci:PatrimonioNettoRiservaLegaleAttribuzioneDividendi contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaLegaleAttribuzioneDividendi>
+  <itcc-ci:PatrimonioNettoRiservaLegaleAltreDestinazioni contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiservaLegaleAltreDestinazioni>
+  <itcc-ci:PatrimonioNettoIncrementiRiservaLegale contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoIncrementiRiservaLegale>
+  <itcc-ci:PatrimonioNettoDecrementiRiservaLegale contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoDecrementiRiservaLegale>
+  <itcc-ci:PatrimonioNettoRiclassificheRiservaLegale contextRef="D_20251231" decimals="0" unitRef="EUR">-10012</itcc-ci:PatrimonioNettoRiclassificheRiservaLegale>
+  <itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateVarieAltreRiserve contextRef="I_20241231" decimals="0" unitRef="EUR">172537</itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateVarieAltreRiserve>
+  <itcc-ci:PatrimonioNettoVarieAltreRiserveAttribuzioneDividendi contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoVarieAltreRiserveAttribuzioneDividendi>
+  <itcc-ci:PatrimonioNettoVarieAltreRiserveAltreDestinazioni contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoVarieAltreRiserveAltreDestinazioni>
+  <itcc-ci:PatrimonioNettoIncrementiVarieAltreRiserve contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoIncrementiVarieAltreRiserve>
+  <itcc-ci:PatrimonioNettoDecrementiVarieAltreRiserve contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoDecrementiVarieAltreRiserve>
+  <itcc-ci:PatrimonioNettoRiclassificheVarieAltreRiserve contextRef="D_20251231" decimals="0" unitRef="EUR">-117395</itcc-ci:PatrimonioNettoRiclassificheVarieAltreRiserve>
+  <itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateVarieAltreRiserve contextRef="I_20251231" decimals="0" unitRef="EUR">55142</itcc-ci:PatrimonioNettoAltreRiserveDistintamenteIndicateVarieAltreRiserve>
+  <itcc-ci:PatrimonioNettoTotaleAltreRiserveAttribuzioneDividendi contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoTotaleAltreRiserveAttribuzioneDividendi>
+  <itcc-ci:PatrimonioNettoTotaleAltreRiserveAltreDestinazioni contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoTotaleAltreRiserveAltreDestinazioni>
+  <itcc-ci:PatrimonioNettoIncrementiTotaleAltreRiserve contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoIncrementiTotaleAltreRiserve>
+  <itcc-ci:PatrimonioNettoDecrementiTotaleAltreRiserve contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoDecrementiTotaleAltreRiserve>
+  <itcc-ci:PatrimonioNettoRiclassificheTotaleAltreRiserve contextRef="D_20251231" decimals="0" unitRef="EUR">-117395</itcc-ci:PatrimonioNettoRiclassificheTotaleAltreRiserve>
+  <itcc-ci:PatrimonioNettoUtilePerditaEsercizioAttribuzioneDividendi contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoUtilePerditaEsercizioAttribuzioneDividendi>
+  <itcc-ci:PatrimonioNettoUtilePerditaEsercizioAltreDestinazioni contextRef="D_20251231" decimals="0" unitRef="EUR">-90547</itcc-ci:PatrimonioNettoUtilePerditaEsercizioAltreDestinazioni>
+  <itcc-ci:PatrimonioNettoIncrementiUtilePerditaEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoIncrementiUtilePerditaEsercizio>
+  <itcc-ci:PatrimonioNettoDecrementiUtilePerditaEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoDecrementiUtilePerditaEsercizio>
+  <itcc-ci:PatrimonioNettoRiclassificheUtilePerditaEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoRiclassificheUtilePerditaEsercizio>
+  <itcc-ci:PatrimonioNettoTotalePatrimonioNettoAttribuzioneDividendi contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoTotalePatrimonioNettoAttribuzioneDividendi>
+  <itcc-ci:PatrimonioNettoTotalePatrimonioNettoAltreDestinazioni contextRef="D_20251231" decimals="0" unitRef="EUR">-90547</itcc-ci:PatrimonioNettoTotalePatrimonioNettoAltreDestinazioni>
+  <itcc-ci:PatrimonioNettoIncrementiTotalePatrimonioNetto contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoIncrementiTotalePatrimonioNetto>
+  <itcc-ci:PatrimonioNettoDecrementiTotalePatrimonioNetto contextRef="D_20251231" decimals="0" unitRef="EUR">0</itcc-ci:PatrimonioNettoDecrementiTotalePatrimonioNetto>
+  <itcc-ci:PatrimonioNettoRiclassificheTotalePatrimonioNetto contextRef="D_20251231" decimals="0" unitRef="EUR">-79907</itcc-ci:PatrimonioNettoRiclassificheTotalePatrimonioNetto>
+  <itcc-ci:DebitiDebitiVersoBancheTotaleDebitiVersoBanche contextRef="I_20241231" decimals="0" unitRef="EUR">522943</itcc-ci:DebitiDebitiVersoBancheTotaleDebitiVersoBanche>
+  <itcc-ci:DebitiVersoBancheVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">211487</itcc-ci:DebitiVersoBancheVariazioneEsercizio>
+  <itcc-ci:DebitiDebitiVersoBancheTotaleDebitiVersoBanche contextRef="I_20251231" decimals="0" unitRef="EUR">734430</itcc-ci:DebitiDebitiVersoBancheTotaleDebitiVersoBanche>
+  <itcc-ci:DebitiDebitiVersoBancheEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">734430</itcc-ci:DebitiDebitiVersoBancheEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiDebitiVersoBancheEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiDebitiVersoBancheEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:DebitiVersoBancheDurataSuperiore5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiVersoBancheDurataSuperiore5Anni>
+  <itcc-ci:DebitiAccontiTotaleAcconti contextRef="I_20241231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiAccontiTotaleAcconti>
+  <itcc-ci:AccontiVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">232708</itcc-ci:AccontiVariazioneEsercizio>
+  <itcc-ci:DebitiAccontiTotaleAcconti contextRef="I_20251231" decimals="0" unitRef="EUR">232708</itcc-ci:DebitiAccontiTotaleAcconti>
+  <itcc-ci:DebitiAccontiEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">232708</itcc-ci:DebitiAccontiEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiAccontiEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiAccontiEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:AccontiDurataSuperiore5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:AccontiDurataSuperiore5Anni>
+  <itcc-ci:DebitiDebitiVersoFornitoriTotaleDebitiVersoFornitori contextRef="I_20241231" decimals="0" unitRef="EUR">361355</itcc-ci:DebitiDebitiVersoFornitoriTotaleDebitiVersoFornitori>
+  <itcc-ci:DebitiVersoFornitoriVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-111183</itcc-ci:DebitiVersoFornitoriVariazioneEsercizio>
+  <itcc-ci:DebitiDebitiVersoFornitoriTotaleDebitiVersoFornitori contextRef="I_20251231" decimals="0" unitRef="EUR">250172</itcc-ci:DebitiDebitiVersoFornitoriTotaleDebitiVersoFornitori>
+  <itcc-ci:DebitiDebitiVersoFornitoriEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">250172</itcc-ci:DebitiDebitiVersoFornitoriEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiDebitiVersoFornitoriEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiDebitiVersoFornitoriEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:DebitiVersoFornitoriDurataSuperiore5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiVersoFornitoriDurataSuperiore5Anni>
+  <itcc-ci:DebitiDebitiTributariTotaleDebitiTributari contextRef="I_20241231" decimals="0" unitRef="EUR">787460</itcc-ci:DebitiDebitiTributariTotaleDebitiTributari>
+  <itcc-ci:DebitiTributariVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-335248</itcc-ci:DebitiTributariVariazioneEsercizio>
+  <itcc-ci:DebitiDebitiTributariTotaleDebitiTributari contextRef="I_20251231" decimals="0" unitRef="EUR">452212</itcc-ci:DebitiDebitiTributariTotaleDebitiTributari>
+  <itcc-ci:DebitiDebitiTributariEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">452212</itcc-ci:DebitiDebitiTributariEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiDebitiTributariEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiDebitiTributariEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:DebitiTributariDurataSuperiore5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiTributariDurataSuperiore5Anni>
+  <itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeTotaleDebitiVersoIstitutiPrevidenzaSicurezzaSociale contextRef="I_20241231" decimals="0" unitRef="EUR">208558</itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeTotaleDebitiVersoIstitutiPrevidenzaSicurezzaSociale>
+  <itcc-ci:DebitiVersoIstitutiPrevidenzaSicurezzaSocialeVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-16803</itcc-ci:DebitiVersoIstitutiPrevidenzaSicurezzaSocialeVariazioneEsercizio>
+  <itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeTotaleDebitiVersoIstitutiPrevidenzaSicurezzaSociale contextRef="I_20251231" decimals="0" unitRef="EUR">191755</itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeTotaleDebitiVersoIstitutiPrevidenzaSicurezzaSociale>
+  <itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">191755</itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiDebitiVersoIstitutiPrevidenzaSicurezzaSocialeEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:DebitiVersoIstitutiPrevidenzaSicurezzaSocialeDurataSuperiore5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiVersoIstitutiPrevidenzaSicurezzaSocialeDurataSuperiore5Anni>
+  <itcc-ci:DebitiAltriDebitiTotaleAltriDebiti contextRef="I_20241231" decimals="0" unitRef="EUR">134914</itcc-ci:DebitiAltriDebitiTotaleAltriDebiti>
+  <itcc-ci:AltriDebitiVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-15235</itcc-ci:AltriDebitiVariazioneEsercizio>
+  <itcc-ci:DebitiAltriDebitiTotaleAltriDebiti contextRef="I_20251231" decimals="0" unitRef="EUR">119679</itcc-ci:DebitiAltriDebitiTotaleAltriDebiti>
+  <itcc-ci:DebitiAltriDebitiEsigibiliEntroEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">119679</itcc-ci:DebitiAltriDebitiEsigibiliEntroEsercizioSuccessivo>
+  <itcc-ci:DebitiAltriDebitiEsigibiliOltreEsercizioSuccessivo contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:DebitiAltriDebitiEsigibiliOltreEsercizioSuccessivo>
+  <itcc-ci:AltriDebitiDurataSuperiore5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:AltriDebitiDurataSuperiore5Anni>
+  <itcc-ci:TotaleDebitiVariazioneEsercizio contextRef="D_20251231" decimals="0" unitRef="EUR">-34274</itcc-ci:TotaleDebitiVariazioneEsercizio>
+  <itcc-ci:TotaleDebitiQuotaScadenteEntroEsercizio contextRef="I_20251231" decimals="0" unitRef="EUR">1980956</itcc-ci:TotaleDebitiQuotaScadenteEntroEsercizio>
+  <itcc-ci:TotaleDebitiQuotaScadenteOltreEsercizio contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleDebitiQuotaScadenteOltreEsercizio>
+  <itcc-ci:TotaleDebitiDurataSuperiore5Anni contextRef="I_20251231" decimals="0" unitRef="EUR">0</itcc-ci:TotaleDebitiDurataSuperiore5Anni>
+  <itcc-ci:DebitiNonAssistitiGaranzieRealiAmmontare contextRef="I_20251231" decimals="0" unitRef="EUR">1980956</itcc-ci:DebitiNonAssistitiGaranzieRealiAmmontare>
+  <itcc-ci:VarieAltreRiserve>
+    <itcc-ci:VarieAltreRiserveDescrizione contextRef="I_20251231">Riserva Legale</itcc-ci:VarieAltreRiserveDescrizione>
+    <itcc-ci:VarieAltreRiserveImporto contextRef="I_20251231" decimals="0" unitRef="EUR">10012</itcc-ci:VarieAltreRiserveImporto>
+  </itcc-ci:VarieAltreRiserve>
+  <itcc-ci:VarieAltreRiserve>
+    <itcc-ci:VarieAltreRiserveDescrizione contextRef="I_20251231">Riserve Facoltative</itcc-ci:VarieAltreRiserveDescrizione>
+    <itcc-ci:VarieAltreRiserveImporto contextRef="I_20251231" decimals="0" unitRef="EUR">45130</itcc-ci:VarieAltreRiserveImporto>
+  </itcc-ci:VarieAltreRiserve>
+  <itcc-ci:IntroduzioneNotaIntegrativa contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;font-weight:bold;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;PREMESSA&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;Il bilancio chiuso &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;al &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;31/12/2025&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; di cui la presente nota integrativa costituisce parte integrante ai sensi dell&amp;#x0027;art. 2423, primo comma del Codice Civile, corrisponde alle risultanze delle scritture contabili regolarmente tenute ed è redatto conformemente agli articoli 2423, 2423 ter, 2424, 2424 bis, 2425, 2425 bis del Codice Civile, secondo principi di redazione conformi a quanto stabilito dall&amp;#x0027;art. 2423 bis, criteri di valutazione di cui all&amp;#x0027;art. 2426 c.c..&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Il bilancio del presente esercizio è stato redatto in forma abbreviata in conformità alle disposizioni di cui all&amp;#x0027;art. 2435-bis del Codice Civile, in quanto ricorrono i presupposti previsti dal comma 1 del predetto articolo. Conseguentemente, nella presente nota integrativa si omettono le indicazioni previste dal comma 1 numero 10 dell&amp;#x0027;art. 2426 e si forniscono le informazioni previste dal comma 1 dell’art. 2427 limitatamente alle voci specificate al comma 5 dell’art. 2435 bis del Codice Civile.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Inoltre, la presente nota integrativa riporta le informazioni richieste dai numeri 3) e 4) dell&amp;#x0027;art. 2428 c.c. e, pertanto, non si è provveduto a redigere la relazione sulla gestione ai sensi dell&amp;#x0027;art. 2435 - bis, comma 6 del Codice Civile. Si rappresenta che ogni singola voce è esplicata nel proseguo della presente Nota Integrativa.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneNotaIntegrativa>
+  <itcc-ci:CommentoPrincipiRedazione contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Al fine di redigere il bilancio con chiarezza e fornire una rappresentazione veritiera e corretta della situazione patrimoniale e finanziaria e del risultato economico, conformemente al disposto dell&amp;#x0027;articolo 2423 bis del Codice Civile, si è provveduto a:&lt;/p&gt;
+&lt;ul style="margin:0pt;padding:0pt;list-style-type:disc;"&gt;
+&lt;li style="font-size:10pt;color:#000000;margin-left:28.3pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;valutare le singole voci secondo prudenza ed in previsione di una normale continuità aziendale;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li style="list-style-type:disc;font-size:10pt;color:#000000;margin-left:28.3pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;includere i soli utili effettivamente realizzati nel corso dell&amp;#x0027;esercizio;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li style="list-style-type:disc;font-size:10pt;color:#000000;margin-left:28.3pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;determinare i proventi ed i costi nel rispetto della competenza temporale, ed indipendentemente dalla loro manifestazione finanziaria;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li style="list-style-type:disc;font-size:10pt;color:#000000;margin-left:28.3pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;comprendere tutti i rischi e le perdite di competenza, anche se divenuti noti dopo la conclusione dell&amp;#x0027;esercizio;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li style="list-style-type:disc;font-size:10pt;color:#000000;margin-left:28.3pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;considerare distintamente, ai fini della relativa valutazione, gli elementi eterogenei inclusi nelle varie voci del bilancio;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li style="list-style-type:disc;font-size:10pt;color:#000000;margin-left:28.3pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;mantenere immutati i criteri di valutazione adottati rispetto al precedente esercizio.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Sono stati altresì rispettati i seguenti postulati di bilancio di cui all’OIC 11 par. 15:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;a) prudenza;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;b) prospettiva della continuità aziendale;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;c) rappresentazione sostanziale;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;d) competenza;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;e) costanza nei criteri di valutazione;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;f) rilevanza;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;g) comparabilità.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Prospettiva della continuità aziendale&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Per quanto concerne tale principio, la valutazione delle voci di bilancio è stata effettuata nella prospettiva della continuità aziendale e quindi tenendo conto del fatto che l’azienda costituisce un complesso economico funzionante, destinato, almeno per un prevedibile arco di tempo futuro (12 mesi dalla data di riferimento di chiusura del bilancio), alla produzione di reddito.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Nella valutazione prospettica circa il presupposto della continuità aziendale, non sono emerse significative incertezze né sono state individuate ragionevoli motivazioni che possano portare alla cessazione dell’attività.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;La Società ha istituito e dispone di un assetto organizzativo, amministrativo e contabile adeguato alla natura e alle dimensioni dell’impresa e pertanto idoneo a rilevare tempestivamente eventuali segnali di crisi d’impresa e/o la perdita della continuità aziendale.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Il bilancio è redatto in unità di euro.&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Si riportano di seguito gli indici di bilancio:&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;font-weight:bold;"&gt;INDICI DI REDDITIVITA&amp;#x0027;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;EBITDA &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;4,02%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;ROS &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;3,44%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;ROI &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;17,46%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;ROE LORDO &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;58,48%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;ROE &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;48,62%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;I&lt;/span&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;NDICI DI SOLVIBILITA&amp;#x0027;&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;I&lt;/span&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;NCIDENZA CAPITALE PROPRIO &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;8,59%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;QUOZIENTE SECONDARIO DI STRUTTURA &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;0,35%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;QUOZIENTE PRIMARIO DI STRUTTURA &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;0,18%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;INDICE DI LIQUIDITA&amp;#x0027; (QUICK RATIO) 0,57&lt;/span&gt;&lt;span style="font-size:10pt;"&gt;%&lt;/span&gt;&lt;/p&gt;
+&lt;p style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;font-weight:bold;"&gt;QUOZIENTE DI DISPONIBILITA&amp;#x0027; &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;0,63%&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Si rappresenta che la società nel corso dell&amp;#x0027;esercizio 2024 ha concluso l&amp;#x0027;acquisto del capannone industriale, tale investimento porterà senza dubbio ad un duplice beneficio per l&amp;#x0027;azienda sia dal punto di vista economico che della solidità patrimoniale&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoPrincipiRedazione>
+  <itcc-ci:CommentoCasiEccezionaliExArt2423QuintoCommaCodiceCivile contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Non si sono verificati eventi eccezionali che abbiano reso necessario il ricorso a deroghe di cui all’articolo 2423, quinto comma del Codice Civile.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoCasiEccezionaliExArt2423QuintoCommaCodiceCivile>
+  <itcc-ci:CommentoCambiamentiPrincipiContabili contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Non si sono verificati cambiamenti di principi contabili nell’esercizio.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoCambiamentiPrincipiContabili>
+  <itcc-ci:CommentoCorrezioneErroriRilevanti contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Non sono emersi nell’esercizio errori rilevanti commessi in esercizi precedenti.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoCorrezioneErroriRilevanti>
+  <itcc-ci:CommentoProblematicheComparabilitaAdattamento contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Non ci sono elementi dell’attivo e del passivo che ricadano sotto più voci dello schema di bilancio.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoProblematicheComparabilitaAdattamento>
+  <itcc-ci:CommentoCriteriValutazioneApplicati contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;I criteri applicati nella valutazione delle voci di bilancio, esposti di seguito, sono conformi a quanto disposto dall&amp;#x0027;art. 2426 del Codice Civile.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I criteri di valutazione di cui all&amp;#x0027;art. 2426 del Codice Civile sono conformi a quelli utilizzati nella redazione del bilancio del precedente esercizio.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Immobilizzazioni immateriali&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;Le immobilizzazioni immateriali sono &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;iscritte, nel limite del valore recuperabile, al costo&lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt; di acquisto o di produzione interna, inclusi tutti gli oneri accessori di diretta imputazione, e sono sistematicamente ammortizzate in quote costanti in relazione alla residua possibilità di utilizzazione del bene.&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Ai sensi dell’OIC 24 par. 37, le acquisizioni con pagamento differito a condizioni diverse da quelle normalmente praticate sul mercato sono iscritte al valore corrispondente al debito determinato ai sensi dell’OIC 19. &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Immobilizzazioni materiali&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Le immobilizzazioni materiali sono rilevate alla data in cui avviene il trasferimento dei rischi e dei benefici connessi ai beni acquisiti e sono iscritte, nel limite del valore recuperabile, al costo di acquisto o di produzione al netto dei relativi fondi di ammortamento, inclusi tutti i costi e gli oneri accessori di diretta imputazione, dei costi indiretti&lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt; inerenti la produzione interna, nonché degli oneri relativi al finanziamento della fabbricazione interna sostenuti nel periodo di fabbricazione e fino al momento nel quale il bene può essere utilizzato.&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I costi sostenuti sui beni esistenti a fini di ampliamento, ammodernamento e miglioramento degli elementi strutturali, nonché quelli sostenuti per aumentarne la rispondenza agli scopi per cui erano stati acquisiti, e le manutenzioni straordinarie in conformità con quanto disposto dall’OIC 16 ai par. da 49 a 53, sono stati capitalizzati solo in presenza di un aumento significativo e misurabile della capacità produttiva o della vita utile.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Per tali beni l’ammortamento è stato applicato in modo unitario sul nuovo valore contabile tenuto conto della residua vita utile.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Il costo delle immobilizzazioni la cui utilizzazione è limitata nel tempo è sistematicamente ammortizzato in ogni esercizio sulla base di aliquote economico-tecniche determinate in relazione alla residua possibilità di utilizzazione.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Tutti i cespiti, compresi quelli temporaneamente non utilizzati, sono stati ammortizzati, ad eccezione di quelli la cui utilità non si esaurisce e che sono costituiti da terreni, fabbricati non strumentali e opere d’arte.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Sulla base di quanto disposto dall’OIC 16 par.60, nel caso in cui il valore dei fabbricati incorpori anche il valore dei terreni sui quali essi insistono, si è proceduto allo scorporo del valore del fabbricato.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;L’ammortamento decorre dal momento in cui i beni sono disponibili e pronti per l’uso.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Sono state applicate le aliquote che rispecchiano il risultato dei piani di ammortamento tecnici, confermate dalle realtà aziendali e ridotte del 50% per le acquisizioni nell&amp;#x0027;esercizio, in quanto esistono per queste ultime le condizioni previste dall’OIC 16 par.61.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I piani di ammortamento, in conformità dell’OIC 16 par.70 sono rivisti in caso di modifica della residua possibilità di utilizzazione.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I cespiti obsoleti e quelli che non saranno più utilizzati o utilizzabili nel ciclo produttivo, sulla base dell’OIC 16 par.80 non sono stati ammortizzati e sono stati valutati al minor valore tra il valore netto contabile e il valore recuperabile.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Le immobilizzazioni in corso non sono oggetto di ammortamento.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Qui di seguito sono specificate le aliquote applicate:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Fabbricati: 3%&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Imp&lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;ianti e macchinari: 12%-30%&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Attrezzature industriali e commerciali: 15%&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Altri beni:&lt;/p&gt;
+&lt;ul style="margin:0pt;padding:0pt;list-style-type:disc;"&gt;
+&lt;li style="font-size:10pt;color:#000000;margin-left:28.3pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;mobili e arredi: 12%&lt;/p&gt;
+&lt;/li&gt;
+&lt;li style="list-style-type:disc;font-size:10pt;color:#000000;margin-left:28.35pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;macchine ufficio elettroniche: 20%&lt;/p&gt;
+&lt;/li&gt;
+&lt;li style="list-style-type:disc;font-size:10pt;color:#000000;margin-left:28.35pt;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;margin-left:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;autoveicoli: 25%&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:15pt;font-size:11pt;color:#000080;font-weight:bold;"&gt;Partecipazioni&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La società non detiene  partecipazioni &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Rimanenze&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Le rimanenze sono rilevate alla data in cui avviene il trasferimento dei rischi e dei benefici connessi ai beni acquisiti e sono iscritte&lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt; al minor valore tra il costo di acquisto, comprensivo di tutti i costi e oneri accessori di diretta imputazione e dei costi indiretti inerenti alla produzione interna, ed il presumibile valore di realizzo &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;desumibile dall&amp;#x0027;andamento del mercato.&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Crediti&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I crediti sono classificati nell’attivo immobilizzato ovvero nell’attivo circolante sulla base della destinazione / origine degli stessi rispetto all’attività ordinaria, e sono iscritti al valore di presunto realizzo.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La suddivisione degli importi esigibili entro e oltre l’esercizio è effettuata con riferimento alla scadenza contrattuale o legale, tenendo anche conto di fatti ed eventi che possono determinare una modifica della scadenza originaria, della realistica capacità del debitore di adempiere all’obbligazione nei termini contrattuali e dell’orizzonte temporale in cui, ragionevolmente, si ritiene di poter esigere il credito.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Ai sensi dell’OIC 15 par. 84 si precisa che nella valutazione dei crediti &lt;/span&gt;&lt;span style="font-size:10pt;font-style:italic;"&gt;è stato&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; adottato il criterio del costo ammortizzato.&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Inoltre, è stato operato uno stanziamento in uno specifico fondo rischi con riferimento alla stima, basata sull’esperienza e su ogni altro elemento utile, di resi di merci o prodotti da parte dei clienti e di sconti e abbuoni che si presume verranno concessi al momento dell’incasso.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Disponibilità liquide&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Le disponibilità liquide sono esposte al loro valore nominale.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Ratei e risconti&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;I ratei e i risconti sono stati iscritti sulla base del principio della competenza &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;economico temporale e contengono i ricavi / costi di competenza dell’esercizio ed esigibili in esercizi successivi e i ricavi / costi sostenuti entro la chiusura dell’esercizio, ma di competenza di esercizi successivi.&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Fondi per rischi ed oneri&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I fondi per rischi rappresentano le passività connesse a situazioni esistenti alla data di bilancio, ma il cui verificarsi è solo probabile.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I fondi per oneri rappresentano passività certe, correlate a componenti negativi di reddito di competenza dell’esercizio, ma che avranno manifestazione numeraria nell’esercizio successivo.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Il processo di stima è operato e/o adeguato alla data di chiusura del bilancio sulla base dell’esperienza passata e di ogni elemento utile a disposizione.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;In conformità con l’OIC 31 par.19, dovendo prevalere il criterio di classificazione per natura dei costi, gli accantonamenti ai fondi rischi e oneri sono iscritti tra le voci dell’attività gestionale a cui si riferisce l’operazione (caratteristica, accessoria o&lt;/span&gt;&lt;span style="font-size:10pt;text-decoration:line-through;"&gt;,&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; finanziaria).&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Trattamento di fine rapporto di lavoro subordinato&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Il trattamento di fine rapporto di lavoro subordinato è iscritto nel rispetto di quanto previsto dalla normativa vigente e corrisponde all’effettivo impegno della Società nei confronti dei singoli dipendenti alla data di chiusura del bilancio, dedotte le anticipazioni corrisposte.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Debiti&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La suddivisione degli importi esigibili entro e oltre l’esercizio è effettuata con riferimento alla scadenza contrattuale o legale, tenendo anche conto di fatti ed eventi che possono determinare una modifica della scadenza originaria.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I debiti sono indicati tra le passività in base al loro valore nominale, ritenuto rappresentativo del loro valore di estinzione.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Ai sensi dell’OIC 19 par. 86 si precisa che nella valutazione dei debiti &lt;/span&gt;&lt;span style="font-size:10pt;font-style:italic;"&gt; è stato&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; adottato il criterio del costo ammortizzato.&lt;/span&gt;&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I debiti originati da acquisizioni di beni sono iscritti al momento in cui sono trasferiti i rischi, gli oneri e i benefici; quelli relativi ai servizi sono rilevati al momento di effettuazione della prestazione; quelli finanziari e di altra natura al momento in cui scaturisce l’obbligazione verso la controparte.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I debiti tributari accolgono le passività per imposte certe e determinate, nonché le ritenute operate quale sostituto e non ancora versate alla data del bilancio, &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Si rappresenta che i debiti tributari indicati in bilancio come esigibili oltre l&amp;#x0027;esercizio successivo sono integralmente rateizzati e le rateizzazioni in corso sono regolarmente pagate.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Valori in valuta&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Le attività e le passività monetarie in valuta sono iscritte al tasso di cambio a pronti alla data di chiusura dell&amp;#x0027;esercizio, con imputazione a conto economico dei relativi utili e perdite su cambi.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Costi e ricavi&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Sono esposti secondo il principio della prudenza e della competenza economica.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Le transazioni economiche e finanziarie con società del gruppo e con controparti correlate sono effettuate a normali condizioni di mercato. &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Con riferimento ai ‘Ricavi delle vendite e delle prestazioni’, si precisa che le rettifiche di ricavi, ai sensi dell’OIC 12 par.50, sono portate a riduzione della voce ricavi, ad esclusione di quelle riferite a precedenti esercizi e derivanti da correzioni di errori o cambiamenti di principi contabili, rilevate, ai sensi dell’OIC 29, sul saldo d’apertura del patrimonio netto.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoCriteriValutazioneApplicati>
+  <itcc-ci:CommentoAltreInformazioni contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Le specifiche sezioni della nota integrativa illustrano i criteri con i quali è stata data attuazione all’art. 2423 quarto comma, in caso di mancato rispetto in tema di rilevazione, valutazione, presentazione e informativa, quando la loro osservanza abbia effetti irrilevanti sulla rappresentazione veritiera e corretta.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoAltreInformazioni>
+  <itcc-ci:IntroduzioneNotaIntegrativaAttivo contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneNotaIntegrativaAttivo>
+  <itcc-ci:IntroduzioneImmobilizzazioni contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Le immobilizzazioni sono pari a € &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;591.220&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; (€ &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;596.653&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; nel precedente esercizio).&lt;/span&gt;&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneImmobilizzazioni>
+  <itcc-ci:IntroduzioneMovimentiImmobilizzazioni contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La composizione e i movimenti delle singole voci sono così rappresentati:&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneMovimentiImmobilizzazioni>
+  <itcc-ci:IntroduzioneImmobilizzazioniFinanziarie contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneImmobilizzazioniFinanziarie>
+  <itcc-ci:IntroduzioneMovimentiImmobilizzazioniFinanziarieCrediti contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:10pt;line-height:150%;font-size:10pt;color:#0F0F0F;"&gt;Vengono di seguito riportati i dati relativi alla suddivisione dei crediti per scadenza, ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 6 del codice civile:&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneMovimentiImmobilizzazioniFinanziarieCrediti>
+  <itcc-ci:IntroduzioneAttivoCircolante contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneAttivoCircolante>
+  <itcc-ci:IntroduzioneVariazioniCreditiIscrittiAttivoCircolante contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:10pt;line-height:150%;font-size:10pt;color:#0F0F0F;"&gt;Vengono di seguito riportati i dati relativi alla suddivisione dei crediti per scadenza, ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 6 del codice civile:&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneVariazioniCreditiIscrittiAttivoCircolante>
+  <itcc-ci:IntroduzioneNotaIntegrativaPassivo contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneNotaIntegrativaPassivo>
+  <itcc-ci:IntroduzionePatrimonioNetto contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;Il patrimonio netto esistente alla chiusura dell&amp;#x0027;esercizio è pari a € &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;204.652&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; &lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;(€ &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;275.596&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; &lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;nel precedente esercizio).&lt;/span&gt;&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzionePatrimonioNetto>
+  <itcc-ci:IntroduzioneVariazioniVociPatrimonioNetto contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;Nei prospetti riportati di seguito viene evidenziata la movimentazione subita durante l&amp;#x0027;esercizio dalle singole poste che compongono il Patrimonio Netto e il dettaglio della voce&lt;/span&gt;&lt;span style="font-size:10pt;"&gt; &lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;‘Altre riserve&lt;/span&gt;&lt;span style="font-size:10pt;"&gt;’:&lt;/span&gt;&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneVariazioniVociPatrimonioNetto>
+  <itcc-ci:CommentoVariazioniVociPatrimonioNetto contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Ai fini di una migliore intelligibilità delle variazioni del patrimonio netto qui di seguito vengono evidenziate le movimentazioni dell&amp;#x0027;esercizio precedente delle voci del patrimonio netto:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:10pt;"&gt; &lt;/p&gt;
+&lt;table cellspacing="0" cellpadding="0pt" style="width:481.65pt;border-collapse:collapse;"&gt;
+&lt;colgroup&gt;
+&lt;col width="109" /&gt;
+&lt;col width="77" /&gt;
+&lt;col width="63" /&gt;
+&lt;col width="63" /&gt;
+&lt;col width="63" /&gt;
+&lt;col width="63" /&gt;
+&lt;col width="70" /&gt;
+&lt;col width="63" /&gt;
+&lt;col width="70" /&gt;
+&lt;/colgroup&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Valore di inizio esercizio&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Attribuzione di dividendi&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Altre destinazioni&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Incrementi&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Decrementi&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Riclassifiche&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Risultato d&amp;#x0027;esercizio&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:center;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Valore di fine esercizio&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Capitale&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;2.500&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;2.500&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Riserva legale&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;10.012&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;10.012&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Altre riserve&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Varie altre riserve&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;105.410&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;67.127&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;172.537&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Totale altre riserve&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;105.410&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;67.127&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt; &lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;172.537&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Utile (perdita) dell&amp;#x0027;esercizio&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;67.129&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;(67.129)&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;90.547&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;90.547&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr align="left" valign="top"&gt;
+&lt;td valign="middle" style="width:79.85pt; background-color:#DEEAF6; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;font-weight:bold;"&gt;Totale Patrimonio netto&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:55.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;185.051&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;(67.129)&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;0&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;67.127&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:45.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;90.547&lt;/p&gt;
+&lt;/td&gt;
+&lt;td valign="middle" style="width:50.25pt; padding-right:1.8pt; border-top: 1pt solid #5B9BD5; border-right: 1pt solid #5B9BD5; border-bottom: 1pt solid #5B9BD5; border-left: 1pt solid #5B9BD5;"&gt;
+&lt;p lang="it-IT" style="text-align:right;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:8pt;"&gt;275.596&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;</itcc-ci:CommentoVariazioniVociPatrimonioNetto>
+  <itcc-ci:IntroduzioneDebiti contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneDebiti>
+  <itcc-ci:IntroduzioneVariazioniScadenzaDebiti contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Qui di seguito vengono riportati i dati relativi alla suddivisione dei debiti per scadenza, ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 6 del codice civile&lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;:&lt;/span&gt;&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneVariazioniScadenzaDebiti>
+  <itcc-ci:IntroduzioneDebitiAssistitiGaranzieRealiBeniSociali contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;"&gt;&lt;span style="font-size:10pt;"&gt;Qui di seguito vengono riportate le informazioni concernenti i debiti di durata superiore ai cinque anni e i debiti assistiti da garanzie reali sui beni sociali,&lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt; ai sensi dell&amp;#x0027;art. &lt;/span&gt;&lt;span style="font-size:10pt;"&gt;2427, comma 1 numero 6 del codice civile&lt;/span&gt;&lt;span style="font-size:10pt;color:#000000;"&gt;:&lt;/span&gt;&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneDebitiAssistitiGaranzieRealiBeniSociali>
+  <itcc-ci:CommentoDebitiAssistitiGaranzieRealiBeniSociali contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt; La società non ha   debiti assistiti da garanzie reali lsu beni sociali.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;I debiti tributari e previdenziali oltre l&amp;#x0027;esercizio sono integralmente rateizzati e i piani di ammortamento delle rateazioni sono regolarmente adempiuti.&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La società non ha debiti verso soci per finanziamenti con clausola di postergazione.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoDebitiAssistitiGaranzieRealiBeniSociali>
+  <itcc-ci:CommentoDebiti contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;Ristrutturazione del debito&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La società non ha in corso alcun piano  di ristrutturazione del debito.&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoDebiti>
+  <itcc-ci:IntroduzioneNotaIntegrativaContoEconomico contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneNotaIntegrativaContoEconomico>
+  <itcc-ci:IntroduzioneImportoNaturaSingoliElementiRicavoEntitaIncidenzaEccezionali contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;RICAVI DI ENTITA&amp;#x0027; O INCIDENZA ECCEZIONALI&lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;In relazione a quanto disposto dall&amp;#x0027;art. 2427, comma 1 numero 13 del codice civile, il seguente prospetto riporta i ricavi di entità o incidenza eccezionali: &lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;non sono stati registrati nell&amp;#x0027;esercizio ricavi di entità eccezionale&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneImportoNaturaSingoliElementiRicavoEntitaIncidenzaEccezionali>
+  <itcc-ci:IntroduzioneImportoNaturaSingoliElementiCostoEntitaIncidenzaEccezionali contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;COSTI DI ENTITA&amp;#x0027; O INCIDENZA ECCEZIONALI&lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;In relazione a quanto disposto dall&amp;#x0027;art. 2427, comma 1 numero 13 del codice civile, il seguente prospetto riporta i costi di entità o incidenza eccezionali:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;non sono stati registrati nell&amp;#x0027;esercizio costi  di entità eccezionale&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneImportoNaturaSingoliElementiCostoEntitaIncidenzaEccezionali>
+  <itcc-ci:IntroduzioneImposteCorrentiDifferiteAnticipate contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneImposteCorrentiDifferiteAnticipate>
+  <itcc-ci:IntroduzioneNotaIntegrativaAltreInformazioni contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneNotaIntegrativaAltreInformazioni>
+  <itcc-ci:IntroduzioneDatiOccupazione contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;color:#000080;font-weight:bold;"&gt; &lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Vengono di seguito riportate le informazioni concernenti il personale, ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 15 del codice civile:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La società ha occupato nell&amp;#x0027;esercizio n°63 dipendenti a tempo indeterminato &lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneDatiOccupazione>
+  <itcc-ci:IntroduzioneCompensiAnticipazioniCreditiConcessiAmministratoriSindaciImpegniAssuntiLoroConto contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Vengono di seguito riportate le informazioni concernenti gli amministratori ed i sindaci, ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 16 del codice civile:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;La società nel 2025 ha deliberato un compenso all&amp;#x0027;Amministratore di Euro 25848&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:IntroduzioneCompensiAnticipazioniCreditiConcessiAmministratoriSindaciImpegniAssuntiLoroConto>
+  <itcc-ci:CommentoInformazioniOperazioniPartiCorrelate contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Vengono di seguito riportate le informazioni concernenti le operazioni realizzate con parti correlate, ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 22-bis del codice civile:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;font-size:10pt;"&gt;Le operazioni con parti correlate sono state effettuate a normali valori di mercato&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoInformazioniOperazioniPartiCorrelate>
+  <itcc-ci:CommentoInformazioniSuiFattiRilievoAvvenutiDopoLaChiusuraEsercizio contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Vengono di seguito riportate le informazioni concernenti la natura e l’effetto patrimoniale, finanziario ed economico dei fatti di rilievo avvenuti dopo la chiusura dell’esercizio, ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 22-quater del codice civile:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Non si segnalano eventi particolari accaduti dopo la chiusura dell&amp;#x0027;esercizio&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoInformazioniSuiFattiRilievoAvvenutiDopoLaChiusuraEsercizio>
+  <itcc-ci:CommentoInformazioniExArt1Comma125Legge4Agosto2017N124 contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;"&gt;Con riferimento all’art. 1 comma 125 della Legge 124/2017, qui di seguito sono riepilogate le sovvenzioni (contributi, incarichi retribuiti, vantaggi economici) ricevute dalle pubbliche amministrazioni. &lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoInformazioniExArt1Comma125Legge4Agosto2017N124>
+  <itcc-ci:CommentoPropostaDestinazioneUtiliCoperturaPerdite contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Ai sensi dell&amp;#x0027;art. 2427, comma 1 numero 22-septies del codice civile, si propone la destinazione del risultato d’esercizio come segue:&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;"&gt;Interamente alla riserva Straordinaria&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoPropostaDestinazioneUtiliCoperturaPerdite>
+  <itcc-ci:CommentoNotaIntegrativa contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;p lang="it-IT" style="text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:11pt;color:#000080;font-weight:bold;"&gt;L&amp;#x0027;Organo amministrativo&lt;/p&gt;
+&lt;p lang="it-IT" style="text-align:justify;text-indent:0pt;margin-top:0pt;margin-bottom:0pt;line-height:150%;font-size:10pt;color:#000000;font-style:italic;"&gt;&lt;/p&gt;
+&lt;/body&gt;</itcc-ci:CommentoNotaIntegrativa>
+  <itcc-ci:DichiarazioneConformita contextRef="I_20251231">&lt;body style="font-family:'Arial';font-size:12pt;background-color:#FFFFFF;text-align:left;"&gt;
+&lt;/body&gt;</itcc-ci:DichiarazioneConformita>
+</xbrl>
