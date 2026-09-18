@@ -62,7 +62,6 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
     hero_photo_caption="La tua poltrona, le tue clienti, i tuoi orari.", lock_text="postazioni da 400 € al mese", price_badge="Prime 30 iscritte: 99 € di attivazione azzerati alla firma", founder_note="Stiamo partendo a Milano con un primo gruppo di professioniste. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Chiedi il contatto per vedere nome e indirizzo e prenotare la visita. Gratis.", form_name_label="Come ti chiami",
     form_question="Cosa ti ha frenato finora dal metterti in proprio?",
     form_positions=["hero", "mid", "bottom"], form_hero_title="Ti mando le postazioni disponibili nella tua zona", form_mid_title="Vuoi vedere queste postazioni dal vivo? Lascia zona e telefono",
-    hero_photo_url=f"{BASE}/static/poltrona/salone_2.jpg",
     form_extra=[{"name": "zona", "placeholder": "Zona di Milano preferita", "required": True, "short": True},
                 {"name": "specialita", "placeholder": "Specialità (colore, taglio uomo, extension…)"}, {"name": "piva", "placeholder": "Hai già la P.IVA? (sì / no)", "short": True},
                 {"name": "telefono", "placeholder": "Telefono", "type": "tel", "short": True}],
@@ -105,6 +104,7 @@ STATEMENT = ("I saloni non trovano personale e restano con postazioni vuote; le 
              "L'affitto di poltrona esiste dal 2018 ma si fa alla cieca su Facebook.")
 
 if __name__ == "__main__":
+    STYLISTS["hero_photo_url"] = f"{BASE}/static/poltrona/salone_2.jpg"  # newer, brighter salon for the professionals page
     OWNERS["listings"] = LISTINGS
     STYLISTS["listings"] = LISTINGS
     for offer in (OWNERS, STYLISTS):  # variant B: same copy, bronze accent + bronze CTA (A/B on colour only)
