@@ -163,12 +163,15 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     def _form(anchor: str, compact: bool) -> str:
         if signed_up:
             return f'<div id="{anchor}" class="ok">{t["thanks"]}</div>'
-        fields = "".join(f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>' for f in (short_fields if compact else (offer.get("form_extra") or [])))
+        all_f = short_fields if compact else (offer.get("form_extra") or [])
+        inp = lambda f: f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>'
+        first = "".join(inp(f) for f in all_f if f.get("first"))
+        fields = "".join(inp(f) for f in all_f if not f.get("first"))
         q = "" if compact else f'<textarea name="answer" rows="2" placeholder="{escape(question)}"></textarea>'
         nm = "" if (compact or not name_label) else f'<input name="business" placeholder="{escape(name_label)}">'
         return f"""<form id="{anchor}" class="{'compact' if compact else ''}" method="post" action="{base}/lp/{escape(c['id'])}/signup">
           <input type="hidden" name="variant" value="{escape(v['key'])}"><input type="hidden" name="placement" value="{anchor}">
-          <input name="email" type="email" required placeholder="{t['email']}">{nm}{fields}{q}
+          {first}<input name="email" type="email" required placeholder="{t['email']}">{nm}{fields}{q}
           <button class="btn" type="submit">{escape(v['cta'])}</button><span class="muted">{t['cta_note']}</span></form>"""
 
     top_form = (f"<div class='w'><div class='formcard'><b>{escape(offer.get('form_top_title') or v['cta'])}</b>{_form('lista-top', True)}</div></div>") if "top" in positions else ""
@@ -183,9 +186,9 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     else:
         form = f"""<form method="post" action="{base}/lp/{escape(c['id'])}/signup">
           <input type="hidden" name="variant" value="{escape(v['key'])}">
-          <input name="email" type="email" required placeholder="{t['email']}">
+          {"".join(f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>' for f in (offer.get("form_extra") or []) if f.get("first"))}<input name="email" type="email" required placeholder="{t['email']}">
           {("<input name='business' placeholder='" + escape(name_label) + "'>") if name_label else ""}
-          {extra}
+          {"".join(f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>' for f in (offer.get("form_extra") or []) if not f.get("first"))}
           <textarea name="answer" rows="2" placeholder="{escape(question)}"></textarea>
           <button class="btn" type="submit">{escape(v['cta'])}</button>
           <span class="muted">{t['cta_note']}</span>
@@ -230,7 +233,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
   <div>
     <h2 style="margin-bottom:4px">{t['price']}</h2>
     <div class="muted">{escape(v.get('plan_name') or '')}</div>
-    <div class="price" style="{'font-size:34px' if v.get('price_text') else ''}">{escape(v['price_text']) if v.get('price_text') else "€" + format(v['price_eur_month'], '.0f') + "<span>" + t['mo'] + "</span>"}</div>
+    <div class="price" style="{('font-size:' + ('24px' if len(v.get('price_text') or '') > 40 else '34px') + ';line-height:1.25') if v.get('price_text') else ''}">{escape(v['price_text']) if v.get('price_text') else "€" + format(v['price_eur_month'], '.0f') + "<span>" + t['mo'] + "</span>"}</div>
     {("<span class='lock'>" + escape(badge) + "</span>") if badge else ""}
     <p class="muted" style="margin-top:12px">{escape(v.get('price_justification') or '')}</p>
   </div>
