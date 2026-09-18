@@ -63,7 +63,7 @@ STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che v
     trust=["Visiti il salone prima di firmare", "Contratto a norma con un mese di prova", "Canone in piattaforma con ricevuta: niente contanti"],
     hero_photo_caption="Una postazione vera, in un salone vero.", lock_text="postazioni da 400 € al mese", price_badge="Prime 30 iscritte: 99 € di attivazione azzerati alla firma", founder_note="Stiamo partendo a Milano con un primo gruppo di professioniste. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Chiedi il contatto per vedere nome e indirizzo e prenotare la visita. Gratis.", form_name_label="",
     form_question="Cosa ti ha frenato finora dal metterti in proprio?",
-    form_positions=["hero", "bottom"], 
+    form_positions=["hero", "bottom"], hero_show_justification=False, 
     form_extra=[{"name": "nome", "placeholder": "Nome e cognome", "required": True, "first": True},
                 {"name": "telefono", "placeholder": "Cellulare", "type": "tel", "required": True},
                 {"name": "piva", "placeholder": "Partita IVA (se non ce l'hai scrivi: no)", "required": True},
