@@ -12,7 +12,7 @@ COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/
               photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), Phalinn Ooi (CC BY 2.0), Haldane Martin / Micky Hoyle (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
               notes="Marketplace affitto di poltrona: due lati, due landing. Citazioni da post pubblici di titolari, ruolo senza nome.")
 
-OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_title="In tre passi", quotes_title="Ti riconosci?", quotes_lead="Frasi vere di titolari di salone.",
+OWNERS = dict(**COMMON, clarity_id="yka3nisvdz", kicker="Per titolari di saloni · Milano", hero_card_title="In tre passi", quotes_title="Ti riconosci?", quotes_lead="Frasi vere di titolari di salone.",
     confirm_email={"subject": "Sei in lista — {brand}", "body": (
         "Ciao{nome_sp}," + NL2 + "grazie: la tua postazione è in lista su {brand}." + NL2 +
         "Cosa succede adesso: entro 2-3 giorni ti chiamo io, Giovanni, per 15 minuti. Mi racconti il salone, la postazione e il canone che vorresti; "
@@ -53,7 +53,7 @@ OWNERS = dict(**COMMON, kicker="Per titolari di saloni · Milano", hero_card_tit
                     {"objection": "E se la professionista non paga?", "answer": "Paga la piattaforma con carta o addebito SEPA, prima che il mese inizi. Se non paga, la postazione torna libera e la sostituiamo: tu non rincorri nessuno."},
                     {"objection": "Chi vede il mio annuncio?", "answer": "Chiunque vede foto, zona, giorni e canone. Nome del salone, indirizzo e telefono li vedono solo le professioniste che hanno chiesto il contatto e accettato le condizioni."}])])
 
-STYLISTS = dict(**COMMON, kicker="Per parrucchiere e barbieri con P.IVA (o che vogliono aprirla)", hero_card_title="In tre passi", quotes_title="Saloni che cercano una professionista", quotes_lead="Annunci pubblicati da titolari nelle ultime settimane.",
+STYLISTS = dict(**COMMON, clarity_id="yka1e47v91", kicker="Per parrucchiere e barbieri con P.IVA (o che vogliono aprirla)", hero_card_title="In tre passi", quotes_title="Saloni che cercano una professionista", quotes_lead="Annunci pubblicati da titolari nelle ultime settimane.",
     confirm_email={"subject": "Sei in lista — {brand}", "body": (
         "Ciao{nome_sp}," + NL2 + "grazie: sei in lista su {brand}." + NL2 +
         "Cosa succede adesso: entro 2-3 giorni ti chiamo io, Giovanni, per 15 minuti. Mi dici zona, giorni e budget, e cosa ti serve (se non hai ancora la P.IVA, ti spiego come aprirla in due giorni). "
