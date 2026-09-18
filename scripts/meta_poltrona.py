@@ -36,28 +36,30 @@ ADSETS = {
         "ads": [
             {"subject": "reddito", "primary": "La poltrona vuota del tuo salone rende 500 € al mese. Selezione, contratto, SUAP e incasso li facciamo noi: tu ricevi il canone entro il 5. Zero costi fissi, 15% solo quando è occupata. Stiamo partendo a Milano.",
              "headline": "Postazione vuota? Rende 500 €/mese", "description": "Gestita da noi. Zero costi fissi."},
-            {"subject": "personale", "primary": "Non trovi personale? Affitta la postazione a una professionista con P.IVA: porta le sue clienti, paga un canone, non è una dipendente. Annuncio anonimo, contratto a norma dal 2018, incasso gestito da noi.",
+            {"subject": "personale", "primary": "Non trovi personale? Affitta la postazione a una professionista con P.IVA: lavora in autonomia, paga un canone, non è una dipendente. Annuncio anonimo, contratto a norma dal 2018, incasso gestito da noi.",
              "headline": "Non trovi personale? Affitta la poltrona", "description": "Contratto e SUAP inclusi."},
-            {"subject": "gestito", "primary": "Incasso gestito e sostituzione inclusa. Se la professionista lascia, la sostituiamo noi; se non paga, non rincorri nessuno. Tratteniamo il 15% solo nei mesi in cui la postazione rende. Primi 30 saloni di Milano: 10%.",
-             "headline": "Zero sbattimento, canone entro il 5", "description": "Primi 30 saloni: 10%."},
+            {"subject": "gestito", "primary": "Incasso gestito e sostituzione inclusa. Se la professionista lascia, la sostituiamo noi; se non paga, non rincorri nessuno. Tratteniamo il 15% solo nei mesi in cui la postazione rende.",
+             "headline": "Zero sbattimento, canone entro il 5", "description": "Nessun costo fisso."},
             {"subject": "carousel_come", "carousel": True, "primary": "Come funziona l'affitto di poltrona gestito da noi, in 4 passi. Per te nessun costo fisso: tratteniamo il 15% solo quando la postazione è occupata.",
              "headline": "Come funziona", "cards": ["Ci dai in gestione la postazione", "Selezioniamo e organizziamo le visite", "Contratto e SUAP li prepariamo noi", "Incassiamo noi, ti giriamo l'85%", "Affitta la tua postazione"]},
-            {"subject": "carousel_faq", "carousel": True, "primary": "\"Mi porta via le clienti?\" \"È legale?\" \"Cosa vi costa?\" Le 5 domande che ci fanno tutte le titolari, con le risposte. Stiamo partendo a Milano.",
-             "headline": "Le domande delle titolari", "cards": ["Mi porta via le clienti?", "È legale?", "E la mia ex dipendente?", "Cosa vi costa?", "E se non paga?"]},
+            {"subject": "carousel_faq", "carousel": True, "primary": "\"E le clienti?\" \"È legale?\" \"Cosa vi costa?\" Le 5 domande che ci fanno tutte le titolari, con le risposte. Stiamo partendo a Milano.",
+             "headline": "Le domande delle titolari", "cards": ["E le clienti?", "È legale?", "E la mia ex dipendente?", "Cosa vi costa?", "E se non paga?"]},
         ],
     },
     "professioniste": {
         "name": "Professioniste · Milano 25km · 22-50 · freelance/domicilio + job title + interessi pro", "landing": f"{BASE}/lp/poltrona_libera_professioniste", "age": (22, 50),
         "flexible_spec": [{"interests": PRO_INTERESTS, "work_positions": STYLIST_JOBS + [{"id": "121890827856661", "name": "Mobile Hairdresser"}]}],
         "ads": [
-            {"subject": "reddito", "primary": "Lavora in proprio senza aprire un salone: postazioni a Milano da 400 € al mese, in saloni veri. Le clienti sono tue, gli orari sono tuoi, l'incasso è tuo. Guardi, visiti, poi decidi.",
+            {"subject": "prof_libera", "primary": "Lavora in proprio senza aprire un salone: postazioni a Milano da 400 € al mese, in saloni veri. Orari tuoi, incasso tuo. Guardi, visiti, poi decidi.",
              "headline": "In proprio, senza aprire un salone", "description": "Postazioni da 400 €/mese."},
-            {"subject": "personale", "primary": "Stanca di lavorare per il 40% di uno stipendio? Con una postazione in affitto tieni il 100% di quello che incassi. Contratto a norma, mese di prova, aiuto per la P.IVA. Milano.",
+            {"subject": "prof_cento", "primary": "Stanca di lavorare per il 40% di uno stipendio? Con una postazione in affitto tieni il 100% di quello che incassi. Contratto a norma, mese di prova, aiuto per aprire l'impresa. Milano.",
              "headline": "Tieni il 100% di quello che incassi", "description": "Contratto a norma, mese di prova."},
-            {"subject": "gestito", "primary": "Zero investimento: niente locale, niente attrezzature, niente fideiussioni. Solo una postazione in un salone di Milano, con canone chiaro e cosa è incluso. Visita gratis, firmi solo se ti convince.",
-             "headline": "Zero investimento, una postazione tua", "description": "Visite gratis a Milano."},
-            {"subject": "domicilio", "primary": "Lavori a domicilio e hai già la P.IVA? Ti manca solo il posto. Postazioni in saloni veri di Milano da 400 € al mese: lavatesta, luce, specchio, e le clienti vengono da te. Contratto a norma, SCIA e registrazione li facciamo noi.",
+            {"subject": "domicilio", "primary": "Lavori a domicilio e hai già la P.IVA? Ti manca solo il posto. Postazioni in saloni veri di Milano da 400 € al mese: lavatesta, luce, specchio, un indirizzo vero. Contratto a norma, SCIA e registrazione li facciamo noi.",
              "headline": "A domicilio? Prenditi una poltrona vera", "description": "Saloni di Milano, da 400 €/mese."},
+            {"subject": "prof_offerta", "primary": "Le prime 30 professioniste iscritte a Milano non pagano l'attivazione: 99 € di contratto, SCIA e registrazione azzerati. Poi solo il canone della postazione che scegli, dopo averla visitata.",
+             "headline": "Prime 30: attivazione azzerata", "description": "Registrati, poi visiti e decidi."},
+            {"subject": "carousel_prof", "carousel": True, "primary": "Come funziona, in tre passi: guardi gli annunci, visiti il salone e incontri la titolare, firmi il contratto preparato da noi. Postazioni a Milano da 400 € al mese.",
+             "headline": "In tre passi", "cards": ["Guardi gli annunci", "Visiti il salone", "Firmi e lavori"]},
         ],
     },
 }
@@ -105,8 +107,9 @@ def create(budget_cents: int = 800) -> dict:
         if existing_sets:
             call("POST", asid, tok, name=cfg["name"], targeting=json.dumps(targeting))
         ex_ads = {a["name"]: a["id"] for a in call("GET", f"{asid}/ads", tok, fields="id,name").get("data", [])}
+        wanted = {f"{BRAND} · {key} · {a['subject']}" for a in cfg["ads"]}
         for name_, id_ in list(ex_ads.items()):
-            if name_.endswith("· personale"):  # image regenerated: recreate the ad with the new creative
+            if name_ not in wanted or name_.split("· ")[-1] in ("gestito", "personale", "carousel_come", "carousel_faq", "prof_libera", "domicilio"):  # wrong audience or regenerated image: delete and recreate
                 call("POST", id_, tok, status="DELETED"); ex_ads.pop(name_)
         ads = []
         for ad in cfg["ads"]:

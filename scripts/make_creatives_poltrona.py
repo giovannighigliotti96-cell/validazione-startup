@@ -137,13 +137,13 @@ def main():
         ad_photo("reddito", P(1), "La poltrona vuota rende 500 € al mese.", "Selezione, contratto, SUAP e incasso li facciamo noi. Tu ricevi il canone entro il 5. Zero costi fissi.", "MILANO · SALONI", k).save(f"{OUT}/reddito_{k}.png")
     # 2) personale — typographic
     for k in SIZES:
-        ad_typo("Non trovi personale? Affitta la postazione.", "Una professionista con P.IVA porta le sue clienti e paga un canone. Annuncio anonimo, contratto a norma, incasso gestito.", k, "personale?").save(f"{OUT}/personale_{k}.png")
+        ad_typo("Non trovi personale? Affitta la postazione.", "Una professionista con P.IVA lavora in autonomia e paga un canone. Annuncio anonimo, contratto a norma, incasso gestito.", k, "personale?").save(f"{OUT}/personale_{k}.png")
     # 3) zero sbattimento — photo 2, different angle
     for k in SIZES:
         ad_photo("gestito", P(3), "Incasso gestito. Sostituzione inclusa.", "Se la professionista lascia, la sostituiamo noi. Se non paga, non rincorri nessuno. 15% solo quando la postazione rende.", "NESSUN COSTO FISSO", k).save(f"{OUT}/gestito_{k}.png")
     # 3b) professioniste — already freelance / a domicilio (typographic, different kicker)
     for k in SIZES:
-        im = ad_typo("Lavori a domicilio? Prenditi una poltrona vera.", "Postazioni in saloni di Milano da 400 € al mese: lavatesta, luce, specchio, clienti che vengono da te. Hai già la P.IVA: ti manca solo il posto.", k, "poltrona vera.", "Guarda le postazioni →")
+        im = ad_typo("Lavori a domicilio? Prenditi una poltrona vera.", "Postazioni in saloni di Milano da 400 € al mese: lavatesta, luce, specchio, un indirizzo vero. Hai già la P.IVA: ti manca solo il posto.", k, "poltrona vera.", "Guarda le postazioni →")
         ImageDraw.Draw(im).rectangle((72, 84 - 4, 720, 84 + 40), fill=PAPER)
         ImageDraw.Draw(im).text((72, 84), "PER PARRUCCHIERE A DOMICILIO · MILANO", font=F(SANS_B, int(28 * (SIZES[k][0] / 1080))), fill=ACC)
         im.save(f"{OUT}/domicilio_{k}.png")
@@ -152,11 +152,11 @@ def main():
              ("Selezioniamo e organizziamo le visite", "Solo professioniste con P.IVA, qualifica e assicurazione. Incontri chi ha senso per te.", 2, None),
              ("Contratto e SUAP li prepariamo noi", "Tu firmi e basta. A norma dal 2018.", 3, None),
              ("Incassiamo noi, ti giriamo l'85%", "Entro il 5 di ogni mese. Se lascia, la sostituiamo.", 4, None),
-             ("Affitta la tua postazione", "Stiamo partendo a Milano con i primi 30 saloni: 10% invece del 15% per un anno.", None, P(2))]
+             ("Affitta la tua postazione", "Stiamo partendo a Milano. Nessun costo fisso: 15% solo quando la postazione rende.", None, P(2))]
     for i, (t, x, n, ph) in enumerate(cards, 1):
         card(t, x, n, ph, dark=(n is None and ph is None)).save(f"{OUT}/carousel_come_{i}.png")
     # 5) carousel: objections
-    obj = [("Mi porta via le clienti?", "Le sue clienti sono sue, le tue sono tue: è scritto nel contratto. Una postazione occupata porta più passaggio, non meno.", None, P(1)),
+    obj = [("E le clienti?", "Lo decidete voi e lo mettiamo per iscritto: ognuna con le proprie, oppure condivise con regole chiare.", None, P(1)),
            ("È legale?", "Sì, dal 2018. Serve una comunicazione al SUAP: la prepariamo noi.", None, None),
            ("Posso affittarla alla mia ex dipendente?", "No, la legge lo vieta per 5 anni. Per questo ti presentiamo professioniste che vengono da altri saloni.", None, None),
            ("Cosa vi costa?", "Il 15% del canone, solo nei mesi in cui la postazione è occupata. Su 500 € ricevi 425 €.", None, None),
