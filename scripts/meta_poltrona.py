@@ -48,7 +48,7 @@ ADSETS = {
     },
     "professioniste": {
         "name": "Professioniste · Milano 25km · 22-50 · freelance/domicilio + job title + interessi pro", "landing": f"{BASE}/lp/poltrona_libera_professioniste", "age": (22, 50),
-        "flexible_spec": [{"interests": PRO_INTERESTS + [{"id": "6003299177301", "name": "Mobile Hairdresser"}], "work_positions": STYLIST_JOBS + [{"id": "121890827856661", "name": "Mobile Hairdresser"}]}],
+        "flexible_spec": [{"interests": PRO_INTERESTS, "work_positions": STYLIST_JOBS + [{"id": "121890827856661", "name": "Mobile Hairdresser"}]}],
         "ads": [
             {"subject": "reddito", "primary": "Lavora in proprio senza aprire un salone: postazioni a Milano da 400 € al mese, in saloni veri. Le clienti sono tue, gli orari sono tuoi, l'incasso è tuo. Guardi, visiti, poi decidi.",
              "headline": "In proprio, senza aprire un salone", "description": "Postazioni da 400 €/mese."},
@@ -97,11 +97,17 @@ def create(budget_cents: int = 800) -> dict:
                      "flexible_spec": cfg["flexible_spec"], "publisher_platforms": ["facebook", "instagram"],
                      "facebook_positions": ["feed", "story", "facebook_reels"], "instagram_positions": ["stream", "story", "reels"],
                      "targeting_automation": {"advantage_audience": 0}}
-        asid = existing_sets.get(cfg["name"]) or call("POST", f"{acc}/adsets", tok, name=cfg["name"], campaign_id=cid, status="PAUSED", daily_budget=budget_cents,
+        # names changed -> find by key prefix; then keep targeting in sync
+        asid = existing_sets.get(cfg["name"]) or next((v for k, v in existing_sets.items() if k.lower().startswith(key)), None) or call("POST", f"{acc}/adsets", tok, name=cfg["name"], campaign_id=cid, status="PAUSED", daily_budget=budget_cents,
                                                       billing_event="IMPRESSIONS", optimization_goal="OFFSITE_CONVERSIONS",
                                                       promoted_object=json.dumps({"pixel_id": pixel, "custom_event_type": "LEAD"}),
                                                       bid_strategy="LOWEST_COST_WITHOUT_CAP", targeting=json.dumps(targeting))["id"]
+        if existing_sets:
+            call("POST", asid, tok, name=cfg["name"], targeting=json.dumps(targeting))
         ex_ads = {a["name"]: a["id"] for a in call("GET", f"{asid}/ads", tok, fields="id,name").get("data", [])}
+        for name_, id_ in list(ex_ads.items()):
+            if name_.endswith("· personale"):  # image regenerated: recreate the ad with the new creative
+                call("POST", id_, tok, status="DELETED"); ex_ads.pop(name_)
         ads = []
         for ad in cfg["ads"]:
             ad_name = f"{BRAND} · {key} · {ad['subject']}"

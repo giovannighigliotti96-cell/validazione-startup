@@ -75,20 +75,21 @@ def ad_typo(headline, sub, size_key, accent_word=None, cta_text=None):
     s = w / 1080
     d.rectangle((0, 0, w, int(14 * s)), fill=ACC)
     d.text((72, 84), "PER TITOLARI DI SALONE · MILANO", font=F(SANS_B, int(28 * s)), fill=ACC)
-    y = h * 0.22 if size_key != "9x16" else h * 0.3
-    big = F(SERIF_B, int(104 * s))
+    y = h * 0.17 if size_key != "9x16" else h * 0.28
+    big = F(SERIF_B, int(92 * s))
     for ln in wrap(d, headline, big, w - 144):
         if accent_word and accent_word in ln:
             pre, post = ln.split(accent_word, 1)
             d.text((72, y), pre, font=big, fill=INK); x = 72 + d.textlength(pre, font=big)
-            d.text((x, y), accent_word, font=F(SERIF_I, int(104 * s)), fill=ACC); x += d.textlength(accent_word, font=F(SERIF_I, int(104 * s)))
+            d.text((x, y), accent_word, font=F(SERIF_I, int(92 * s)), fill=ACC); x += d.textlength(accent_word, font=F(SERIF_I, int(92 * s)))
             d.text((x, y), post, font=big, fill=INK)
         else:
             d.text((72, y), ln, font=big, fill=INK)
-        y += int(116 * s)
-    y = draw_lines(d, 72, y + 24, wrap(d, sub, F(SANS, int(40 * s)), w - 160), F(SANS, int(40 * s)), (63, 58, 53), int(54 * s))
-    d.rounded_rectangle((72, y + 40, 72 + int(520 * s), y + 40 + int(92 * s)), radius=999, fill=INK)
-    d.text((72 + int(48 * s), y + 40 + int(22 * s)), (cta_text or "Affitta la tua postazione →"), font=F(SANS_B, int(34 * s)), fill=PAPER)
+        y += int(104 * s)
+    y = draw_lines(d, 72, y + 20, wrap(d, sub, F(SANS, int(38 * s)), w - 160), F(SANS, int(38 * s)), (63, 58, 53), int(50 * s))
+    y = min(y, h - int(250 * s))  # keep the button clear of the brand bar
+    d.rounded_rectangle((72, y + 30, 72 + int(520 * s), y + 30 + int(92 * s)), radius=999, fill=INK)
+    d.text((72 + int(48 * s), y + 30 + int(22 * s)), (cta_text or "Affitta la tua postazione →"), font=F(SANS_B, int(34 * s)), fill=PAPER)
     brand_bar(d, w, h, False)
     return im
 
