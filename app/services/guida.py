@@ -114,7 +114,7 @@ def create_checkout(slug: str, utm: str = "", fb: tuple[str, str] = ("", ""), ip
         billing_address_collection="auto",
         phone_number_collection={"enabled": True},  # for the WhatsApp follow-up (optional field)
         payment_method_configuration="pmc_1S1173KZdRNh4BbI0EYOQDgI",  # card + Apple Pay + Google Pay + Link + PayPal + Amazon Pay
-        custom_text={"submit": {"message": f"Ricevi il PDF subito via email. Garanzia {GUARANTEE_DAYS} giorni: rimborso senza domande."},
+        custom_text={"submit": {"message": "Ricevi il PDF subito via email, con il link per scaricarlo."},
                      "after_submit": {"message": "Grazie! Nella pagina successiva trovi il link per scaricare la guida."}},
         allow_promotion_codes=True,
         metadata={"slug": slug, "utm": utm[:80], "fbp": fb[0][:80], "fbc": fb[1][:120], "ip": ip[:45], "ua": ua[:200]},
@@ -193,7 +193,6 @@ def send_delivery(buyer: dict) -> None:
         f"Il link è personale e resta valido: salva il PDF sul telefono o sul computer. Se hai problemi ad aprirlo rispondi a questa email.",
         ("Da dove partire, se sei nell'emergenza: capitolo 2 (le prime 48 ore) e capitolo 5 (i premi sul fatturato). Il resto nel weekend."
          if buyer["slug"] == "squadra" else "Da dove partire: capitolo 2 (i numeri della tua postazione) e capitolo 6 (il contratto in 12 punti)."),
-        f"Garanzia: se entro {GUARANTEE_DAYS} giorni pensi che non ti sia servita, rispondi a questa email e ti rimborso, senza domande.",
         "Se vuoi parlarne a voce, sono su WhatsApp al 392 590 9721.",
         "Buon lavoro,<br>Giovanni Ghigliotti<br>Poltrona Libera",
     ])

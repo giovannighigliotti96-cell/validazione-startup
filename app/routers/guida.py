@@ -85,8 +85,12 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <p class='lead' style='margin-top:12px'>{escape(g['sub'])}</p>
 <div class='pricebox'><span class='now'>{now}</span><span class='was'>{was}</span><span class='tag'>prezzo di lancio</span></div>
 {buy_form}
-<div class='trustline'><span>PDF subito via email</span><span>Garanzia {G.GUARANTEE_DAYS} giorni: rimborso senza domande</span><span>Pagamento sicuro con carta (Stripe)</span></div>
+<div class='trustline'><span>PDF subito via email</span><span>{g['pages']} pagine + kit da stampare</span><span>Carta, PayPal, Apple e Google Pay</span></div>
 </div><div><img class='cover' src='{base}/static/poltrona/guide/{slug}_p1.png' alt='Copertina: {escape(g['title'])}'></div></section>
+
+<h2 data-sec='anteprima' style='margin-top:10px'>Sfoglia la guida</h2>
+<p class='muted' style='margin:0 0 10px'>Copertina, indice e due capitoli, così vedi com'è fatta prima di prenderla.</p>
+<div class='previews'>{previews}</div>
 
 <h2 data-sec='pains'>Ti riconosci?</h2>
 <p class='muted' style='margin:0 0 10px'>Le risposte esatte che ci hanno scritto le titolari di salone quando abbiamo chiesto perché una postazione era vuota.</p>
@@ -96,9 +100,6 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <ol class='chapters'>{chapters}</ol>
 <h3 style='margin-top:22px'>Il kit da stampare</h3><div class='kit'>{kit}</div>
 
-<h2 data-sec='anteprima'>Sfoglia qualche pagina</h2>
-<div class='previews'>{previews}</div>
-
 <div class='two' data-sec='per_chi'><div class='card'><h3 style='margin-top:0'>È per te se</h3><ul>{"".join(f"<li>{escape(x)}</li>" for x in g['for'])}</ul></div>
 <div class='card'><h3 style='margin-top:0'>Non è per te se</h3><ul>{"".join(f"<li>{escape(x)}</li>" for x in g['not_for'])}</ul><p class='muted' style='margin-top:10px'>L'altra guida: <a href='{base}/pl/guida/{g['other']}' style='color:var(--acc)'>«{escape(other['title'])}»</a></p></div></div>
 
@@ -107,7 +108,7 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <p class='muted'>Non è consulenza legale o fiscale: per il tuo caso restano necessari il consulente del lavoro e il commercialista. È il metodo, con i pezzi pronti.</p></div></div>
 
 <div class='buy' data-sec='prezzo' style='margin-top:30px'><div><h2>«{escape(g['title'])}»</h2><p class='muted'>{g['pages']} pagine + kit da stampare · PDF subito via email · {escape(was)} da novembre, oggi <b style='color:#fff'>{escape(now)}</b></p></div><div>{buy_form}</div></div>
-<div class='guarantee' style='margin-top:14px'><span style='font-size:28px'>🛡️</span><span>Se entro {G.GUARANTEE_DAYS} giorni pensi che non ti sia servita, rispondi alla mail di consegna e ti rimborso. Senza domande.</span></div>
+<div class='card' data-sec='costo' style='margin-top:14px'><h3 style='margin-top:0'>Quanto costa aspettare</h3><p class='muted' style='margin:0'>{"Una postazione vuota vale 500-1.000 € al mese di incassi mancati, e ogni mese senza una collega è un mese in cui fai tutto tu. La guida costa meno di una piega, e la applichi da domani mattina." if slug == "squadra" else "Una postazione vuota a Milano vale 500-1.200 € al mese di canone non incassato; in un anno sono 6.000-14.000 €. La guida costa meno di una piega, e il primo annuncio lo pubblichi in cinque minuti."}</p></div>
 
 <h2 data-sec='faq'>Domande</h2>
 <div class='faq'>
@@ -115,8 +116,10 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <details><summary>Vale per tutta Italia?</summary><p>Sì. Le regole (CCNL, INPS, affitto di poltrona) sono nazionali; gli esempi di prezzo delle postazioni sono di Milano e nel kit trovi il calcolo per la tua zona.</p></details>
 <details><summary>Posso avere la fattura?</summary><p>Sì: rispondi alla mail di consegna con i dati del salone (ragione sociale, P.IVA, codice destinatario) e la ricevi entro 2 giorni lavorativi.</p></details>
 <details><summary>Che differenza c'è con l'altra guida?</summary><p>«La dipendente è andata via» è per chi vuole ricostruire la squadra (annunci, colloqui, premi, progetto). «Basta dipendenti» è per chi vuole smettere di assumere e affittare le postazioni. Se sei indecisa, parti dalla situazione di oggi: hai una poltrona vuota adesso? Leggi prima «Basta dipendenti».</p></details>
+<details><summary>Cosa succede dopo il pagamento?</summary><p>Arrivi subito su una pagina con il bottone per scaricare il PDF e ricevi la stessa cosa via email. Nei giorni seguenti ti scrivo io con i capitoli da cui partire e, se vuoi, con una mano per pubblicare la tua postazione.</p></details>
 <details><summary>È aggiornata?</summary><p>Prima edizione settembre 2026, con tabelle CCNL 2026, aliquote INPS 2026 e regole di Milano in vigore. Le fonti sono elencate in fondo al PDF.</p></details>
 </div>
+<div class='card' style='margin-top:24px;text-align:center'><b>Hai dubbi o domande?</b><br><span class='muted'>Chiama o scrivi su WhatsApp a Giovanni: </span><a href='tel:+393925909721' style='color:var(--acc);font-weight:700'>+39 392 590 9721</a> · <a href='https://wa.me/393925909721?text=Ciao%20Giovanni%2C%20ho%20una%20domanda%20sulla%20guida' style='color:var(--acc);font-weight:700'>WhatsApp</a></div>
 <div class='sticky'>{buy_form}</div>"""
     return _shell(f"{g['title']} — guida per titolari di salone", body, _pixel(pv_id, f"fbq('track','ViewContent',{{content_name:'{slug}',content_type:'product',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{vc_id}'}});"), g["headline"], beacon_id=f"guida_{slug}", utm=utm or "diretto")
 
