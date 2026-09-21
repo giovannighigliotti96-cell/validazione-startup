@@ -121,8 +121,8 @@ def save(listing: dict, fields: dict, new_photos: list[bytes], submit: bool) -> 
 def _on_submitted(listing: dict) -> None:
     _sender(f"Il tuo annuncio è in verifica — {BRAND}", _mail([
         f"Ciao {listing.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
-        f"abbiamo ricevuto l'annuncio della postazione di {listing.get('salone')} ({listing.get('zona')}). Lo controlliamo noi a mano: se tutto va bene entro qualche ora è online e le professioniste della tua zona potranno chiederci il tuo contatto.",
-        "Il tuo telefono non compare nell'annuncio: lo diamo solo alle professioniste che chiedono di contattarti.",
+        f"abbiamo ricevuto l'annuncio della postazione di {listing.get('salone')} ({listing.get('zona')}). Lo controlliamo noi a mano: se tutto va bene entro qualche ora è online e le professioniste della tua zona potranno chiamarti.",
+        "Nell'annuncio compaiono nome del salone, zona, giorni, prezzo, foto e il numero da chiamare: le professioniste ti chiamano direttamente.",
         f"Per modificare l'annuncio in qualsiasi momento: {link(listing)}",
         "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), listing["email"])
     rows = "".join(f"<tr><td style='padding:4px 10px;color:#64748b'>{escape(k)}</td><td style='padding:4px 10px'><b>{escape(str(listing.get(k) or ''))}</b></td></tr>"
@@ -155,7 +155,7 @@ def set_status(listing_id: str, status: str, note: str = "", quiet: bool = False
         _sender(f"Il tuo annuncio è online — {BRAND}", _mail([
             f"Ciao {listing.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
             f"l'annuncio della postazione di {listing.get('salone')} è online: {base()}/pl/postazioni",
-            "Da adesso le professioniste che lo vedono possono chiederci il tuo contatto; quando succede ti scriviamo noi con nome e telefono, e vi mettete d'accordo direttamente. Pubblicare e ricevere richieste non costa nulla.",
+            "Da adesso le professioniste che lo vedono ti chiamano direttamente al numero che hai indicato, e vi mettete d'accordo tra di voi. Pubblicare e ricevere chiamate non costa nulla.",
             f"Per modificare o mettere in pausa l'annuncio: {link(listing)}",
             "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), listing["email"])
     elif status == "rifiutato":
@@ -173,15 +173,26 @@ def online_listings() -> list[dict]:
 
 
 def public_card(listing: dict) -> dict:
-    """Anonymous card for the landing rail and the catalogue: no salon name, no address, no phone."""
+    """Card for the landing rail and the catalogue: everything in the clear, the professional calls the owner directly."""
     tags = [t for t in (listing.get("zona"), listing.get("giorni")) if t][:2]
     if listing.get("chi_cerchi"):
         tags.append(listing["chi_cerchi"][:28])
     price = listing.get("prezzo") or ""
     m = re.search(r"\d[\d.]*", price)
-    return {"photo_url": (listing.get("photos") or [None])[0], "tags": tags[:3], "title": f"Postazione a {listing.get('zona')}",
-            "text": " · ".join(x for x in (listing.get("incluso"), listing.get("descrizione")) if x)[:180] or "Chiedi il contatto per i dettagli.",
-            "price": (m.group(0) + " €") if m else price[:24], "price_note": "al mese" if m else "", "note": "Annuncio verificato · contatto su richiesta", "id": listing["id"]}
+    return {"photo_url": (listing.get("photos") or [None])[0], "tags": tags[:3], "title": f"{listing.get('salone')} · {listing.get('zona')}",
+            "text": " · ".join(x for x in (listing.get("incluso"), listing.get("descrizione")) if x)[:180] or "Chiama la titolare per i dettagli.",
+            "price": (m.group(0) + " €") if m else price[:24], "price_note": "al mese" if m else "",
+            "note": f"Annuncio verificato · chiama {listing.get('titolare') or 'la titolare'}: {listing.get('telefono')}", "id": listing["id"],
+            "telefono": listing.get("telefono"), "titolare": listing.get("titolare")}
+
+
+def track_call(listing_id: str, kind: str) -> None:
+    """A tap on 'Chiama' or 'WhatsApp' in the catalogue: the demand signal we measure instead of a paywall."""
+    from google.cloud.firestore_v1 import Increment
+
+    ref = db.get_db().collection("listings").document(listing_id)
+    if ref.get().exists:
+        ref.update({f"clicks.{'whatsapp' if kind == 'wa' else 'call'}": Increment(1), "last_click_at": db.now()})
 
 
 # ----------------------------------------------------------------------------- reminders
