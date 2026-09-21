@@ -112,6 +112,10 @@ def create_checkout(slug: str, utm: str = "", fb: tuple[str, str] = ("", ""), ip
                                                                      "images": [f"{base()}/static/poltrona/guide/{slug}_p1.png"]}}}],
         customer_creation="always",
         billing_address_collection="auto",
+        phone_number_collection={"enabled": True},  # for the WhatsApp follow-up (optional field)
+        payment_method_configuration="pmc_1S1173KZdRNh4BbI0EYOQDgI",  # card + Apple Pay + Google Pay + Link + PayPal + Amazon Pay
+        custom_text={"submit": {"message": f"Ricevi il PDF subito via email. Garanzia {GUARANTEE_DAYS} giorni: rimborso senza domande."},
+                     "after_submit": {"message": "Grazie! Nella pagina successiva trovi il link per scaricare la guida."}},
         allow_promotion_codes=True,
         metadata={"slug": slug, "utm": utm[:80], "fbp": fb[0][:80], "fbc": fb[1][:120], "ip": ip[:45], "ua": ua[:200]},
         success_url=f"{base()}/pl/guida/{slug}/grazie?session_id={{CHECKOUT_SESSION_ID}}",
