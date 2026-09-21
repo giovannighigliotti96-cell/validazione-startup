@@ -152,9 +152,9 @@ def set_status(listing_id: str, status: str, note: str = "", quiet: bool = False
     if quiet:
         return listing
     if status == "online":
-        _sender(f"Il tuo annuncio è online — {BRAND}", _mail([
+        _sender(f"Annuncio approvato: sei online — {BRAND}", _mail([
             f"Ciao {listing.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
-            f"l'annuncio della postazione di {listing.get('salone')} è online: {base()}/pl/postazioni",
+            f"il tuo annuncio è stato approvato ed è online: {base()}/pl/postazioni",
             "Da adesso le professioniste che lo vedono ti chiamano direttamente al numero che hai indicato, e vi mettete d'accordo tra di voi. Pubblicare e ricevere chiamate non costa nulla.",
             f"Per modificare o mettere in pausa l'annuncio: {link(listing)}",
             "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), listing["email"])
@@ -253,12 +253,17 @@ def request_contact(listing_id: str, form: dict) -> dict | None:
 
 
 # ----------------------------------------------------------------------------- admin data
+def is_test(email: str | None) -> bool:
+    e = (email or "").lower()
+    return any(t and (e == t or e.endswith("@" + t) or e.endswith(t)) for t in (x.strip().lower() for x in get_settings().pl_test_emails.split(",")))
+
+
 def admin_data() -> dict:
     client = db.get_db()
-    listings = [{"id": d.id, **d.to_dict()} for d in client.collection("listings").stream()]
+    listings = [{"id": d.id, **d.to_dict()} for d in client.collection("listings").stream() if not is_test(d.to_dict().get("email"))]
     listings.sort(key=lambda x: ({"in_verifica": 0, "online": 1, "bozza": 2, "rifiutato": 3, "chiuso": 4}.get(x.get("status"), 9), str(x.get("updated_at") or "")))
-    owners = [{"id": d.id, **d.to_dict()} for d in client.collection(db.PROBLEM_CLUSTERS).document(OWNERS).collection("leads").stream()]
-    pros = [{"id": d.id, **d.to_dict()} for d in client.collection(db.PROBLEM_CLUSTERS).document(PROS).collection("leads").stream()]
-    reqs = [{"id": d.id, **d.to_dict()} for d in client.collection("contact_requests").stream()]
+    owners = [{"id": d.id, **d.to_dict()} for d in client.collection(db.PROBLEM_CLUSTERS).document(OWNERS).collection("leads").stream() if not is_test(d.to_dict().get("email"))]
+    pros = [{"id": d.id, **d.to_dict()} for d in client.collection(db.PROBLEM_CLUSTERS).document(PROS).collection("leads").stream() if not is_test(d.to_dict().get("email"))]
+    reqs = [{"id": d.id, **d.to_dict()} for d in client.collection("contact_requests").stream() if not is_test(d.to_dict().get("email"))]
     reqs.sort(key=lambda x: str(x.get("at") or ""), reverse=True)
     return {"listings": listings, "owners": owners, "pros": pros, "requests": reqs}

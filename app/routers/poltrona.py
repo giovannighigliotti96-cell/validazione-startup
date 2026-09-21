@@ -124,8 +124,27 @@ async def annuncio_post(token: str, request: Request):
         P.set_status(li["id"], "chiuso" if action == "pausa" else ("online" if li.get("approved_at") else "in_verifica"), quiet=True)
         return RedirectResponse(f"{P.base()}/pl/annuncio/{token}", status_code=303)
     submit = action == "1"
-    P.save(li, {k: form.get(k) for k in ("salone", "titolare", "telefono", "zona", "giorni", "prezzo", "incluso", "chi_cerchi", "descrizione")}, photos, submit)
+    out = P.save(li, {k: form.get(k) for k in ("salone", "titolare", "telefono", "zona", "giorni", "prezzo", "incluso", "chi_cerchi", "descrizione")}, photos, submit)
+    if submit and out.get("status") == "in_verifica" and li.get("status") != "in_verifica":
+        return RedirectResponse(f"{P.base()}/pl/annuncio/{token}/grazie", status_code=303)
     return RedirectResponse(f"{P.base()}/pl/annuncio/{token}?saved=1", status_code=303)
+
+
+@router.get("/annuncio/{token}/grazie", response_class=HTMLResponse)
+def grazie(token: str):
+    li = P.by_token(token)
+    if not li:
+        raise HTTPException(404, "link non valido")
+    base = P.base()
+    body = f"""<div style='max-width:640px;margin:30px auto;text-align:center'>
+<div style='font-size:52px;line-height:1'>✅</div>
+<h1 style='margin-top:14px'>Annuncio inviato: è in fase di approvazione</h1>
+<p class='lead' style='margin:10px auto 22px'>Grazie {escape(li.get('titolare') or '')}. Controlliamo a mano ogni annuncio: se tutto va bene entro qualche ora la postazione di <b>{escape(li.get('salone') or '')}</b> è online e ti mandiamo una email di conferma.</p>
+<div class='card' style='text-align:left'>
+<b>Cosa succede adesso</b>
+<ol style='margin:8px 0 0;padding-left:20px;line-height:1.7'><li>Approviamo l'annuncio e ti scriviamo a {escape(li.get('email') or '')}.</li><li>Le professioniste di Milano lo vedono con zona, giorni, prezzo, foto e il tuo numero.</li><li>Ti chiamano direttamente: vi mettete d'accordo tra di voi.</li></ol></div>
+<p class='muted' style='margin-top:18px'>Vuoi modificare qualcosa? <a href='{base}/pl/annuncio/{escape(token)}' style='color:inherit'>Apri il tuo annuncio</a> (il link è anche nella email).</p></div>"""
+    return _page("Annuncio inviato", body, pixel="Lead")
 
 
 # ----------------------------------------------------------------------------- public catalogue
@@ -177,23 +196,57 @@ async def contatto(listing_id: str, request: Request):
 
 
 # ----------------------------------------------------------------------------- admin
-def _auth(request: Request, token: str | None) -> Response | None:
-    expected = get_settings().api_token
-    tok = token or request.cookies.get("pl_admin")
-    if expected and tok != expected:
-        raise HTTPException(401, "token mancante: apri /pl/admin?token=API_TOKEN")
-    return None
+def _cookie_value() -> str:
+    """What the browser stores: a hash of the password and the cron secret, never the password itself."""
+    import hashlib
+
+    s = get_settings()
+    return hashlib.sha256(f"{s.pl_admin_password}|{s.cron_token}|pl-admin".encode()).hexdigest()
 
 
-def _set_cookie(resp: Response, token: str | None) -> Response:
-    if token:
-        resp.set_cookie("pl_admin", token, max_age=60 * 60 * 24 * 90, httponly=True, samesite="lax")
+def _logged_in(request: Request) -> bool:
+    pw = get_settings().pl_admin_password
+    return bool(pw) and request.cookies.get("pl_admin") == _cookie_value()
+
+
+def _login_page(error: str = "") -> HTMLResponse:
+    base = P.base()
+    closed = not get_settings().pl_admin_password
+    body = f"""<div class='card' style='max-width:420px;margin:40px auto'><h1 style='font-size:24px'>Pannello</h1>
+{"<p class='muted'>Pannello chiuso: manca PL_ADMIN_PASSWORD nella configurazione del server.</p>" if closed else f"<form method='post' action='{base}/pl/admin/login'><label for='pw'>Password</label><input id='pw' name='password' type='password' autocomplete='current-password' required>{('<p style=color:var(--bad)>' + escape(error) + '</p>') if error else ''}<div class='row' style='margin-top:16px'><button class='btn' type='submit'>Entra</button></div></form>"}
+</div>"""
+    return _page("Pannello", body, pixel="")
+
+
+@router.post("/admin/login")
+async def admin_login(request: Request):
+    form = await request.form()
+    s = get_settings()
+    import secrets as _secrets
+
+    if s.pl_admin_password and _secrets.compare_digest(str(form.get("password") or ""), s.pl_admin_password):
+        resp = RedirectResponse(f"{P.base()}/pl/admin", status_code=303)
+        resp.set_cookie("pl_admin", _cookie_value(), max_age=60 * 60 * 24 * 30, httponly=True, samesite="lax", secure=P.base().startswith("https"))
+        return resp
+    return _login_page("Password sbagliata.")
+
+
+@router.get("/admin/logout")
+def admin_logout():
+    resp = RedirectResponse(f"{P.base()}/pl/admin", status_code=303)
+    resp.delete_cookie("pl_admin")
     return resp
+
+
+def _auth(request: Request, token: str | None = None) -> None:
+    if not _logged_in(request):
+        raise HTTPException(401, "login richiesto")
 
 
 @router.get("/admin", response_class=HTMLResponse)
 def admin(request: Request, token: str | None = None):
-    _auth(request, token)
+    if not _logged_in(request):
+        return _login_page()
     d = P.admin_data()
     base = P.base()
     pill = {"in_verifica": "warn", "online": "ok", "bozza": "gray", "rifiutato": "bad", "chiuso": "gray"}
@@ -225,20 +278,27 @@ def admin(request: Request, token: str | None = None):
     owners = "".join(lead_row(l, "o") for l in sorted(d["owners"], key=lambda x: str(x.get("at")), reverse=True))
     pros = "".join(lead_row(l, "p") for l in sorted(d["pros"], key=lambda x: str(x.get("at")), reverse=True))
     reqs = "".join(f"<tr><td>{str(r.get('at'))[:16]}</td><td><b>{escape(r.get('nome') or '')}</b><br>{escape(r.get('telefono') or '')}<br>{escape(r.get('email') or '')}</td><td>{escape(r.get('salone') or '')} · {escape(r.get('zona') or '')}</td><td>{escape(r.get('specialita') or '')}<br><small>{escape(r.get('messaggio') or '')}</small></td><td><span class='pill gray'>{escape(r.get('status') or '')}</span></td></tr>" for r in d["requests"])
-    body = f"""<h1>Pannello Poltrona Libera</h1>
-<p class='lead'>Annunci {len(d['listings'])} · online {sum(1 for x in d['listings'] if x.get('status') == 'online')} · da approvare {sum(1 for x in d['listings'] if x.get('status') == 'in_verifica')} · saloni iscritti {len(d['owners'])} · professioniste {len(d['pros'])} · richieste contatto {len(d['requests'])}
-<br><a href='{base}/pl/admin/export.csv?what=owners'>CSV saloni</a> · <a href='{base}/pl/admin/export.csv?what=pros'>CSV professioniste</a> · <a href='{base}/pl/admin/export.csv?what=listings'>CSV annunci</a> · <a href='{base}/pl/postazioni' target='_blank'>catalogo pubblico ↗</a></p>
+    n_sub = sum(1 for x in d['listings'] if x.get('status') in ('in_verifica', 'online', 'rifiutato', 'chiuso'))
+    n_on = sum(1 for x in d['listings'] if x.get('status') == 'online')
+    n_wait = sum(1 for x in d['listings'] if x.get('status') == 'in_verifica')
+    n_draft = sum(1 for x in d['listings'] if x.get('status') == 'bozza')
+    calls = sum(int((x.get('clicks') or {}).get('call', 0)) + int((x.get('clicks') or {}).get('whatsapp', 0)) for x in d['listings'])
+    kpi = lambda n, l: f"<div class='card' style='padding:12px 14px'><b style='font-size:26px;font-family:Fraunces,Georgia,serif'>{n}</b><br><span class='muted'>{l}</span></div>"  # noqa: E731
+    body = f"""<div class='row' style='justify-content:space-between'><h1>Pannello Poltrona Libera</h1><a class='muted' href='{base}/pl/admin/logout'>esci</a></div>
+<p class='muted' style='margin:0 0 14px'>Test esclusi ({escape(get_settings().pl_test_emails)}).</p>
+<div class='grid' style='grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:8px'>{kpi(len(d['owners']), 'saloni iscritti')}{kpi(n_sub, 'annunci inviati')}{kpi(n_wait, 'da approvare')}{kpi(n_on, 'online')}{kpi(n_draft, 'bozze non finite')}{kpi(len(d['pros']), 'professioniste iscritte')}{kpi(calls, 'tap su chiama / WhatsApp')}</div>
+<p class='muted'><a href='{base}/pl/admin/export.csv?what=owners'>CSV saloni</a> · <a href='{base}/pl/admin/export.csv?what=pros'>CSV professioniste</a> · <a href='{base}/pl/admin/export.csv?what=listings'>CSV annunci</a> · <a href='{base}/pl/postazioni' target='_blank'>catalogo pubblico ↗</a></p>
 <h2>Annunci</h2><div class='tbl'><table><thead><tr><th>Stato</th><th>Salone</th><th>Zona · giorni · prezzo</th><th>Cerca</th><th>Foto</th><th>Azioni</th></tr></thead><tbody>{rows or '<tr><td colspan=6 class=muted>nessun annuncio</td></tr>'}</tbody></table></div>
 <h2>Richieste di contatto</h2><div class='tbl'><table><thead><tr><th>Quando</th><th>Professionista</th><th>Per</th><th>Note</th><th>Stato</th></tr></thead><tbody>{reqs or '<tr><td colspan=5 class=muted>nessuna</td></tr>'}</tbody></table></div>
 <h2>Match per zona</h2><div class='grid'>{zones}</div>
 <h2>Saloni iscritti</h2><div class='tbl'><table><thead><tr><th>Data</th><th>Titolare · salone</th><th>Contatti</th><th>Zona</th><th>P.IVA</th><th>Risposta</th><th>Form</th></tr></thead><tbody>{owners}</tbody></table></div>
 <h2>Professioniste iscritte</h2><div class='tbl'><table><thead><tr><th>Data</th><th>Nome</th><th>Contatti</th><th>Zona</th><th>Specialità</th><th>Risposta</th><th>Form</th></tr></thead><tbody>{pros}</tbody></table></div>"""
-    return _set_cookie(_page("Pannello", body, pixel=""), token)
+    return _page("Pannello", body, pixel="")
 
 
 @router.post("/admin/listing/{listing_id}/status")
 async def admin_status(listing_id: str, request: Request):
-    _auth(request, None)
+    _auth(request)
     form = await request.form()
     if not P.set_status(listing_id, str(form.get("status") or ""), str(form.get("note") or "")):
         raise HTTPException(400, "stato non valido")
@@ -247,7 +307,7 @@ async def admin_status(listing_id: str, request: Request):
 
 @router.get("/admin/export.csv")
 def admin_export(request: Request, what: str = "owners", token: str | None = None):
-    _auth(request, token)
+    _auth(request)
     d = P.admin_data()
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";")
