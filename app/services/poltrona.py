@@ -173,6 +173,12 @@ def set_status(listing_id: str, status: str, note: str = "", quiet: bool = False
         upd["approved_at"] = db.now()
     ref.update(upd)
     listing.update(upd)
+    if status == "online":
+        import threading
+
+        from app.services import matching
+
+        threading.Thread(target=matching.match_listing, args=(listing,), daemon=True).start()
     if quiet:
         return listing
     if status == "online":

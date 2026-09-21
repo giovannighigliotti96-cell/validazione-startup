@@ -214,6 +214,12 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
         return RedirectResponse(f"{_pl.link(draft)}?nuovo={int(is_new)}", status_code=303)
     if is_new:
         _notify_signup(c, offer, lead)
+        if cluster_id == "poltrona_libera_professioniste":  # find her a chair right away
+            import threading
+
+            from app.services import matching
+
+            threading.Thread(target=matching.match_lead, args=(lead_id, lead), daemon=True).start()
     return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1", status_code=303)
 
 

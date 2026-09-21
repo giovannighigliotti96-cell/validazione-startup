@@ -306,6 +306,16 @@ def admin(request: Request, token: str | None = None):
                                f"<td>{escape(str((l.get('extra') or {}).get('zona') or ''))}</td><td>{escape(str((l.get('extra') or {}).get('specialita') or (l.get('extra') or {}).get('piva') or ''))}</td><td><small>{escape((l.get('answer') or '')[:120])}</small></td><td><small class='muted'>{escape(l.get('placement') or '')} · {escape(l.get('variant') or '')}</small></td></tr>")
     owners = "".join(lead_row(l, "o") for l in sorted(d["owners"], key=lambda x: str(x.get("at")), reverse=True))
     pros = "".join(lead_row(l, "p") for l in sorted(d["pros"], key=lambda x: str(x.get("at")), reverse=True))
+    from app.services import matching as _m
+
+    def _mrow(m: dict) -> str:
+        ok = "ok" if m.get("match") else "gray"
+        wa = f"<a class='btn' style='padding:6px 12px;background:#25d366' href='{escape(m['wa_link'])}' target='_blank'>Invia</a>" if m.get("wa_link") else ""
+        return (f"<tr><td><span class='pill {ok}'>{m.get('score')}</span><br><small class='muted'>{escape(m.get('specialty_fit') or '')}/{escape(m.get('zone_fit') or '')}</small></td>"
+                f"<td><b>{escape(m.get('nome') or '')}</b><br>{escape(m.get('specialita') or '')}<br>{escape(m.get('telefono') or '')}</td><td>{escape(m.get('salone') or '')}<br>{escape(m.get('zona') or '')}</td>"
+                f"<td><small>{escape(m.get('reason') or '')}</small></td><td><span class='pill {ok}'>{escape(m.get('status') or '')}</span></td><td>{wa}</td></tr>")
+
+    matches = "".join(_mrow(m) for m in _m.all_matches())
     reqs = "".join(f"<tr><td>{str(r.get('at'))[:16]}</td><td><b>{escape(r.get('nome') or '')}</b><br>{escape(r.get('telefono') or '')}<br>{escape(r.get('email') or '')}</td><td>{escape(r.get('salone') or '')} · {escape(r.get('zona') or '')}</td><td>{escape(r.get('specialita') or '')}<br><small>{escape(r.get('messaggio') or '')}</small></td><td><span class='pill gray'>{escape(r.get('status') or '')}</span></td></tr>" for r in d["requests"])
     n_sub = sum(1 for x in d['listings'] if x.get('status') in ('in_verifica', 'online', 'rifiutato', 'chiuso'))
     n_on = sum(1 for x in d['listings'] if x.get('status') == 'online')
@@ -318,6 +328,8 @@ def admin(request: Request, token: str | None = None):
 <div class='grid' style='grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:8px'>{kpi(len(d['owners']), 'saloni iscritti')}{kpi(n_sub, 'annunci inviati')}{kpi(n_wait, 'da approvare')}{kpi(n_on, 'online')}{kpi(n_draft, 'bozze non finite')}{kpi(len(d['pros']), 'professioniste iscritte')}{kpi(calls, 'tap su chiama / WhatsApp')}</div>
 <p class='muted'><a href='{base}/pl/admin/export.csv?what=owners'>CSV saloni</a> · <a href='{base}/pl/admin/export.csv?what=pros'>CSV professioniste</a> · <a href='{base}/pl/admin/export.csv?what=listings'>CSV annunci</a> · <a href='{base}/pl/postazioni' target='_blank'>catalogo pubblico ↗</a></p>
 <h2>Annunci</h2><div class='tbl'><table><thead><tr><th>Stato</th><th>Salone</th><th>Zona · giorni · prezzo</th><th>Cerca</th><th>Foto</th><th>Azioni</th></tr></thead><tbody>{rows or '<tr><td colspan=6 class=muted>nessun annuncio</td></tr>'}</tbody></table></div>
+<h2>Match automatici</h2><p class='muted' style='margin:0 0 8px'>Ogni annuncio online viene confrontato con ogni professionista iscritta (specialità prima, poi zona). Match ≥ 70: email alla professionista con il numero della titolare, e a te il link WhatsApp.</p>
+<div class='tbl'><table><thead><tr><th>Punteggio</th><th>Professionista</th><th>Postazione</th><th>Perché</th><th>Stato</th><th>WhatsApp</th></tr></thead><tbody>{matches or '<tr><td colspan=6 class=muted>nessun confronto ancora</td></tr>'}</tbody></table></div>
 <h2>Richieste di contatto</h2><div class='tbl'><table><thead><tr><th>Quando</th><th>Professionista</th><th>Per</th><th>Note</th><th>Stato</th></tr></thead><tbody>{reqs or '<tr><td colspan=5 class=muted>nessuna</td></tr>'}</tbody></table></div>
 <h2>Match per zona</h2><div class='grid'>{zones}</div>
 <h2>Saloni iscritti</h2><div class='tbl'><table><thead><tr><th>Data</th><th>Titolare · salone</th><th>Contatti</th><th>Zona</th><th>P.IVA</th><th>Risposta</th><th>Form</th></tr></thead><tbody>{owners}</tbody></table></div>
