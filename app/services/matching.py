@@ -78,6 +78,19 @@ def evaluate(listing: dict, lead: dict) -> Verdict | None:
         return None
 
 
+PARTICLES = {"de", "di", "da", "del", "della", "dello", "dei", "degli", "la", "lo", "le", "van", "von", "mc", "d'"}
+
+
+def first_name(full: str) -> str:
+    """'De Maria Dina' -> 'Dina'; 'Gessica' -> 'Gessica'; 'DOTT SSA BARBARA LIDIA CORLEONE' -> 'Barbara'."""
+    toks = [t for t in (full or "").replace(".", " ").split() if t.lower() not in ("dott", "dottssa", "dott.ssa", "ssa", "sig", "sig.ra", "sigra")]
+    if not toks:
+        return ""
+    if toks[0].lower() in PARTICLES and len(toks) > 1:
+        return toks[-1].title()
+    return toks[0].title()
+
+
 def _tel(phone: str) -> str:
     d = "".join(ch for ch in (phone or "") if ch.isdigit())
     return "+" + (d if d.startswith("39") and len(d) > 10 else "39" + d.lstrip("0"))
@@ -96,7 +109,7 @@ def _wa(phone: str, text: str) -> str:
 
 def _notify(listing: dict, lead: dict, v: Verdict) -> None:
     e = lead.get("extra") or {}
-    first = (e.get("nome") or "").strip().split(" ")[0] or ""
+    first = first_name(e.get("nome") or "")
     base = P.base()
     owner_wa = _wa(listing.get("telefono") or "", f"Ciao {listing.get('titolare') or ''}, ho visto la postazione di {listing.get('salone')} su Poltrona Libera e mi interessa")
     photo = (listing.get("photos") or [None])[0]
@@ -116,7 +129,7 @@ def _notify(listing: dict, lead: dict, v: Verdict) -> None:
         except Exception as ex:  # noqa: BLE001
             log.error("match email to pro failed: %s", ex)
     # the owner too: a professional who fits has just been sent her number
-    owner_first = (listing.get("titolare") or "").strip().split(" ")[0]
+    owner_first = first_name(listing.get("titolare") or "")
     owner_paras = [
         f"Ciao {owner_first}," if owner_first else "Ciao,",
         f"buone notizie: una professionista in linea con il tuo annuncio di <b>{escape(listing.get('salone') or '')}</b> si è iscritta su Poltrona Libera e le abbiamo appena mandato il tuo numero.",
@@ -163,7 +176,7 @@ def _consider(listing: dict, lead_id: str, lead: dict) -> dict | None:
     doc = {"listing_id": listing["id"], "lead_id": lead_id, "salone": listing.get("salone"), "zona": listing.get("zona"), "nome": e.get("nome"),
            "telefono": e.get("telefono"), "email": lead.get("email"), "specialita": e.get("specialita"), "score": v.score, "match": v.match,
            "reason": v.reason, "specialty_fit": v.specialty_fit, "zone_fit": v.zone_fit, "status": "notificata" if v.match else "scartata",
-           "wa_link": _wa(e.get("telefono") or "", f"Ciao {(e.get('nome') or '').split(' ')[0]}, sono Giovanni di Poltrona Libera: è online una postazione per te, {listing.get('salone')} a {listing.get('zona')}. Chiama {listing.get('titolare')} al {listing.get('telefono')}. Dettagli: {P.base()}/pl/postazioni") if v.match else "",
+           "wa_link": _wa(e.get("telefono") or "", f"Ciao {first_name(e.get('nome') or '')}, sono Giovanni di Poltrona Libera: è online una postazione per te, {listing.get('salone')} a {listing.get('zona')}. Chiama {listing.get('titolare')} al {listing.get('telefono')}. Dettagli: {P.base()}/pl/postazioni") if v.match else "",
            "created_at": db.now()}
     ref.set(doc)
     if v.match:
