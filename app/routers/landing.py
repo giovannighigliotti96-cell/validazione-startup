@@ -151,6 +151,11 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
             log.error("online listings: %s", e)
             real = []
         offer = {**offer, "listings": real + list(offer.get("listings") or []), "footer_html": _pl.footer_html()}
+        if real:
+            n = len(real)
+            offer["listings_title"] = f"{n} postazion{'e' if n == 1 else 'i'} disponibil{'e' if n == 1 else 'i'} adesso a Milano"
+            offer["listings_hint"] = ("Annunci veri di saloni iscritti, con il numero da chiamare. Seguono alcuni esempi con dati indicativi, marcati come tali. "
+                                      f"Tutte le postazioni: {base}/pl/postazioni")
     q = request.query_params
     offer = {**offer, "_utm": re.sub(r"[^A-Za-z0-9_./-]", "", "/".join(x for x in (q.get("utm_source"), q.get("utm_campaign"), q.get("utm_content")) if x) or ("meta" if q.get("fbclid") else "diretto"))[:80]}
     resp = HTMLResponse(render(c, offer, var, base, signed_up=bool(ok)))
