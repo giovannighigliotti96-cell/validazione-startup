@@ -23,6 +23,9 @@ app.include_router(signals.router)
 app.include_router(opportunities.router)
 app.include_router(cron.router)
 app.include_router(landing.router)
+from app.routers import poltrona as _poltrona  # noqa: E402
+
+app.include_router(_poltrona.router)
 app.mount("/static", StaticFiles(directory="public"), name="static")  # page assets, ad images
 
 

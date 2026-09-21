@@ -154,9 +154,11 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
         tags = "".join(f"<span class='tag'>{escape(x)}</span>" for x in lp.get("tags", []))
         ph = (f"<div class='ph' style=\"background-image:url('{escape(lp['photo_url'])}');background-size:cover;background-position:center\"></div>" if lp.get("photo_url")
               else f"<div class='ph'>{escape(lp.get('photo_label') or 'foto della postazione')}</div>")
-        return (f"<aside class='listing'>{ph}<div class='body'>{tags}<h3>{escape(lp.get('title') or '')}</h3><p>{escape(lp.get('text') or '')}</p>"
-                f"<div class='price'>{escape(lp.get('price') or '')}<span> {escape(lp.get('price_note') or '')}</span></div>"
-                f"<div class='note'>{escape(lp.get('note') or '')}</div></div></aside>")
+        inner = (f"{ph}<div class='body'>{tags}<h3>{escape(lp.get('title') or '')}</h3><p>{escape(lp.get('text') or '')}</p>"
+                 f"<div class='price'>{escape(lp.get('price') or '')}<span> {escape(lp.get('price_note') or '')}</span></div>"
+                 f"<div class='note'>{escape(lp.get('note') or '')}</div></div>")
+        return (f"<a class='listing' href='{escape(lp['href'])}' style='text-decoration:none;color:inherit'>{inner}</a>" if lp.get("href")
+                else f"<aside class='listing'>{inner}</aside>")
     listings = offer.get("listings") or []
     rail_html = ""
     if listings:
@@ -177,7 +179,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 
     def _form(anchor: str, compact: bool) -> str:
         if signed_up:
-            return f'<div id="{anchor}" class="ok">{t["thanks"]}</div>'
+            return f'<div id="{anchor}" class="ok">{escape(offer.get("thanks_text") or t["thanks"])}</div>'
         all_f = short_fields if compact else (offer.get("form_extra") or [])
         inp = lambda f: f'<input name="{escape(f["name"])}" type="{escape(f.get("type") or "text")}" placeholder="{escape(f["placeholder"])}" {"required" if f.get("required") else ""}>'
         first = "".join(inp(f) for f in all_f if f.get("first"))
@@ -205,7 +207,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
     quotes = offer.get("quotes") or []  # curated (cleaned, translated, anonymised) from real signals; never raw scraped text on a public page
     pay = offer.get("payment_link_url")
     if signed_up:
-        form = f'<div class="ok">{t["thanks"]}</div>'
+        form = f'<div class="ok">{escape(offer.get("thanks_text") or t["thanks"])}</div>'
     elif pay:
         form = f'<a class="btn" href="{escape(pay)}" onclick="try{{fbq(\'track\',\'InitiateCheckout\')}}catch(e){{}}">{escape(v["cta"])}</a>'
     else:
@@ -220,7 +222,7 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
         </form>"""
     quotes_html = "".join(f'<div class="q">&ldquo;{escape(q["quote"][:240])}&rdquo;<small>{escape(q.get("role") or "")}</small></div>' for q in quotes)
     note_q = " Testimonianze raccolte online, anonimizzate." if lang == "it" else " Collected online, anonymised."
-    benefits = "".join(f'<div class="card"><b>✓ {escape(b)}</b></div>' for b in v.get("benefits", []))
+    benefits = "".join(f'<div class="card"><b>{"" if warm else "✓ "}{escape(b)}</b></div>' for b in v.get("benefits", []))
     steps = "".join(f'<div class="card"><span class="num">{i+1}</span><p>{escape(s)}</p></div>' for i, s in enumerate(v.get("how_it_works", [])))
     faq = "".join(f'<details><summary>{escape(o.get("objection",""))}</summary><p>{escape(o.get("answer",""))}</p></details>' for o in v.get("objections", []))
     return f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

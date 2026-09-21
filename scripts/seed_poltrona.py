@@ -8,88 +8,76 @@ NL = chr(10)
 NL2 = NL + NL
 BASE = "https://validazione-startup-148506634481.europe-west1.run.app"
 COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/logo_512.png", cover_url=f"{BASE}/static/poltrona/cover_1640x856.png",
-              active_variants=["A"], generated_by="manual", theme="warm", listings_title="Così appaiono gli annunci", listings_hint="Esempi di annuncio: foto reali di saloni, dati indicativi. Nome e indirizzo sempre nascosti fino alla richiesta di contatto.", hero_photo_url=f"{BASE}/static/poltrona/salone_1.jpg",
+              active_variants=["A"], generated_by="manual", theme="warm", hero_photo_url=f"{BASE}/static/poltrona/salone_1.jpg",
               photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), Phalinn Ooi (CC BY 2.0), Haldane Martin / Micky Hoyle (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
               notes="Marketplace affitto di poltrona: due lati, due landing. Citazioni da post pubblici di titolari, ruolo senza nome.")
 
 OWNERS = dict(**COMMON, clarity_id="yka3nisvdz", kicker="Per titolari di saloni · Milano", hero_card_title="In tre passi", quotes_title="Ti riconosci?", quotes_lead="Frasi vere di titolari di salone.",
-    confirm_email={"subject": "Sei in lista — {brand}", "body": (
-        "Ciao{nome_sp}," + NL2 + "grazie: la tua postazione è in lista su {brand}." + NL2 +
-        "Cosa succede adesso: entro 2-3 giorni ti chiamo io, Giovanni, per 15 minuti. Mi racconti il salone, la postazione e il canone che vorresti; "
-        "poi cerco tra le professioniste della tua zona e ti presento le prime 2-3 che hanno senso per te. Se preferisci, rispondi a questa email con il giorno e l'orario migliori per la chiamata." + NL2 +
-        "Per te non ci sono costi: tratteniamo il 15% del canone solo nei mesi in cui la postazione è occupata, e ti giriamo il resto entro il 5 di ogni mese." + NL2 +
+    listings_title="Così appaiono gli annunci", listings_hint="Esempi con dati indicativi e foto di saloni reali. Il tuo annuncio mostrerà zona, giorni, prezzo e foto: nome, indirizzo e telefono restano nascosti.",
+    confirm_email={"subject": "Pubblica la tua postazione — {brand}", "body": (
+        "Ciao{nome_sp}," + NL2 + "grazie per esserti registrata su {brand}. Pubblicare la tua postazione è gratis e ci vogliono due minuti: giorni, prezzo, una foto e il numero da chiamare." + NL2 +
+        "Il tuo annuncio lo completi qui (il link è personale, tienilo):" + NL + "{link_annuncio}" + NL2 +
+        "Nome del salone, indirizzo e telefono non compaiono nell'annuncio: le professioniste vedono zona, giorni, prezzo e foto, e chiedono a noi il tuo contatto. Poi vi mettete d'accordo direttamente." + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
-    trust=["Canone incassato da noi e girato a te entro il 5 del mese", "Contratto registrato, SCIA al SUAP e sostituzione inclusi", "Zero costi fissi: tratteniamo il 15% solo quando rende"],
-    hero_photo_caption="Una postazione libera è un'entrata in più, non un problema in più.", lock_text="", price_badge="", founder_note="Stiamo partendo a Milano con un primo gruppo di saloni. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Nome e indirizzo del salone visibili solo dopo la richiesta di contatto.", form_name_label="Nome del salone (non sarà mostrato)",
+    trust=["Pubblicare è gratis, nessuna commissione", "Annuncio anonimo: nome e indirizzo restano nascosti", "Ti mettiamo in contatto, poi vi accordate tra di voi"],
+    hero_photo_caption="Una postazione libera è un'entrata in più, non un problema in più.", lock_text="", price_badge="", founder_note="Stiamo partendo a Milano con i primi saloni. Pubblicare è gratis e resta gratis per chi si iscrive adesso.", hero_note="Nome e indirizzo del salone visibili solo a chi chiede il contatto.", form_name_label="Nome del salone (non sarà mostrato)",
     form_question="Perché la postazione oggi è vuota? (es. dipendente andata via, non trovo personale…)",
-    form_positions=["hero", "bottom"], 
+    form_positions=["hero", "bottom"], hero_show_justification=False,
     form_extra=[{"name": "nome", "placeholder": "Nome e cognome", "required": True, "first": True},
                 {"name": "telefono", "placeholder": "Cellulare", "type": "tel", "required": True},
-                {"name": "piva", "placeholder": "Partita IVA del salone", "required": True},
                 {"name": "zona", "placeholder": "Zona / quartiere di Milano", "required": True},
 ],
     quotes=[{"quote": "Prima del Covid era facile trovare dipendenti: lo scrivevi su un social, mettevi un foglio A4 in vetrina e arrivavano. Adesso niente.", "role": "Titolare di salone"},
             {"quote": "Dieci ore al giorno per 1.200 euro: i giovani non vogliono più farlo. E io resto sola a mandare avanti il negozio.", "role": "Titolare di salone, Firenze"},
             {"quote": "Cerchiamo parrucchiera/e per affitto poltrona: salone moderno, curato, in viale centrale. Scrivici su WhatsApp.", "role": "Titolare di salone, Modena"},
             {"quote": "Affitto poltrona per parrucchiere o barbiere, zona San Giovanni. Per info chiamare.", "role": "Titolare di salone, Roma"}],
-    variants=[dict(key="A", target_language="it", headline="La poltrona vuota del tuo salone *rende 500 euro al mese*. Senza fare nulla.",
-        subheadline="La gestiamo noi: annuncio anonimo, selezione delle professioniste con P.IVA, visite, contratto a norma, SCIA e incasso mensile. Il prezzo lo decidi tu: canone fisso, misto (canone + percentuale) o solo percentuale sugli incassi. Tu ricevi il dovuto entro il 5 di ogni mese; noi tratteniamo il 15%, solo quando la postazione è occupata.",
-        cta="Affitta la tua postazione", price_eur_month=0, price_text="Nessun costo fisso · 15% del canone, solo quando la postazione è occupata",
-        price_justification="Come un gestore per la casa: pubblichiamo, selezioniamo, facciamo firmare, incassiamo e ti giriamo il canone ogni mese. Se la professionista se ne va, la sostituiamo noi. Postazione vuota = zero costi per te.",
-        benefits=["Incasso gestito: la professionista paga la piattaforma, tu ricevi il canone entro il 5 del mese", "Selezione fatta da noi: solo professioniste con P.IVA, qualifica e assicurazione RC", "Contratto a norma (modello CNA), registrazione e SCIA al SUAP preparati da noi: tu firmi e basta", "Se la professionista lascia, troviamo noi la sostituta: la postazione non resta vuota", "Annuncio anonimo: chi guarda vede foto, zona, giorni e canone, non chi sei", "Il prezzo lo decidi tu: fisso, misto o solo percentuale sugli incassi. Lo scriviamo nel contratto"],
-        how_it_works=["Ci dai in gestione la postazione: 3 foto, zona, giorni, canone. Firmi un mandato di 12 mesi, senza costi.", "Selezioniamo le professioniste e organizziamo le visite in salone: incontri solo chi ha senso per te.", "Firmate il contratto preparato da noi. Da lì incassiamo noi ogni mese e ti giriamo l'85% entro il 5."],
-        objections=[{"objection": "E le clienti?", "answer": "Lo decidete voi e lo mettiamo per iscritto: ognuna con le proprie, oppure condivise con regole chiare. Il contratto standard prevede entrambe le opzioni."},
-                    {"objection": "È legale?", "answer": "Sì. In Italia dal 2012 (accordo nazionale CNA / CCNL acconciatura); a Milano è regolato dalla delibera comunale n. 120 del 26/01/2018. Il contratto va registrato all'Agenzia delle Entrate e la professionista presenta una SCIA al SUAP: prepariamo noi entrambe le cose."},
-                    {"objection": "Quante postazioni posso affittare?", "answer": "Dipende dai tuoi dipendenti: 1 postazione fino a 3 dipendenti, 2 da 4 a 9, 3 oltre i 10."},
-                    {"objection": "Posso affittarla alla mia ex dipendente?", "answer": "No: le linee guida vietano di affittare a chi è stato tuo dipendente negli ultimi 5 anni, e vietano l'affitto ai saloni che hanno fatto licenziamenti negli ultimi 12-24 mesi (salvo giusta causa). Per questo ti presentiamo professioniste che vengono da altri saloni."},
-                    {"objection": "Chi può prenderla in affitto?", "answer": "Solo un'impresa artigiana iscritta alla Camera di Commercio, con la qualifica di acconciatore e la P.IVA, che lavora da sola (niente collaboratori). Non basta la sola P.IVA: lo verifichiamo noi prima di presentartela."},
-                    {"objection": "Quanto posso chiedere?", "answer": "A Milano: 350-500 € in periferia, 500-700 in semicentro, 700-1.200 in centro. Ti aiutiamo a fissare il canone giusto."},
-                    {"objection": "Canone fisso, misto o percentuale?", "answer": "Decidi tu. Tre formule in uso: canone fisso (entrata certa), percentuale sugli incassi della professionista (di solito 30-50%, rende di più se lavora tanto), o mista: canone ridotto più una percentuale. Il contratto standard (modello CNA) le prevede tutte; la quota variabile non può superare metà del corrispettivo. Il nostro 15% si calcola su quello che incassi, qualunque formula scegli."},
-                    {"objection": "Che garanzie ho?", "answer": "Cauzione di un mese, canone pagato in piattaforma prima che il mese inizi, assicurazione RC della professionista, contratto scritto con recesso chiaro, e se lascia la sostituiamo noi. Il tuo salone non resta mai senza tutela né senza canone dovuto."},
-                    {"objection": "Quanto dura il contratto e come lo disdico?", "answer": "Il contratto standard dura 12 mesi, con 1 mese di prova iniziale in cui entrambi potete uscire senza motivo, poi disdetta con 60 giorni di preavviso via PEC o raccomandata. Cauzione di un canone, restituita alla fine."},
-                    {"objection": "Perché non farlo da soli su Facebook?", "answer": "Puoi. Ma la maggior parte dei titolari non trova nessuno, e chi trova firma un accordo a voce: senza contratto e SUAP è lavoro subordinato mascherato, con contributi e sanzioni a carico tuo se passa l'ispettorato. E poi ogni mese devi chiedere i soldi. Noi facciamo tutto questo."},
-                    {"objection": "Cosa vi costa?", "answer": "Il 15% del canone, trattenuto solo nei mesi in cui la postazione è occupata e pagata. Niente abbonamento, niente costi se resta vuota. Su 500 € ricevi 425 €, senza fare nulla."},
-                    {"objection": "E se mi accordo direttamente con la professionista?", "answer": "Il mandato è in esclusiva per 12 mesi: se firmi fuori dalla piattaforma sono dovuti 3 mesi di commissione. Ma il punto è un altro: fuori dovresti fare da solo contratto, SUAP, incasso, solleciti e sostituzione. È esattamente il lavoro che ti togliamo."},
-                    {"objection": "E se la professionista non paga?", "answer": "Paga la piattaforma con carta o addebito SEPA, prima che il mese inizi. Se non paga, la postazione torna libera e la sostituiamo: tu non rincorri nessuno."},
-                    {"objection": "Chi vede il mio annuncio?", "answer": "Chiunque vede foto, zona, giorni e canone. Nome del salone, indirizzo e telefono li vedono solo le professioniste che hanno chiesto il contatto e accettato le condizioni."}])])
+    variants=[dict(key="A", target_language="it", headline="Hai una poltrona libera? *Pubblicala gratis* e ricevi le chiamate delle professioniste.",
+        subheadline="Non trovi personale e una postazione resta vuota? Affittala a una professionista che lavora in proprio. Pubblichi l'annuncio in due minuti: zona, giorni, prezzo e una foto. Le professioniste di Milano lo vedono, chiedono il tuo contatto e vi mettete d'accordo direttamente: giorni, orari, prezzo e tipo di collaborazione li decidete voi.",
+        cta="Pubblica gratis la tua postazione", price_eur_month=0, price_text="Gratis · pubblicare e ricevere contatti non costa nulla",
+        price_justification="",
+        benefits=["Annuncio anonimo: chi guarda vede foto, zona, giorni e prezzo, non chi sei", "Il prezzo lo decidi tu: canone fisso, misto o percentuale sugli incassi", "Ricevi solo professioniste che hanno visto il tuo annuncio e chiesto il contatto", "Vi accordate direttamente: giorni, orari, prova, condizioni", "Modifichi o metti in pausa l'annuncio quando vuoi", "Nessun costo, nessuna commissione"],
+        how_it_works=["Ti registri e pubblichi la postazione: zona, giorni, prezzo, cosa è incluso, una foto e il numero da chiamare. Due minuti.", "Lo controlliamo e lo mettiamo online in giornata. Le professioniste di Milano lo vedono e chiedono il tuo contatto.", "Ti scriviamo nome e telefono di chi ti ha chiesto. La chiami, la incontri in salone e vi mettete d'accordo tra di voi."],
+        objections=[{"objection": "Quanto costa?", "answer": "Niente. Pubblicare l'annuncio e ricevere i contatti delle professioniste è gratis. Nessuna commissione sul canone."},
+                    {"objection": "Chi vede il mio annuncio?", "answer": "Chiunque vede foto, zona, giorni e prezzo. Nome del salone, indirizzo e telefono li vedono solo le professioniste che ci hanno chiesto il tuo contatto."},
+                    {"objection": "Che tipo di professionista arriva?", "answer": "Parrucchiere e barbieri che vogliono lavorare in proprio senza aprire un salone: chi lavora a domicilio, chi ha lasciato un salone, chi vuole una postazione qualche giorno a settimana. Nell'annuncio scrivi tu chi cerchi (es. esperta in schiariture, taglio uomo, part-time)."},
+                    {"objection": "Come funziona l'accordo?", "answer": "Lo fate tra di voi: giorni, orari, prezzo, prova, cosa è incluso. Le formule più usate a Milano sono canone fisso (350-500 € in periferia, 500-700 in semicentro, 700-1.200 in centro), percentuale sugli incassi, o mista. Noi vi mettiamo in contatto, il resto lo decidete voi."},
+                    {"objection": "E le clienti?", "answer": "Lo decidete voi: ognuna con le proprie, oppure condivise con regole chiare. Mettetelo per iscritto quando vi accordate."},
+                    {"objection": "Posso pubblicare più postazioni?", "answer": "Sì, una per annuncio. Scrivici e ti attiviamo il secondo."},
+                    {"objection": "Devo rispondere a tutte?", "answer": "No. Ti scriviamo chi ha chiesto il contatto, con specialità e messaggio: chiami solo chi ha senso per te."},
+                    {"objection": "Posso togliere l'annuncio?", "answer": "Quando vuoi, dal tuo link personale: lo metti in pausa o lo chiudi in un clic."}])])
 
-STYLISTS = dict(**COMMON, clarity_id="yka1e47v91", kicker="Per parrucchiere e barbieri con P.IVA (o che vogliono aprirla)", hero_card_title="In tre passi", quotes_title="Saloni che cercano una professionista", quotes_lead="Annunci pubblicati da titolari nelle ultime settimane.",
-    confirm_email={"subject": "Sei in lista — {brand}", "body": (
-        "Ciao{nome_sp}," + NL2 + "grazie: sei in lista su {brand}." + NL2 +
-        "Cosa succede adesso: entro 2-3 giorni ti chiamo io, Giovanni, per 15 minuti. Mi dici zona, giorni e budget, e cosa ti serve (se non hai ancora la P.IVA, ti spiego come aprirla in due giorni). "
-        "Poi ti mando le postazioni disponibili che corrispondono e fissiamo le visite con le titolari. Se preferisci, rispondi a questa email con il giorno e l'orario migliori per la chiamata." + NL2 +
-        "Cercare e visitare è gratis: alla firma paghi 99 € una tantum, poi solo il canone concordato, ogni mese in piattaforma." + NL2 +
+STYLISTS = dict(**COMMON, clarity_id="yka1e47v91", thanks_text="Sei registrata, è gratis. Ti abbiamo mandato una email: appena c'è una postazione nella tua zona ti scriviamo noi. Intanto puoi guardare le postazioni già online.", kicker="Per parrucchiere e barbieri · Milano", hero_card_title="In tre passi", quotes_title="Saloni che cercano una professionista", quotes_lead="Annunci pubblicati da titolari nelle ultime settimane.",
+    listings_title="Così appaiono gli annunci", listings_hint="Esempi con dati indicativi e foto di saloni reali: mostrano cosa vedrai. Quando un salone pubblica una postazione vera, vedi zona, giorni, prezzo, cosa è incluso e le foto; il nome del salone resta nascosto finché non chiedi il contatto.",
+    confirm_email={"subject": "Sei registrata — {brand}", "body": (
+        "Ciao{nome_sp}," + NL2 + "sei registrata su {brand}: è gratis e resta gratis." + NL2 +
+        "Cosa succede adesso: appena un salone della tua zona pubblica una postazione ti scriviamo noi, con zona, giorni, prezzo e foto. Se ti interessa chiedi il contatto e ti mandiamo nome e telefono della titolare: la chiami, visiti il salone e vi mettete d'accordo tra di voi su giorni, orari e condizioni." + NL2 +
+        "Le postazioni già online le vedi qui: " + BASE + "/pl/postazioni" + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
-    trust=["Visiti il salone prima di firmare", "Contratto a norma con un mese di prova", "Canone in piattaforma con ricevuta: niente contanti"],
-    hero_photo_caption="Una postazione vera, in un salone vero.", lock_text="postazioni da 400 € al mese", price_badge="Prime 30 iscritte: 99 € di attivazione azzerati alla firma", founder_note="Stiamo partendo a Milano con un primo gruppo di professioniste. Le condizioni indicate sono quelle reali: nessuna sorpresa.", hero_note="Chiedi il contatto per vedere nome e indirizzo e prenotare la visita. Gratis.", form_name_label="",
-    form_question="Cosa ti ha frenato finora dal metterti in proprio?",
-    form_positions=["hero", "bottom"], hero_show_justification=False, 
+    trust=["Guardare e chiedere il contatto è gratis", "Scegli tu giorni, orari e tipo di collaborazione, insieme al salone", "Visiti il salone e incontri la titolare prima di decidere"],
+    hero_photo_caption="Una postazione vera, in un salone vero.", lock_text="", price_badge="", founder_note="Stiamo partendo a Milano. Per le professioniste è gratis: registrarsi, guardare e chiedere il contatto.", hero_note="Chiedi il contatto per avere nome e telefono della titolare. Gratis.", form_name_label="",
+    form_question="Come lavori oggi? (in un salone, a domicilio, ferma…) e cosa cerchi?",
+    form_positions=["hero", "bottom"], hero_show_justification=False,
     form_extra=[{"name": "nome", "placeholder": "Nome e cognome", "required": True, "first": True},
                 {"name": "telefono", "placeholder": "Cellulare", "type": "tel", "required": True},
-                {"name": "piva", "placeholder": "Partita IVA (se non ce l'hai scrivi: no)", "required": True},
-                {"name": "zona", "placeholder": "Zona di Milano preferita", "required": True},
-                {"name": "specialita", "placeholder": "Specialità (colore, taglio uomo, extension…)"}],
+                {"name": "zona", "placeholder": "Zona di Milano dove vorresti lavorare", "required": True},
+                {"name": "specialita", "placeholder": "Cosa fai (colore, taglio donna, uomo/barba, extension…)"}],
     quotes=[{"quote": "Affittiamo una postazione nel nostro salone: moderno, curato, in viale centrale. Cerchiamo una professionista indipendente.", "role": "Titolare di salone, Modena"},
             {"quote": "Offro affitto poltrona nel salone, Milano centro.", "role": "Titolare di salone, Milano"},
             {"quote": "Affitto poltrona per parrucchiere o barbiere, zona San Giovanni.", "role": "Titolare di salone, Roma"},
             {"quote": "Cerchiamo un talento indipendente che voglia condividere con noi uno spazio di lavoro.", "role": "Titolare di salone"}],
-    variants=[dict(key="A", target_language="it", headline="Lavora in proprio, *senza aprire un salone*.",
-        subheadline="Postazioni in saloni veri a Milano da 400 € al mese. Guardi, visiti il salone, incontri la titolare, poi decidi. Orari tuoi, incasso tuo. Contratto a norma, SCIA e assicurazione inclusi; il canone lo paghi in piattaforma, con ricevuta. Se non hai ancora l'impresa ti aiutiamo ad aprirla.",
-        cta="Guarda le postazioni", price_eur_month=0, price_text="Guardare e visitare è gratis · 99 € alla firma, poi solo il canone, in piattaforma",
-        price_justification="Guardare, chiedere il contatto e visitare non costa nulla. Alla firma paghi 99 € una tantum (contratto, SUAP, assicurazione, attivazione). Poi paghi solo il canone concordato con il salone, ogni mese in piattaforma con carta o SEPA: ricevuta automatica, niente contanti, niente discussioni.",
-        benefits=["Zero investimento: niente locale, niente attrezzature, niente fideiussioni", "Tieni il 100% di quello che incassi, non il 40% di uno stipendio",
-                  "Postazioni verificate, con canone chiaro e cosa è incluso (prodotti, lavatesta, luce, acqua)", "Aiuto per aprire l'impresa (P.IVA, Camera di Commercio, INPS) e per l'assicurazione RC",
-                  "Cambi salone quando vuoi: il contratto ha un preavviso chiaro"],
-        how_it_works=["Guardi gli annunci della tua città: foto, zona, giorni, canone.", "Chiedi il contatto e prenoti la visita dalla piattaforma: incontri la titolare in salone prima di decidere.", "Firmi il contratto preparato da noi: da quel giorno la poltrona è tua. Il canone lo paghi ogni mese in piattaforma."],
-        objections=[{"objection": "Serve la P.IVA?", "answer": "Serve un'impresa: P.IVA più iscrizione alla Camera di Commercio come impresa artigiana, con la qualifica di acconciatore. Costi reali: forfettario al 5% sul reddito i primi 5 anni, più i contributi INPS artigiani, un minimo fisso di circa 3.000 € l'anno (4.600 € senza la riduzione del 35% del forfettario). Ti mettiamo in contatto con chi apre tutto in pochi giorni."},
-                    {"objection": "Posso avere una collaboratrice o un'apprendista?", "answer": "No: chi affitta la poltrona lavora da sola, è una regola delle linee guida. Se cresci al punto da avere bisogno di aiuto, è il momento di aprire il tuo salone (e noi ti facciamo il tifo)."},
-                    {"objection": "Serve la qualifica?", "answer": "Sì, serve l'abilitazione di acconciatore (o barbiere). Se ce l'hai, sei pronta."},
-                    {"objection": "Posso affittare nel salone dove lavoravo?", "answer": "No: la legge lo vieta per 5 anni. Ma nel salone accanto sì, ed è proprio per questo che esistiamo."},
-                    {"objection": "Quanto guadagno davvero?", "answer": "Esempio: 4 clienti al giorno × 45 € × 20 giorni = 3.600 €/mese, meno il canone (400-700 €) e i prodotti. Il resto è tuo."},
-                    {"objection": "Perché il canone si paga in piattaforma?", "answer": "Perché così hai contratto, SUAP, ricevute mensili e assicurazione inclusi, e se il salone non rispetta il contratto (spazi, orari, prodotti) hai qualcuno a cui rivolgerti. Il salone lo preferisce: incassa puntuale senza chiederti niente."},
-                    {"objection": "Posso accordarmi direttamente con il salone?", "answer": "Il salone ha affidato la postazione a noi in esclusiva, quindi no. E senza di noi non avresti contratto, SUAP, assicurazione né tutela: saresti una dipendente in nero con altro nome."},
-                    {"objection": "Quanto dura e come disdico?", "answer": "12 mesi rinnovabili, con 1 mese di prova in cui puoi uscire senza motivo; poi 60 giorni di preavviso. Cauzione di un canone, che ti viene restituita."},
-                    {"objection": "E se il salone non mi piace?", "answer": "Nel mese di prova esci senza penali e ti mostriamo un'altra postazione. Nessun vincolo lungo."}])])
+    variants=[dict(key="A", target_language="it", headline="Non aprire un salone. Lavora in proprio: *affitta una poltrona*.",
+        subheadline="Trova una postazione in un salone di Milano e lavora alle tue condizioni: scegli giorni, orari e tipo di collaborazione insieme alla titolare. Guardi gli annunci gratis, chiedi il contatto del salone che ti piace, lo visiti e vi mettete d'accordo tra di voi.",
+        cta="Registrati gratis", price_eur_month=0, price_text="Gratis · nessun pagamento per cercare né per chiedere il contatto",
+        price_justification="",
+        benefits=["Lavori in proprio senza aprire un salone: niente locale, niente attrezzature, niente investimento", "Scegli tu giorni, orari e tipo di collaborazione, insieme al salone", "Vedi zona, giorni, prezzo, cosa è incluso e le foto prima di chiedere il contatto", "Visiti il salone e incontri la titolare prima di decidere", "Gratis: registrarti, guardare e chiedere il contatto non costano nulla"],
+        how_it_works=["Ti registri gratis e guardi le postazioni di Milano: zona, giorni, prezzo, foto.", "Quella che ti piace? Chiedi il contatto: ti mandiamo nome e telefono della titolare entro 24 ore.", "La chiami, visiti il salone e vi mettete d'accordo tra di voi: giorni, orari, prezzo, prova."],
+        objections=[{"objection": "Quanto costa?", "answer": "Niente. Registrarti, guardare gli annunci e chiedere il contatto è gratis."},
+                    {"objection": "Cosa vedo negli annunci?", "answer": "Zona, giorni e orari disponibili, prezzo al mese, cosa è incluso (lavatesta, prodotti, phon…), foto e che professionista cerca il salone. Il nome del salone e il telefono li ricevi quando chiedi il contatto."},
+                    {"objection": "Come mi accordo con il salone?", "answer": "Direttamente con la titolare: giorni, orari, prezzo (fisso, percentuale o misto), periodo di prova, clienti. Noi vi mettiamo in contatto, il resto lo decidete voi."},
+                    {"objection": "Posso lavorare solo qualche giorno a settimana?", "answer": "Sì, molti saloni offrono postazioni part-time. Negli annunci trovi i giorni disponibili e nel messaggio alla titolare scrivi cosa cerchi."},
+                    {"objection": "Quanto guadagno davvero?", "answer": "Esempio: 4 clienti al giorno × 45 € × 20 giorni = 3.600 € al mese, meno il prezzo della postazione (300-700 €) e i prodotti. Il resto è tuo."},
+                    {"objection": "E se il salone non mi piace?", "answer": "Non sei obbligata a niente: chiedi il contatto, visiti, decidi. Puoi chiedere il contatto di più postazioni."},
+                    {"objection": "Non ci sono postazioni nella mia zona", "answer": "Registrati lo stesso: appena un salone della tua zona pubblica una postazione ti scriviamo noi."}])])
 
 LISTINGS = [
     {"photo_url": f"{BASE}/static/poltrona/postazione_1.jpg", "tags": ["Isola", "Mar–Sab", "1 postazione"], "title": "Postazione in salone di 80 mq, luce naturale",

@@ -52,6 +52,18 @@ def cron_digest():
 def cron_funnel(background: BackgroundTasks):
     """Responds immediately (cron-job.org has a 30s limit); evaluation runs in the background (Cloud Run: CPU always allocated)."""
     background.add_task(funnel.evaluate_all, True)
+
+    def _reminders():
+        from app.services import poltrona
+
+        try:
+            n = poltrona.send_reminders()
+            if n:
+                analysis.log.info("poltrona reminders sent: %s", n)
+        except Exception as e:  # noqa: BLE001
+            analysis.log.error("poltrona reminders: %s", e)
+
+    background.add_task(_reminders)
     return {"status": "accepted", "clusters": db.count(db.PROBLEM_CLUSTERS)}
 
 

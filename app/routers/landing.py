@@ -142,6 +142,15 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
             seen_ref.set({"variant": var["key"], "at": db.now()})
             _bump(cluster_id, var["key"], "visitors")
     base = get_settings().public_base_url.rstrip("/")
+    if cluster_id in ("poltrona_libera_titolari", "poltrona_libera_professioniste"):
+        from app.services import poltrona as _pl
+
+        try:
+            real = [{**_pl.public_card(x), "href": f"{base}/pl/postazioni"} for x in _pl.online_listings()]
+        except Exception as e:  # noqa: BLE001
+            log.error("online listings: %s", e)
+            real = []
+        offer = {**offer, "listings": real + list(offer.get("listings") or [])}
     q = request.query_params
     offer = {**offer, "_utm": re.sub(r"[^A-Za-z0-9_./-]", "", "/".join(x for x in (q.get("utm_source"), q.get("utm_campaign"), q.get("utm_content")) if x) or ("meta" if q.get("fbclid") else "diretto"))[:80]}
     resp = HTMLResponse(render(c, offer, var, base, signed_up=bool(ok)))
@@ -168,7 +177,8 @@ def _notify_signup(c: dict, offer: dict, lead: dict) -> None:
     if conf and conf.get("body"):
         try:
             name = (lead.get("business") or "").strip()
-            body = conf["body"].replace("{nome_sp}", f" {name}" if name else "").replace("{nome}", name or "").replace("{brand}", brand)
+            name = ((lead.get("extra") or {}).get("nome") or name).strip().split(" ")[0] if (lead.get("extra") or {}).get("nome") else name
+            body = conf["body"].replace("{nome_sp}", f" {name}" if name else "").replace("{nome}", name or "").replace("{brand}", brand).replace("{link_annuncio}", offer.get("_link_annuncio") or "")
             paras = "".join(f"<p>{_e(par)}</p>" for par in body.split("\n\n"))
             foot = f"<p style='color:#94a3b8;font-size:12px;margin-top:24px'>Hai ricevuto questa email perché ti sei iscritto/a su {_e(brand)}. Per cancellarti basta rispondere con: cancella.</p>"
             html = "<div style='font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px;color:#0f172a;line-height:1.6'>" + paras + foot + "</div>"
@@ -184,12 +194,21 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
     extra = {k: str(form.get(k) or "")[:300] for k in {f["name"] for f in (offer.get("form_extra") or [])} if form.get(k)}
     lead_id = hashlib.sha256(email.strip().lower().encode()).hexdigest()[:20]
     ref = db.get_db().collection(db.PROBLEM_CLUSTERS).document(cluster_id).collection("leads").document(lead_id)
-    if not ref.get().exists:
-        lead = {"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "placement": str(form.get("placement") or "lista")[:20], "at": db.now()}
+    base = get_settings().public_base_url.rstrip("/")
+    lead = {"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "placement": str(form.get("placement") or "lista")[:20], "at": db.now()}
+    is_new = not ref.get().exists
+    if is_new:
         ref.set(lead)
         _bump(cluster_id, variant, "signups")
+    if cluster_id == "poltrona_libera_titolari":  # owners go straight into the listing flow (magic link also sent by email)
+        from app.services import poltrona as _pl
+
+        draft = _pl.create_draft(lead if is_new else (ref.get().to_dict() or lead), lead_id)
+        if is_new:
+            _notify_signup(c, {**offer, "_link_annuncio": _pl.link(draft)}, lead)
+        return RedirectResponse(f"{_pl.link(draft)}?nuovo={int(is_new)}", status_code=303)
+    if is_new:
         _notify_signup(c, offer, lead)
-    base = get_settings().public_base_url.rstrip("/")
     return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1", status_code=303)
 
 
