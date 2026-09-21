@@ -124,12 +124,21 @@ def create_checkout(slug: str, utm: str = "", fb: tuple[str, str] = ("", ""), ip
     return session.url
 
 
+def prepare_checkout(slug: str, utm: str, fb: tuple[str, str], ip: str, ua: str) -> str | None:
+    """Session created while the page renders, so the button opens Stripe instantly (sessions live 24h)."""
+    try:
+        return create_checkout(slug, utm, fb, ip, ua)
+    except Exception as e:  # noqa: BLE001
+        log.warning("prepare_checkout: %s", e)
+        return None
+
+
 def fulfil_session(session_id: str) -> dict | None:
     """Idempotent: called from the success page and from the webhook. Records the buyer and sends the delivery email once."""
     import stripe
 
     stripe.api_key = get_settings().stripe_secret_key
-    s = stripe.checkout.Session.retrieve(session_id, expand=["customer_details"])
+    s = stripe.checkout.Session.retrieve(session_id).to_dict()
     if s.get("payment_status") not in ("paid", "no_payment_required"):  # the latter: 100% promo code (internal tests)
         return None
     client = db.get_db()

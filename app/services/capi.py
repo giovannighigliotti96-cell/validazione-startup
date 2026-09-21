@@ -78,6 +78,8 @@ def send(event_name: str, event_id: str, source_url: str, ud: dict, custom: dict
     token = getattr(s, "meta_capi_token", "") or getattr(s, "meta_access_token", "") or ""
     if not pixel or not token:
         return
+    if not (ud.get("em") or ud.get("ph") or (ud.get("client_ip_address") and ud.get("client_user_agent"))):
+        return  # Meta rejects events without usable match keys (e.g. local tests)
     payload = {"event_name": event_name, "event_time": int(time.time()), "event_id": event_id, "action_source": "website",
                "event_source_url": source_url, "user_data": ud}
     if custom:

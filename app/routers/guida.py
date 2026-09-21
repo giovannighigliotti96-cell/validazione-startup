@@ -71,8 +71,13 @@ def sales(slug: str, request: Request, annullato: int = 0):
     ud = capi.user_data(request)
     capi.send("PageView", pv_id, str(request.url), ud)
     capi.send("ViewContent", vc_id, str(request.url), ud, {"content_name": slug, "content_type": "product", "value": G.PRICE_CENTS / 100, "currency": "EUR"})
-    buy_form = (f"<form method='post' action='{base}/pl/guida/{slug}/checkout'><input type='hidden' name='utm' value='{escape(utm)}'><input type='hidden' name='eid' value='{ic_id}'>"
-                f"<button class='btn' type='submit' onclick=\"try{{fbq('track','InitiateCheckout',{{content_name:'{slug}',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{ic_id}'}})}}catch(e){{}}\">Scarica la guida · {now}</button></form>")
+    fbjs = f"try{{fbq('track','InitiateCheckout',{{content_name:'{slug}',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{ic_id}'}})}}catch(e){{}}"
+    pre = G.prepare_checkout(slug, utm, (request.cookies.get("_fbp") or "", request.cookies.get("_fbc") or ""), (request.headers.get("x-forwarded-for") or "").split(",")[0].strip(), request.headers.get("user-agent") or "") if G.stripe_ready() else None
+    if pre:  # instant: the button is a direct link to the ready session; the server-side InitiateCheckout is sent by a beacon
+        buy_form = (f"<a class='btn' href='{escape(pre)}' onclick=\"{fbjs};try{{navigator.sendBeacon('{base}/pl/guida/{slug}/ic/{ic_id}')}}catch(e){{}}\">Scarica la guida · {now}</a>")
+    else:
+        buy_form = (f"<form method='post' action='{base}/pl/guida/{slug}/checkout'><input type='hidden' name='utm' value='{escape(utm)}'><input type='hidden' name='eid' value='{ic_id}'>"
+                    f"<button class='btn' type='submit' onclick=\"{fbjs}\">Scarica la guida · {now}</button></form>")
     pains = "".join(f"<blockquote>{escape(p)}<small>Titolare di salone, Milano · settembre 2026</small></blockquote>" for p in g["pains"])
     chapters = "".join(f"<li><div><b>{escape(t)}</b><span>{escape(d)}</span></div></li>" for t, d in g["chapters"])
     previews = "".join(f"<img src='{base}/static/poltrona/guide/{slug}_p{p}.png' alt='Pagina {p} della guida' loading='lazy'>" for p in g["preview_pages"])
@@ -122,6 +127,14 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <div class='card' style='margin-top:24px;text-align:center'><b>Hai dubbi o domande?</b><br><span class='muted'>Chiama o scrivi su WhatsApp a Giovanni: </span><a href='tel:+393925909721' style='color:var(--acc);font-weight:700'>+39 392 590 9721</a> · <a href='https://wa.me/393925909721?text=Ciao%20Giovanni%2C%20ho%20una%20domanda%20sulla%20guida' style='color:var(--acc);font-weight:700'>WhatsApp</a></div>
 <div class='sticky'>{buy_form}</div>"""
     return _shell(f"{g['title']} — guida per titolari di salone", body, _pixel(pv_id, f"fbq('track','ViewContent',{{content_name:'{slug}',content_type:'product',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{vc_id}'}});"), g["headline"], beacon_id=f"guida_{slug}", utm=utm or "diretto")
+
+
+@router.post("/{slug}/ic/{eid}")
+def ic_beacon(slug: str, eid: str, request: Request):
+    from app.services import capi
+
+    capi.send("InitiateCheckout", eid, f"{P.base()}/pl/guida/{slug}", capi.user_data(request), {"content_name": slug, "content_type": "product", "value": G.PRICE_CENTS / 100, "currency": "EUR"})
+    return {"ok": True}
 
 
 @router.post("/{slug}/checkout")
@@ -193,6 +206,7 @@ async def webhook(request: Request):
     try:
         event = stripe.Webhook.construct_event(payload, sig, s.stripe_webhook_secret) if s.stripe_webhook_secret else stripe.Event.construct_from(__import__("json").loads(payload), s.stripe_secret_key)
     except Exception as e:  # noqa: BLE001
+        log.error("stripe webhook rejected: %s (sig header present: %s, secret len: %s)", str(e)[:160], bool(sig), len(s.stripe_webhook_secret or ""))
         raise HTTPException(400, f"webhook: {e}")
     if event["type"] == "checkout.session.completed":
         try:
