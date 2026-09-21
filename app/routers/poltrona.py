@@ -306,7 +306,11 @@ def admin(request: Request, token: str | None = None):
                                f"<td>{escape(str((l.get('extra') or {}).get('zona') or ''))}</td><td>{escape(str((l.get('extra') or {}).get('specialita') or (l.get('extra') or {}).get('piva') or ''))}</td><td><small>{escape((l.get('answer') or '')[:120])}</small></td><td><small class='muted'>{escape(l.get('placement') or '')} · {escape(l.get('variant') or '')}</small></td></tr>")
     owners = "".join(lead_row(l, "o") for l in sorted(d["owners"], key=lambda x: str(x.get("at")), reverse=True))
     pros = "".join(lead_row(l, "p") for l in sorted(d["pros"], key=lambda x: str(x.get("at")), reverse=True))
+    from app.services import guida as _g
     from app.services import matching as _m
+
+    buyers_rows = "".join(f"<tr><td>{str(b.get('created_at'))[:16]}</td><td><b>{escape(b.get('name') or '')}</b><br>{escape(b.get('email') or '')}<br>{escape(b.get('phone') or '')}</td><td>{escape(_g.CATALOG.get(b.get('slug'), {}).get('title', b.get('slug') or ''))}</td>"
+                          f"<td>{_g.price_str(int(b.get('amount') or 0))}</td><td>{escape(b.get('utm') or 'diretto')}</td><td>{int(b.get('downloads') or 0)}</td><td>{int(b.get('steps_sent') or 0)}/3</td></tr>" for b in _g.buyers())
 
     def _mrow(m: dict) -> str:
         ok = "ok" if m.get("match") else "gray"
@@ -325,9 +329,10 @@ def admin(request: Request, token: str | None = None):
     kpi = lambda n, l: f"<div class='card' style='padding:12px 14px'><b style='font-size:26px;font-family:Fraunces,Georgia,serif'>{n}</b><br><span class='muted'>{l}</span></div>"  # noqa: E731
     body = f"""<div class='row' style='justify-content:space-between'><h1>Pannello Poltrona Libera</h1><a class='muted' href='{base}/pl/admin/logout'>esci</a></div>
 <p class='muted' style='margin:0 0 14px'>Test esclusi ({escape(get_settings().pl_test_emails)}).</p>
-<div class='grid' style='grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:8px'>{kpi(len(d['owners']), 'saloni iscritti')}{kpi(n_sub, 'annunci inviati')}{kpi(n_wait, 'da approvare')}{kpi(n_on, 'online')}{kpi(n_draft, 'bozze non finite')}{kpi(len(d['pros']), 'professioniste iscritte')}{kpi(calls, 'tap su chiama / WhatsApp')}</div>
+<div class='grid' style='grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:8px'>{kpi(len(d['owners']), 'saloni iscritti')}{kpi(n_sub, 'annunci inviati')}{kpi(n_wait, 'da approvare')}{kpi(n_on, 'online')}{kpi(n_draft, 'bozze non finite')}{kpi(len(d['pros']), 'professioniste iscritte')}{kpi(calls, 'tap su chiama / WhatsApp')}{kpi(len(_g.buyers()), 'guide vendute')}</div>
 <p class='muted'><a href='{base}/pl/admin/export.csv?what=owners'>CSV saloni</a> · <a href='{base}/pl/admin/export.csv?what=pros'>CSV professioniste</a> · <a href='{base}/pl/admin/export.csv?what=listings'>CSV annunci</a> · <a href='{base}/pl/postazioni' target='_blank'>catalogo pubblico ↗</a></p>
 <h2>Annunci</h2><div class='tbl'><table><thead><tr><th>Stato</th><th>Salone</th><th>Zona · giorni · prezzo</th><th>Cerca</th><th>Foto</th><th>Azioni</th></tr></thead><tbody>{rows or '<tr><td colspan=6 class=muted>nessun annuncio</td></tr>'}</tbody></table></div>
+<h2>Guide vendute</h2><div class='tbl'><table><thead><tr><th>Quando</th><th>Acquirente</th><th>Guida</th><th>Importo</th><th>Provenienza</th><th>Download</th><th>Mail workflow</th></tr></thead><tbody>{buyers_rows or '<tr><td colspan=7 class=muted>nessuna vendita ancora</td></tr>'}</tbody></table></div>
 <h2>Match automatici</h2><p class='muted' style='margin:0 0 8px'>Ogni annuncio online viene confrontato con ogni professionista iscritta (specialità prima, poi zona). Match ≥ 70: email alla professionista con il numero della titolare, e a te il link WhatsApp.</p>
 <div class='tbl'><table><thead><tr><th>Punteggio</th><th>Professionista</th><th>Postazione</th><th>Perché</th><th>Stato</th><th>WhatsApp</th></tr></thead><tbody>{matches or '<tr><td colspan=6 class=muted>nessun confronto ancora</td></tr>'}</tbody></table></div>
 <h2>Richieste di contatto</h2><div class='tbl'><table><thead><tr><th>Quando</th><th>Professionista</th><th>Per</th><th>Note</th><th>Stato</th></tr></thead><tbody>{reqs or '<tr><td colspan=5 class=muted>nessuna</td></tr>'}</tbody></table></div>

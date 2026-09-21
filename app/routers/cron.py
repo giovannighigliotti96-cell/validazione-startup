@@ -54,7 +54,7 @@ def cron_funnel(background: BackgroundTasks):
     background.add_task(funnel.evaluate_all, True)
 
     def _reminders():
-        from app.services import poltrona
+        from app.services import guida, poltrona
 
         try:
             n = poltrona.send_reminders()
@@ -62,6 +62,12 @@ def cron_funnel(background: BackgroundTasks):
                 analysis.log.info("poltrona reminders sent: %s", n)
         except Exception as e:  # noqa: BLE001
             analysis.log.error("poltrona reminders: %s", e)
+        try:
+            n = guida.run_workflow()
+            if n:
+                analysis.log.info("guida workflow emails sent: %s", n)
+        except Exception as e:  # noqa: BLE001
+            analysis.log.error("guida workflow: %s", e)
 
     background.add_task(_reminders)
     return {"status": "accepted", "clusters": db.count(db.PROBLEM_CLUSTERS)}

@@ -26,6 +26,9 @@ app.include_router(landing.router)
 from app.routers import poltrona as _poltrona  # noqa: E402
 
 app.include_router(_poltrona.router)
+from app.routers import guida as _guida  # noqa: E402
+
+app.include_router(_guida.router)
 app.mount("/static", StaticFiles(directory="public"), name="static")  # page assets, ad images
 
 

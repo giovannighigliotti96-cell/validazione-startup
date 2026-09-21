@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     # Security
     cron_token: str = "change-me"
     api_token: str = ""  # empty = manual endpoints are open
+    stripe_secret_key: str = ""  # Stripe (guides): sk_live_... / sk_test_...
+    stripe_webhook_secret: str = ""  # whsec_...
     pl_admin_password: str = ""  # Poltrona Libera admin panel (/pl/admin); empty = panel closed
     pl_test_emails: str = "giovannighigliotti96@gmail.com,example.com"  # excluded from the panel counts
 
