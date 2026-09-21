@@ -53,7 +53,33 @@ def _page(title: str, body: str, pixel: str = "PageView", desc: str = "") -> HTM
     base = P.base()
     return HTMLResponse(f"<!doctype html><html lang='it'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{escape(title)} — Poltrona Libera</title>"
                         f"<meta name='description' content='{escape(desc)}'>{CSS}{_pixel_html(pixel)}</head><body>{_top(base)}<main class='w'>{body}</main>"
-                        f"<footer class='w muted' style='padding-bottom:30px'><div style='color:var(--ink);font-size:15px;margin-bottom:10px'>{P.footer_html()}</div>Poltrona Libera · Milano · <a href='{base}/lp/{P.OWNERS}/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
+                        f"<footer class='w muted' style='padding-bottom:30px'><div style='color:var(--ink);font-size:15px;margin-bottom:10px'>{P.footer_html()}</div>Poltrona Libera · Milano · <a href='{base}/pl/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
+
+
+# ----------------------------------------------------------------------------- privacy (also the Meta app's privacy policy URL)
+PRIVACY_HTML = """<h1>Informativa sulla privacy</h1>
+<p class='lead'>Poltrona Libera è un servizio di Giovanni Ghigliotti (Arenzano, GE, Italia) che mette in contatto titolari di saloni con parrucchiere e barbieri che cercano una postazione. Questa pagina spiega quali dati raccogliamo, perché, e come chiederne la cancellazione.</p>
+<h2>Titolare del trattamento</h2><p>Giovanni Ghigliotti — email: giovannighigliotti96@gmail.com — telefono: +39 392 590 9721.</p>
+<h2>Quali dati raccogliamo</h2>
+<ul><li><b>Titolari di salone</b>: nome e cognome, email, numero di telefono, nome del salone, zona, dettagli della postazione (giorni, prezzo, cosa è incluso, descrizione), foto della postazione, motivo per cui la postazione è libera.</li>
+<li><b>Professioniste/i</b>: nome e cognome, email, numero di telefono, zona di interesse, specialità, risposta libera nel modulo.</li>
+<li><b>Dati tecnici</b>: pagine viste, sezioni scorse, campi del modulo compilati, variante della pagina mostrata, provenienza (annuncio), in forma aggregata e con identificativo di sessione casuale. Registrazioni di sessione anonime tramite Microsoft Clarity.</li>
+<li><b>Dati dai servizi Meta</b> (Facebook/Instagram): usiamo il pixel di Meta per misurare l'efficacia degli annunci (eventi: visualizzazione pagina, iscrizione, contatto) e, tramite la nostra app Meta, gestiamo le inserzioni e pubblichiamo contenuti sulla pagina Facebook di Poltrona Libera. Non raccogliamo dati personali degli utenti Facebook/Instagram al di fuori di quanto Meta fornisce in forma aggregata (statistiche delle inserzioni e della pagina).</li></ul>
+<h2>Perché li usiamo</h2>
+<ul><li>Per pubblicare l'annuncio della postazione: <b>nome del salone, zona, giorni, prezzo, foto e numero di telefono della titolare sono visibili pubblicamente</b> nell'annuncio, con il consenso dato dalla titolare al momento della pubblicazione.</li>
+<li>Per avvisare le professioniste quando c'è una postazione nella loro zona e per rispondere alle loro richieste.</li>
+<li>Per contattare gli iscritti in merito al servizio (email di conferma, promemoria per completare l'annuncio, aggiornamenti).</li>
+<li>Per misurare l'interesse verso il servizio e migliorare le pagine.</li></ul>
+<p>Base giuridica: il consenso, espresso inviando i moduli, e l'esecuzione del servizio richiesto. Nessuna vendita o cessione dei dati a terzi per fini di marketing. Nessuna decisione automatizzata.</p>
+<h2>Dove sono conservati e per quanto</h2><p>Su Google Cloud (Firestore e Cloud Storage, regione europe-west1, UE). Email inviate tramite il nostro provider di posta. Conservazione: finché l'annuncio o l'iscrizione sono attivi e comunque non oltre 24 mesi dall'ultimo contatto, o fino a richiesta di cancellazione.</p>
+<h2>Come chiedere la cancellazione dei dati</h2><p>Scrivi a <a href='mailto:giovannighigliotti96@gmail.com?subject=Cancellazione%20dati%20Poltrona%20Libera'>giovannighigliotti96@gmail.com</a> con oggetto "Cancellazione dati", oppure su WhatsApp al +39 392 590 9721, indicando l'email o il telefono con cui ti sei registrata/o. Cancelliamo iscrizione, annuncio e foto entro 7 giorni e ti confermiamo via email. Hai inoltre diritto di accesso, rettifica, limitazione e portabilità dei dati, e di reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it).</p>
+<h2>Cookie e strumenti di terze parti</h2><p>Cookie tecnici (variante della pagina, accesso al pannello). Pixel di Meta e Microsoft Clarity per statistiche: puoi limitarli dalle impostazioni del browser, dalle <a href='https://www.facebook.com/ads/preferences'>preferenze pubblicitarie di Meta</a> o con <a href='https://clarity.microsoft.com/terms'>l'opt-out di Clarity</a>.</p>
+<p class='muted'>Ultimo aggiornamento: 21 settembre 2026.</p>"""
+
+
+@router.api_route("/privacy", methods=["GET", "HEAD"], response_class=HTMLResponse)
+def privacy():
+    return _page("Informativa sulla privacy", PRIVACY_HTML, pixel="", desc="Informativa sulla privacy di Poltrona Libera: quali dati raccogliamo, perché, e come chiederne la cancellazione.")
 
 
 # ----------------------------------------------------------------------------- owner listing form

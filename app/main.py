@@ -44,3 +44,11 @@ def root():
 @app.get("/healthz", include_in_schema=False)
 def healthz():
     return {"ok": True}
+
+
+from fastapi.responses import RedirectResponse as _Redirect  # noqa: E402
+
+
+@app.api_route("/privacy", methods=["GET", "HEAD"], include_in_schema=False)
+def _privacy_root():
+    return _Redirect("/pl/privacy", status_code=308)

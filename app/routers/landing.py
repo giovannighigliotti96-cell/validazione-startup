@@ -32,7 +32,7 @@ from app.config import get_settings
 router = APIRouter(prefix="/lp", tags=["landing"])
 
 
-@router.get("/privacy", response_class=HTMLResponse)
+@router.api_route("/privacy", methods=["GET", "HEAD"], response_class=HTMLResponse)
 def privacy_tool():
     """Privacy policy of the research tool itself (public posts analysis) — the URL given in API access requests."""
     return HTMLResponse("""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy — startup problem research</title>
@@ -271,7 +271,7 @@ def stats(cluster_id: str):
     return out
 
 
-@router.get("/{cluster_id}/privacy", response_class=HTMLResponse)
+@router.api_route("/{cluster_id}/privacy", methods=["GET", "HEAD"], response_class=HTMLResponse)
 def privacy(cluster_id: str):
     c, o, offer = _offer(cluster_id)
     brand = offer.get("product_name") or "questo progetto"
