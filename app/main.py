@@ -55,3 +55,20 @@ from fastapi.responses import RedirectResponse as _Redirect  # noqa: E402
 @app.api_route("/privacy", methods=["GET", "HEAD"], include_in_schema=False)
 def _privacy_root():
     return _Redirect("/pl/privacy", status_code=308)
+
+
+from fastapi.responses import PlainTextResponse as _Plain, Response as _Resp  # noqa: E402
+
+
+@app.get("/robots.txt", include_in_schema=False)
+def _robots():
+    base = "https://poltronalibera.it"
+    return _Plain(f"User-agent: *\nAllow: /lp/\nAllow: /pl/\nDisallow: /pl/admin\nDisallow: /pl/annuncio/\nDisallow: /pl/guida/download/\nDisallow: /cron/\nSitemap: {base}/sitemap.xml\n")
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def _sitemap():
+    base = "https://poltronalibera.it"
+    urls = ["/lp/poltrona_libera_titolari", "/lp/poltrona_libera_professioniste", "/pl/postazioni", "/pl/guida/squadra", "/pl/guida/poltrona", "/pl/privacy"]
+    body = "".join(f"<url><loc>{base}{u}</loc><changefreq>daily</changefreq></url>" for u in urls)
+    return _Resp(content=f"<?xml version='1.0' encoding='UTF-8'?><urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>{body}</urlset>", media_type="application/xml")

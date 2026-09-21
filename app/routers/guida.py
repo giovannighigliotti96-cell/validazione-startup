@@ -42,7 +42,7 @@ def _pixel(pv_id: str, extra: str = "") -> str:
     return px("PageView", pv_id, "", extra)
 
 
-def _shell(title: str, body: str, pixel_html: str, desc: str, beacon_id: str = "", utm: str = "") -> HTMLResponse:
+def _shell(title: str, body: str, pixel_html: str, desc: str, beacon_id: str = "", utm: str = "", head_extra: str = "") -> HTMLResponse:
     base = P.base()
     beacon = ""
     if beacon_id:
@@ -51,7 +51,7 @@ def _shell(title: str, body: str, pixel_html: str, desc: str, beacon_id: str = "
         beacon = BEHAVIOR_JS % {"cid": beacon_id, "variant": "A", "utm": utm, "base": base}
     top = f"<div class='top'><div class='w'><a href='{base}/lp/{P.OWNERS}' style='display:flex;align-items:center;gap:12px'><img src='{base}/static/poltrona/logo_512.png' alt=''><b>Poltrona Libera</b></a></div></div>"
     return HTMLResponse(f"<!doctype html><html lang='it'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{escape(title)}</title>"
-                        f"<meta name='description' content='{escape(desc)}'>{CSS}{EXTRA_CSS}{pixel_html}</head><body>{top}<main class='w'>{body}</main>{beacon}"
+                        f"<meta name='description' content='{escape(desc)}'>{head_extra}{CSS}{EXTRA_CSS}{pixel_html}</head><body>{top}<main class='w'>{body}</main>{beacon}"
                         f"<footer class='w muted' style='padding-bottom:30px'><div style='color:var(--ink);font-size:15px;margin-bottom:10px'>{P.footer_html()}</div>Poltrona Libera · Milano · <a href='{base}/pl/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
 
 
@@ -126,7 +126,21 @@ def sales(slug: str, request: Request, annullato: int = 0):
 </div>
 <div class='card' style='margin-top:24px;text-align:center'><b>Hai dubbi o domande?</b><br><span class='muted'>Chiama o scrivi su WhatsApp a Giovanni: </span><a href='tel:+393925909721' style='color:var(--acc);font-weight:700'>+39 392 590 9721</a> · <a href='https://wa.me/393925909721?text=Ciao%20Giovanni%2C%20ho%20una%20domanda%20sulla%20guida' style='color:var(--acc);font-weight:700'>WhatsApp</a></div>
 <div class='sticky'>{buy_form}</div>"""
-    return _shell(f"{g['title']} — guida per titolari di salone", body, _pixel(pv_id, f"fbq('track','ViewContent',{{content_name:'{slug}',content_type:'product',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{vc_id}'}});"), g["headline"], beacon_id=f"guida_{slug}", utm=utm or "diretto")
+    import json as _json
+
+    url = f"{base}/pl/guida/{slug}"
+    ld_product = {"@context": "https://schema.org", "@type": "Product", "name": f"Guida «{g['title']}»", "description": g["sub"], "image": f"{base}/static/poltrona/guide/{slug}_p1.png",
+                  "brand": {"@type": "Brand", "name": "Poltrona Libera"}, "category": "Guida PDF per titolari di salone",
+                  "offers": {"@type": "Offer", "url": url, "priceCurrency": "EUR", "price": f"{G.PRICE_CENTS / 100:.2f}", "availability": "https://schema.org/InStock", "priceValidUntil": "2026-10-31"}}
+    faqs = [("Come la ricevo?", "Subito dopo il pagamento arrivi su una pagina con il link e ricevi una email con lo stesso link. È un PDF: si apre su telefono, tablet e computer."),
+            ("Vale per tutta Italia?", "Sì. Le regole (CCNL, INPS, affitto di poltrona) sono nazionali; gli esempi di prezzo delle postazioni sono di Milano e nel kit trovi il calcolo per la tua zona."),
+            ("Che differenza c'è con l'altra guida?", "«La dipendente è andata via» è per chi vuole ricostruire la squadra; «Basta dipendenti» è per chi vuole smettere di assumere e affittare le postazioni.")]
+    ld_faq = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
+    head_extra = (f"<link rel='canonical' href='{url}'><meta property='og:type' content='product'><meta property='og:title' content='{escape(g['title'])} — guida per titolari di salone'>"
+                  f"<meta property='og:description' content='{escape(g['headline'])}'><meta property='og:image' content='{base}/static/poltrona/guide/{slug}_p1.png'><meta property='og:url' content='{url}'>"
+                  f"<meta property='og:locale' content='it_IT'><meta name='twitter:card' content='summary_large_image'>"
+                  f"<script type='application/ld+json'>{_json.dumps(ld_product, ensure_ascii=False)}</script><script type='application/ld+json'>{_json.dumps(ld_faq, ensure_ascii=False)}</script>")
+    return _shell(f"{g['title']} — guida per titolari di salone", body, _pixel(pv_id, f"fbq('track','ViewContent',{{content_name:'{slug}',content_type:'product',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{vc_id}'}});"), g["headline"], beacon_id=f"guida_{slug}", utm=utm or "diretto", head_extra=head_extra)
 
 
 @router.post("/{slug}/ic/{eid}")

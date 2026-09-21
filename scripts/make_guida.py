@@ -75,7 +75,7 @@ def html_for(g: dict) -> str:
     return f"""<!doctype html><html lang="it"><head><meta charset="utf-8"><title>{escape(title)}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>{CSS}</style></head><body>
-<div class="cover"><div class="band"></div><div class="kicker">Guida pratica per titolari di salone · Milano 2026</div>
+<div class="cover"><div class="band"></div><div class="kicker">Guida pratica per titolari di salone · Edizione 2026</div>
 <h1>{cover_title}</h1><div class="sub">{escape(g['subtitle'])}</div>
 <div class="foot"><span>{escape(AUTHOR)}</span><span>poltronalibera.it</span></div></div>
 <section class="toc"><h2>Indice</h2><ol>{toc}</ol><p class="kit"><b>Kit finale</b> (da stampare): {kit_list}.</p>
@@ -109,8 +109,11 @@ def build(slug: str) -> tuple[str, int, list[str]]:
     import pymupdf
 
     doc = pymupdf.open(pdf_path)
+    # previews: the cover + the three fullest pages of the first half (never a chapter tail with two lines)
+    dens = sorted(((len(doc[i].get_text()), i) for i in range(1, min(len(doc), 15))), reverse=True)[:3]
+    chosen = [0] + sorted(i for _, i in dens)
     previews = []
-    for i in PREVIEW_PAGES[slug]:
+    for i in chosen:
         if i < len(doc):
             pix = doc[i].get_pixmap(dpi=110)
             out = os.path.join(OUT_PNG, f"{slug}_p{i + 1}.png")
@@ -118,6 +121,7 @@ def build(slug: str) -> tuple[str, int, list[str]]:
             previews.append(out)
     n = len(doc)
     doc.close()
+    print(slug, "preview pages:", [i + 1 for i in chosen])
     return pdf_path, n, previews
 
 
