@@ -35,6 +35,7 @@ input,textarea,select{width:100%;padding:11px 12px;border:1px solid var(--line);
 .ok-box{background:var(--okbg);color:var(--ok);border-radius:12px;padding:16px 18px;font-weight:600}
 dialog{border:0;border-radius:16px;padding:0;max-width:440px;width:calc(100% - 32px)}dialog::backdrop{background:rgba(28,25,23,.45)}dialog .in{padding:22px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+footer a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1px solid var(--acc)}footer .sep{color:var(--mut);margin:0 8px}
 @media(max-width:600px){h1{font-size:25px}}</style>"""
 
 
@@ -52,7 +53,7 @@ def _page(title: str, body: str, pixel: str = "PageView", desc: str = "") -> HTM
     base = P.base()
     return HTMLResponse(f"<!doctype html><html lang='it'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{escape(title)} — Poltrona Libera</title>"
                         f"<meta name='description' content='{escape(desc)}'>{CSS}{_pixel_html(pixel)}</head><body>{_top(base)}<main class='w'>{body}</main>"
-                        f"<footer class='w muted' style='padding-bottom:30px'>Poltrona Libera · Milano · <a href='{base}/lp/{P.OWNERS}/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
+                        f"<footer class='w muted' style='padding-bottom:30px'><div style='color:var(--ink);font-size:15px;margin-bottom:10px'>{P.footer_html()}</div>Poltrona Libera · Milano · <a href='{base}/lp/{P.OWNERS}/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
 
 
 # ----------------------------------------------------------------------------- owner listing form

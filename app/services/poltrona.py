@@ -29,8 +29,19 @@ STATUSES = ("bozza", "in_verifica", "online", "rifiutato", "chiuso")
 REMINDERS_H = (24, 72, 168)  # hours after the draft was created
 
 
+PHONE = "3925909721"
+
+
 def base() -> str:
     return get_settings().public_base_url.rstrip("/")
+
+
+def footer_html() -> str:
+    """Shared footer: Giovanni's number (call/WhatsApp) and the entry point of the listing flow."""
+    b = base()
+    return (f"Hai dubbi o domande? Chiama o scrivi su WhatsApp a Giovanni: <a href='tel:+39{PHONE}'>392 590 9721</a> "
+            f"<a href='https://wa.me/39{PHONE}?text=Ciao%20Giovanni%2C%20ho%20una%20domanda%20su%20Poltrona%20Libera' target='_blank' rel='noopener'>WhatsApp</a>"
+            f"<span class='sep'>·</span><a href='{b}/lp/{OWNERS}#lista-hero'>Pubblica il tuo annuncio</a><span class='sep'>·</span><a href='{b}/pl/postazioni'>Postazioni disponibili</a>")
 
 
 def _sender(subject: str, html: str, to: str) -> None:

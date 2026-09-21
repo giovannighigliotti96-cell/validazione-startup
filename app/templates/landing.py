@@ -58,6 +58,7 @@ footer{padding:28px 0 44px;color:#94a3b8;font-size:12px;border-top:1px solid var
 .formcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin:22px 0 0;box-shadow:0 12px 40px rgba(28,25,23,.08)}
 .topbar{background:var(--paper);border-bottom:1px solid var(--line)}.topbar .w{display:flex;align-items:center;gap:12px;padding-top:14px;padding-bottom:14px}.topbar img{width:40px;height:40px;border-radius:10px}.topbar span{font-weight:800;font-size:20px;letter-spacing:-.02em}
 .heroform{margin:0}.heroform .btn{width:100%}.heroform form{display:flex;flex-direction:column;gap:10px}
+.fcontact{font-size:15px;color:var(--ink);margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}.fcontact a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1px solid var(--acc)}.fcontact .sep{color:var(--mut);margin:0 8px}
 .heroprice{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px}.heroprice small{display:block;color:var(--mut);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
 .heroprice .pt{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:22px;line-height:1.25;margin:4px 0 6px}.heroprice p{margin:8px 0 0;color:#3f3a35;font-size:14px}
 .hero .w.has-form{grid-template-columns:1fr;align-items:start}@media(min-width:880px){.hero .w.has-form{grid-template-columns:.9fr 1.1fr}.hero .w.has-form .heroform{order:1}.hero .w.has-form .text{order:2;padding-top:6px}}
@@ -113,6 +114,7 @@ footer{padding:28px 0 44px;color:var(--mut);font-size:12px;border-top:1px solid 
 .formcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin:22px 0 0;box-shadow:0 12px 40px rgba(28,25,23,.08)}
 .topbar{background:var(--paper);border-bottom:1px solid var(--line)}.topbar .w{display:flex;align-items:center;gap:12px;padding-top:14px;padding-bottom:14px}.topbar img{width:40px;height:40px;border-radius:10px}.topbar span{font-weight:800;font-size:20px;letter-spacing:-.02em}
 .heroform{margin:0}.heroform .btn{width:100%}.heroform form{display:flex;flex-direction:column;gap:10px}
+.fcontact{font-size:15px;color:var(--ink);margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}.fcontact a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1px solid var(--acc)}.fcontact .sep{color:var(--mut);margin:0 8px}
 .heroprice{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px}.heroprice small{display:block;color:var(--mut);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
 .heroprice .pt{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:22px;line-height:1.25;margin:4px 0 6px}.heroprice p{margin:8px 0 0;color:#3f3a35;font-size:14px}
 .hero .w.has-form{grid-template-columns:1fr;align-items:start}@media(min-width:880px){.hero .w.has-form{grid-template-columns:.9fr 1.1fr}.hero .w.has-form .heroform{order:1}.hero .w.has-form .text{order:2;padding-top:6px}}
@@ -271,5 +273,5 @@ def render_landing(c: dict, offer: dict, v: dict, base: str, pixel_html: str = "
 {("<section data-sec='faq'><div class='w'><h2>" + t['faq'] + "</h2>" + faq + "</div></section>") if faq else ""}
 
 {behavior}
-<footer><div class="w">{("<div style='margin-bottom:8px'>" + escape(offer.get('photo_credits')) + "</div>") if offer.get('photo_credits') else ""}{(escape(brand) + " · ") if brand else ""}{t['privacy']} <a href="{base}/lp/{escape(c['id'])}/privacy">Privacy</a></div></footer>
+<footer><div class="w">{("<div class='fcontact'>" + offer["footer_html"] + "</div>") if offer.get("footer_html") else ""}{("<div style='margin-bottom:8px'>" + escape(offer.get('photo_credits')) + "</div>") if offer.get('photo_credits') else ""}{(escape(brand) + " · ") if brand else ""}{t['privacy']} <a href="{base}/lp/{escape(c['id'])}/privacy">Privacy</a></div></footer>
 </body></html>"""
