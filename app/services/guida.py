@@ -130,7 +130,7 @@ def fulfil_session(session_id: str) -> dict | None:
 
     stripe.api_key = get_settings().stripe_secret_key
     s = stripe.checkout.Session.retrieve(session_id, expand=["customer_details"])
-    if s.get("payment_status") != "paid":
+    if s.get("payment_status") not in ("paid", "no_payment_required"):  # the latter: 100% promo code (internal tests)
         return None
     client = db.get_db()
     ref = client.collection("buyers").document(session_id)
