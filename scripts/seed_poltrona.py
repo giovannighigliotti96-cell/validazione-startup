@@ -15,7 +15,7 @@ COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/
 OWNERS = dict(**COMMON, clarity_id="yka3nisvdz", kicker="Per titolari di saloni · Milano", hero_card_title="In tre passi", quotes_title="Ti riconosci?", quotes_lead="Frasi vere di titolari di salone.",
     listings_title="Così appaiono gli annunci", listings_hint="Esempi con dati indicativi e foto di saloni reali. Il tuo annuncio mostrerà zona, giorni, prezzo, cosa è incluso e le foto.",
     confirm_email={"subject": "Pubblica la tua postazione — {brand}", "body": (
-        "Ciao{nome_sp}," + NL2 + "grazie per esserti registrata su {brand}. Pubblicare la tua postazione è gratis e ci vogliono due minuti: giorni, prezzo, una foto e il numero da chiamare." + NL2 +
+        "Ciao{nome_sp}," + NL2 + "grazie per la registrazione su {brand}. Pubblicare la tua postazione è gratis e ci vogliono due minuti: giorni, prezzo, una foto e il numero da chiamare." + NL2 +
         "Il tuo annuncio lo completi qui (il link è personale, tienilo):" + NL + "{link_annuncio}" + NL2 +
         "Nell'annuncio le professioniste vedono il nome del salone, zona, giorni, prezzo, foto e il numero da chiamare: ti chiamano direttamente e vi mettete d'accordo tra di voi." + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
@@ -46,10 +46,10 @@ OWNERS = dict(**COMMON, clarity_id="yka3nisvdz", kicker="Per titolari di saloni 
                     {"objection": "Ricevo troppe chiamate?", "answer": "Nell'annuncio scrivi tu chi cerchi (specialità, giorni, part-time): ti chiama chi si riconosce. Se vuoi una pausa, metti l'annuncio in pausa dal tuo link personale."},
                     {"objection": "Posso togliere l'annuncio?", "answer": "Quando vuoi, dal tuo link personale: lo metti in pausa o lo chiudi in un clic."}])])
 
-STYLISTS = dict(**COMMON, clarity_id="yka1e47v91", thanks_text="Sei registrata, è gratis. Ti abbiamo mandato una email: appena c'è una postazione nella tua zona ti scriviamo noi. Intanto puoi guardare le postazioni già online e chiamare direttamente.", kicker="Per parrucchiere e barbieri · Milano", hero_card_title="In tre passi", quotes_title="Saloni che cercano una professionista", quotes_lead="Annunci pubblicati da titolari nelle ultime settimane.",
+STYLISTS = dict(**COMMON, clarity_id="yka1e47v91", thanks_text="Registrazione confermata, è gratis. Ti abbiamo mandato una email: appena c'è una postazione nella tua zona ti scriviamo noi. Intanto puoi guardare le postazioni già online e chiamare direttamente.", kicker="Per parrucchiere e barbieri · Milano", hero_card_title="In tre passi", quotes_title="Saloni che cercano una professionista", quotes_lead="Annunci pubblicati da titolari nelle ultime settimane.",
     listings_title="Così appaiono gli annunci", listings_hint="Esempi con dati indicativi e foto di saloni reali: mostrano cosa vedrai. Quando un salone pubblica una postazione vera, vedi nome del salone, zona, giorni, prezzo, cosa è incluso, foto e il numero da chiamare.",
-    confirm_email={"subject": "Sei registrata — {brand}", "body": (
-        "Ciao{nome_sp}," + NL2 + "sei registrata su {brand}: è gratis e resta gratis." + NL2 +
+    confirm_email={"subject": "Registrazione confermata — {brand}", "body": (
+        "Ciao{nome_sp}," + NL2 + "la tua registrazione su {brand} è confermata: è gratis e resta gratis." + NL2 +
         "Cosa succede adesso: appena un salone della tua zona pubblica una postazione ti scriviamo noi, con nome del salone, zona, giorni, prezzo, foto e il numero della titolare. La chiami, visiti il salone e vi mettete d'accordo tra di voi su giorni, orari e condizioni." + NL2 +
         "Le postazioni già online le vedi qui: " + BASE + "/pl/postazioni" + NL2 +
         "A presto," + NL + "Giovanni Ghigliotti" + NL + "{brand}")},
@@ -76,7 +76,7 @@ STYLISTS = dict(**COMMON, clarity_id="yka1e47v91", thanks_text="Sei registrata, 
                     {"objection": "Come mi accordo con il salone?", "answer": "Direttamente con la titolare: giorni, orari, prezzo (fisso, percentuale o misto), periodo di prova, clienti. Noi pubblichiamo gli annunci, il resto lo decidete voi."},
                     {"objection": "Posso lavorare solo qualche giorno a settimana?", "answer": "Sì, molti saloni offrono postazioni part-time. Negli annunci trovi i giorni disponibili e nel messaggio alla titolare scrivi cosa cerchi."},
                     {"objection": "Quanto guadagno davvero?", "answer": "Esempio: 4 clienti al giorno × 45 € × 20 giorni = 3.600 € al mese, meno il prezzo della postazione (300-700 €) e i prodotti. Il resto è tuo."},
-                    {"objection": "E se il salone non mi piace?", "answer": "Non sei obbligata a niente: chiami, visiti, decidi. Puoi chiamare tutti i saloni che vuoi."},
+                    {"objection": "E se il salone non mi piace?", "answer": "Nessun obbligo: chiami, visiti, decidi. Puoi chiamare tutti i saloni che vuoi."},
                     {"objection": "Non ci sono postazioni nella mia zona", "answer": "Registrati lo stesso: appena un salone della tua zona pubblica una postazione ti scriviamo noi."}])])
 
 LISTINGS = [

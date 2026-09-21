@@ -70,6 +70,8 @@ def evaluate(listing: dict, lead: dict) -> Verdict | None:
         data = llm_json(_fmt(listing, lead), Verdict, strong=True, temperature=0.1)
         v = Verdict(**data)
         v.score = max(0, min(100, int(v.score)))
+        v.reason = (v.reason or "").strip().rstrip(".")
+        v.reason = (v.reason[:1].upper() + v.reason[1:] + ".") if v.reason else ""
         if v.specialty_fit == "no":
             v.match = False
         return v
@@ -78,17 +80,7 @@ def evaluate(listing: dict, lead: dict) -> Verdict | None:
         return None
 
 
-PARTICLES = {"de", "di", "da", "del", "della", "dello", "dei", "degli", "la", "lo", "le", "van", "von", "mc", "d'"}
-
-
-def first_name(full: str) -> str:
-    """'De Maria Dina' -> 'Dina'; 'Gessica' -> 'Gessica'; 'DOTT SSA BARBARA LIDIA CORLEONE' -> 'Barbara'."""
-    toks = [t for t in (full or "").replace(".", " ").split() if t.lower() not in ("dott", "dottssa", "dott.ssa", "ssa", "sig", "sig.ra", "sigra")]
-    if not toks:
-        return ""
-    if toks[0].lower() in PARTICLES and len(toks) > 1:
-        return toks[-1].title()
-    return toks[0].title()
+first_name = P.first_name
 
 
 def _tel(phone: str) -> str:
@@ -111,14 +103,14 @@ def _notify(listing: dict, lead: dict, v: Verdict) -> None:
     e = lead.get("extra") or {}
     first = first_name(e.get("nome") or "")
     base = P.base()
-    owner_wa = _wa(listing.get("telefono") or "", f"Ciao {listing.get('titolare') or ''}, ho visto la postazione di {listing.get('salone')} su Poltrona Libera e mi interessa")
+    owner_wa = _wa(listing.get("telefono") or "", f"Ciao {first_name(listing.get('titolare') or '')}, ho visto la postazione di {listing.get('salone')} su Poltrona Libera e mi interessa")
     photo = (listing.get("photos") or [None])[0]
     pro_paras = [
         f"Ciao {first}," if first else "Ciao,",
         f"abbiamo trovato una postazione che fa al caso tuo: <b>{escape(listing.get('salone') or '')}</b>, a <b>{escape(listing.get('zona') or '')}</b>. {escape(v.reason)}",
         (f"<p><a href='{escape(photo)}'><img src='{escape(photo)}' style='max-width:100%;border-radius:10px'></a></p>" if photo else ""),
         f"<ul><li><b>Giorni</b>: {escape(listing.get('giorni') or '')}</li><li><b>Prezzo</b>: {escape(listing.get('prezzo') or '')}</li><li><b>Incluso</b>: {escape(listing.get('incluso') or '-')}</li><li><b>Cerca</b>: {escape(listing.get('chi_cerchi') or '-')}</li></ul>",
-        f"La titolare è <b>{escape(listing.get('titolare') or '')}</b>: chiamala oggi al <a href='tel:{_tel(listing.get('telefono') or '')}'><b>{escape(listing.get('telefono') or '')}</b></a> "
+        f"La titolare è <b>{escape(first_name(listing.get('titolare') or ''))}</b>: chiamala oggi al <a href='tel:{_tel(listing.get('telefono') or '')}'><b>{escape(listing.get('telefono') or '')}</b></a> "
         f"oppure <a href='{owner_wa}'>scrivile su WhatsApp</a>. È l'unica postazione di questo tipo online adesso e la titolare sceglie la prima che la convince: non aspettare.",
         "Come vi accordate (giorni, orari, prezzo, prova) lo decidete tra di voi. Se vuoi un consiglio prima di chiamare, rispondi a questa email o scrivimi su WhatsApp al 392 590 9721.",
         "In bocca al lupo,<br>Giovanni Ghigliotti<br>Poltrona Libera",
@@ -133,11 +125,11 @@ def _notify(listing: dict, lead: dict, v: Verdict) -> None:
     owner_paras = [
         f"Ciao {owner_first}," if owner_first else "Ciao,",
         f"buone notizie: una professionista in linea con il tuo annuncio di <b>{escape(listing.get('salone') or '')}</b> si è iscritta su Poltrona Libera e le abbiamo appena mandato il tuo numero.",
-        f"<ul><li><b>{escape(e.get('nome') or '')}</b></li><li>Cosa fa: {escape(e.get('specialita') or '-')}</li><li>Zona: {escape(e.get('zona') or '-')}</li>"
+        f"<ul><li><b>{escape((e.get('nome') or '').strip().title())}</b></li><li>Cosa fa: {escape(e.get('specialita') or '-')}</li><li>Zona: {escape(e.get('zona') or '-')}</li>"
         + (f"<li>Come lavora oggi: {escape(lead.get('answer') or '')}</li>" if lead.get("answer") else "") + "</ul>",
         f"Perché è adatta: {escape(v.reason)}",
         f"Probabilmente ti chiamerà lei. Se preferisci anticiparla, il suo numero è <a href='tel:{_tel(e.get('telefono') or '')}'><b>{escape(e.get('telefono') or '')}</b></a>"
-        + (f" oppure <a href='{_wa(e.get('telefono') or '', 'Ciao ' + first + ', sono ' + (listing.get('titolare') or '') + ' di ' + (listing.get('salone') or '') + ': ho visto su Poltrona Libera che cerchi una postazione')}'>scrivile su WhatsApp</a>." if e.get("telefono") else "."),
+        + (f" oppure <a href='{_wa(e.get('telefono') or '', 'Ciao ' + first + ', sono ' + first_name(listing.get('titolare') or '') + ' di ' + (listing.get('salone') or '') + ': ho visto su Poltrona Libera che cerchi una postazione')}'>scrivile su WhatsApp</a>." if e.get("telefono") else "."),
         "Come vi accordate (giorni, orari, prezzo, prova) lo decidete tra di voi. Per qualsiasi dubbio scrivimi su WhatsApp al 392 590 9721.",
         "A presto,<br>Giovanni Ghigliotti<br>Poltrona Libera",
     ]

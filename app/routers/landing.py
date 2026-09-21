@@ -182,7 +182,9 @@ def _notify_signup(c: dict, offer: dict, lead: dict) -> None:
     if conf and conf.get("body"):
         try:
             name = (lead.get("business") or "").strip()
-            name = ((lead.get("extra") or {}).get("nome") or name).strip().split(" ")[0] if (lead.get("extra") or {}).get("nome") else name
+            from app.services.poltrona import first_name as _fn
+
+            name = _fn((lead.get("extra") or {}).get("nome") or "") or name
             body = conf["body"].replace("{nome_sp}", f" {name}" if name else "").replace("{nome}", name or "").replace("{brand}", brand).replace("{link_annuncio}", offer.get("_link_annuncio") or "")
             paras = "".join(f"<p>{_e(par)}</p>" for par in body.split("\n\n"))
             foot = f"<p style='color:#94a3b8;font-size:12px;margin-top:24px'>Hai ricevuto questa email perché ti sei iscritto/a su {_e(brand)}. Per cancellarti basta rispondere con: cancella.</p>"

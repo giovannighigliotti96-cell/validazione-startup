@@ -17,7 +17,7 @@ for d in c.collection(db.PROBLEM_CLUSTERS).document(P.OWNERS).collection("leads"
         print("already", lead["email"]); continue
     nome = ((lead.get("extra") or {}).get("nome") or "").split(" ")[0]
     body = P._mail([f"Ciao {nome}," if nome else "Ciao,",
-                    f"grazie per esserti registrata su Poltrona Libera per {lead.get('business') or 'il tuo salone'}. Abbiamo cambiato una cosa importante: pubblicare la tua postazione è gratis, senza commissioni. Tu pubblichi l'annuncio, le professioniste di Milano lo vedono e chiedono il tuo contatto, e vi mettete d'accordo direttamente.",
+                    f"grazie per la registrazione su Poltrona Libera per {lead.get('business') or 'il tuo salone'}. Abbiamo cambiato una cosa importante: pubblicare la tua postazione è gratis, senza commissioni. Tu pubblichi l'annuncio, le professioniste di Milano lo vedono e chiedono il tuo contatto, e vi mettete d'accordo direttamente.",
                     "Ci vogliono due minuti: giorni, prezzo, una foto e il numero da chiamare. Il tuo link personale:", f"<p><a href='{P.link(li)}' style='display:inline-block;background:#b5532c;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700'>Pubblica la tua postazione</a></p>",
                     "Nell'annuncio compaiono nome del salone, zona, giorni, prezzo, foto e il numero da chiamare: le professioniste ti chiamano direttamente.",
                     "Se hai domande rispondi a questa email.", "A presto,<br>Giovanni Ghigliotti<br>Poltrona Libera"])

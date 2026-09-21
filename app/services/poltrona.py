@@ -32,6 +32,25 @@ REMINDERS_H = (24, 72, 168)  # hours after the draft was created
 PHONE = "3925909721"
 
 
+PARTICLES = {"de", "di", "da", "del", "della", "dello", "dei", "degli", "la", "lo", "le", "van", "von", "mc"}
+TITLES = {"dott", "dottssa", "dott.ssa", "ssa", "sig", "sig.ra", "sigra", "dr", "dr.ssa"}
+
+
+def first_name(full: str) -> str:
+    """'De Maria Dina' -> 'Dina'; 'DOTT SSA BARBARA LIDIA CORLEONE' -> 'Barbara'; 'Annalisa cao' -> 'Annalisa'."""
+    toks = [t for t in (full or "").replace(".", " ").split() if t.lower() not in TITLES]
+    if not toks:
+        return ""
+    if toks[0].lower() in PARTICLES and len(toks) > 1:
+        return toks[-1].title()
+    return toks[0].title()
+
+
+def hi(full: str) -> str:
+    n = first_name(full)
+    return f"Ciao {n}," if n else "Ciao,"
+
+
 def base() -> str:
     return get_settings().public_base_url.rstrip("/")
 
@@ -52,7 +71,8 @@ def _sender(subject: str, html: str, to: str) -> None:
 
 
 def _mail(paras: list[str]) -> str:
-    body = "".join(f"<p>{escape(p)}</p>" if not p.startswith("<") else p for p in paras)
+    """Paragraphs that contain markup are used as-is; plain ones are escaped and wrapped."""
+    body = "".join(p if p.startswith("<") else (f"<p>{p}</p>" if "<" in p else f"<p>{escape(p)}</p>") for p in paras if p)
     return f"<div style='font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px;color:#1c1917;line-height:1.6'>{body}</div>"
 
 
@@ -131,7 +151,7 @@ def save(listing: dict, fields: dict, new_photos: list[bytes], submit: bool) -> 
 
 def _on_submitted(listing: dict) -> None:
     _sender(f"Il tuo annuncio è in verifica — {BRAND}", _mail([
-        f"Ciao {listing.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
+        hi(listing.get("titolare") or ""),
         f"abbiamo ricevuto l'annuncio della postazione di {listing.get('salone')} ({listing.get('zona')}). Lo controlliamo noi a mano: se tutto va bene entro qualche ora è online e le professioniste della tua zona potranno chiamarti.",
         "Nell'annuncio compaiono nome del salone, zona, giorni, prezzo, foto e il numero da chiamare: le professioniste ti chiamano direttamente.",
         f"Per modificare l'annuncio in qualsiasi momento: {link(listing)}",
@@ -183,14 +203,14 @@ def set_status(listing_id: str, status: str, note: str = "", quiet: bool = False
         return listing
     if status == "online":
         _sender(f"Annuncio approvato: sei online — {BRAND}", _mail([
-            f"Ciao {listing.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
+            hi(listing.get("titolare") or ""),
             f"il tuo annuncio è stato approvato ed è online: {base()}/pl/postazioni",
             "Da adesso le professioniste che lo vedono ti chiamano direttamente al numero che hai indicato, e vi mettete d'accordo tra di voi. Pubblicare e ricevere chiamate non costa nulla.",
             f"Per modificare o mettere in pausa l'annuncio: {link(listing)}",
             "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), listing["email"])
     elif status == "rifiutato":
         _sender(f"Il tuo annuncio: serve una modifica — {BRAND}", _mail([
-            f"Ciao {listing.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
+            hi(listing.get("titolare") or ""),
             "abbiamo guardato l'annuncio e prima di pubblicarlo serve una modifica:", f"<p><b>{escape(note or 'aggiungi qualche dettaglio in più (foto, giorni, prezzo).')}</b></p>",
             f"Lo sistemi qui in un minuto: {link(listing)}", "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), listing["email"])
     return listing
@@ -239,7 +259,7 @@ def send_reminders() -> int:
             continue
         nth = ("Non hai finito il tuo annuncio", "Ci sono professioniste che aspettano il tuo annuncio", "Ultimo promemoria: la tua postazione")[sent]
         _sender(f"{nth} — {BRAND}", _mail([
-            f"Ciao {li.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
+            hi(li.get("titolare") or ""),
             f"l'annuncio della postazione di {li.get('salone') or 'del tuo salone'} è rimasto a metà. Ci vogliono due minuti: giorni, prezzo, una foto e il numero da chiamare.",
             f"Riprendi da dove eri: {link(li)}",
             "Pubblicare è gratis e le professioniste della tua zona vedono solo gli annunci completi.",
@@ -269,7 +289,7 @@ def request_contact(listing_id: str, form: dict) -> dict | None:
             {"email": req["email"], "business": "", "variant": "cat", "placement": "catalogo", "answer": req["messaggio"],
              "extra": {"nome": req["nome"], "telefono": req["telefono"], "zona": req["zona"], "specialita": req["specialita"]}, "at": db.now()}, merge=True)
         _sender(f"Richiesta ricevuta — {BRAND}", _mail([
-            f"Ciao {req['nome']},", f"abbiamo ricevuto la tua richiesta per la postazione a {li.get('zona')}. Entro 24 ore ti scriviamo con il nome del salone e il numero della titolare, e le diciamo che la contatterai tu.",
+            hi(req["nome"]), f"abbiamo ricevuto la tua richiesta per la postazione a {li.get('zona')}. Entro 24 ore ti scriviamo con il nome del salone e il numero della titolare, e le diciamo che la contatterai tu.",
             "Non ti costa nulla. Come vi mettete d'accordo (giorni, orari, prezzo, tipo di collaborazione) lo decidete tra di voi.",
             f"Nel frattempo puoi guardare le altre postazioni: {base()}/pl/postazioni", "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), req["email"])
     try:
