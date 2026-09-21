@@ -122,7 +122,7 @@ def _on_submitted(listing: dict) -> None:
     _sender(f"Il tuo annuncio è in verifica — {BRAND}", _mail([
         f"Ciao {listing.get('titolare') or ''},".replace("Ciao ,", "Ciao,"),
         f"abbiamo ricevuto l'annuncio della postazione di {listing.get('salone')} ({listing.get('zona')}). Lo controlliamo noi a mano: se tutto va bene entro qualche ora è online e le professioniste della tua zona potranno chiederci il tuo contatto.",
-        "Il tuo nome, l'indirizzo e il telefono non compaiono nell'annuncio: li diamo solo alle professioniste che chiedono di contattarti.",
+        "Il tuo telefono non compare nell'annuncio: lo diamo solo alle professioniste che chiedono di contattarti.",
         f"Per modificare l'annuncio in qualsiasi momento: {link(listing)}",
         "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), listing["email"])
     rows = "".join(f"<tr><td style='padding:4px 10px;color:#64748b'>{escape(k)}</td><td style='padding:4px 10px'><b>{escape(str(listing.get(k) or ''))}</b></td></tr>"

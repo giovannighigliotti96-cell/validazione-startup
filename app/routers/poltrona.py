@@ -74,11 +74,11 @@ def _form_html(li: dict, saved: bool, base: str) -> str:
     return f"""
 <div class='steps'><span class='on'>1 · Postazione</span><span class='on'>2 · Chi cerchi</span><span class='on'>3 · Foto</span><span class='on'>4 · Contatto</span></div>
 <h1>Pubblica la tua postazione</h1>
-<p class='lead'>Gratis. Due minuti. Nome del salone, indirizzo e telefono <b>non compaiono nell'annuncio</b>: le professioniste vedono zona, giorni, prezzo e foto, e chiedono a noi il tuo contatto.</p>
+<p class='lead'>Gratis. Due minuti. Le professioniste vedono zona, giorni, prezzo, cosa è incluso e le foto, e chiedono a noi il tuo contatto: il telefono lo diamo solo a loro.</p>
 {banner}
 <form method='post' enctype='multipart/form-data' class='card' style='margin-top:16px' id='annuncio'>
 <h2 style='margin-top:0'>1 · La postazione</h2>
-<label for='salone'>Nome del salone <small>non sarà mostrato</small></label><input id='salone' name='salone' value='{v("salone")}' required>
+<label for='salone'>Nome del salone</label><input id='salone' name='salone' value='{v("salone")}' required>
 <label for='zona'>Zona / quartiere di Milano <small>es. Porta Romana, Rozzano, NoLo</small></label><input id='zona' name='zona' value='{v("zona")}' required>
 <label for='giorni'>Giorni e orari disponibili <small>scrivi come vuoi, es. "martedì-sabato, orario negozio" oppure "solo 3 giorni a settimana"</small></label><input id='giorni' name='giorni' value='{v("giorni")}' required>
 <label for='prezzo'>Prezzo al mese <small>scrivilo come preferisci: "500 €", "450 € + prodotti", "percentuale sugli incassi, da concordare"</small></label><input id='prezzo' name='prezzo' value='{v("prezzo")}' required>

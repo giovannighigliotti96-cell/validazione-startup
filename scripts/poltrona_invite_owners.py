@@ -19,7 +19,7 @@ for d in c.collection(db.PROBLEM_CLUSTERS).document(P.OWNERS).collection("leads"
     body = P._mail([f"Ciao {nome}," if nome else "Ciao,",
                     f"grazie per esserti registrata su Poltrona Libera per {lead.get('business') or 'il tuo salone'}. Abbiamo cambiato una cosa importante: pubblicare la tua postazione è gratis, senza commissioni. Tu pubblichi l'annuncio, le professioniste di Milano lo vedono e chiedono il tuo contatto, e vi mettete d'accordo direttamente.",
                     "Ci vogliono due minuti: giorni, prezzo, una foto e il numero da chiamare. Il tuo link personale:", f"<p><a href='{P.link(li)}' style='display:inline-block;background:#b5532c;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700'>Pubblica la tua postazione</a></p>",
-                    "Nome del salone, indirizzo e telefono non compaiono nell'annuncio: li diamo solo alle professioniste che chiedono di contattarti.",
+                    "Il tuo telefono non compare nell'annuncio: lo diamo solo alle professioniste che chiedono di contattarti.",
                     "Se hai domande rispondi a questa email.", "A presto,<br>Giovanni Ghigliotti<br>Poltrona Libera"])
     st = notify.send_email("Pubblica gratis la tua postazione — Poltrona Libera", body, to=lead["email"], from_name="Poltrona Libera", reply_to=db.get_db and __import__("app.config", fromlist=["get_settings"]).get_settings().notify_email_to)
     print("sent", lead["email"], lead.get("business"), st)
