@@ -76,19 +76,22 @@ def _bump(cluster_id: str, variant: str, field: str, ip_ua_hash: str | None = No
     ref.update({f"metrics.{field}": Increment(1), f"metrics.by_variant.{variant}.{field}": Increment(1), "updated_at": db.now()})
 
 
-def _pixel(event: str = "PageView") -> str:
+def _pixel(event: str = "PageView", pv_id: str = "", ev_id: str = "", extra: str = "") -> str:
+    """Browser pixel. Event ids are shared with the Conversions API call made server-side, so Meta counts each once."""
     pid = getattr(get_settings(), "meta_pixel_id", "") or ""
     if not pid:
         return ""
+    pv = f"fbq('track','PageView',{{}},{{eventID:'{pv_id}'}});" if pv_id else "fbq('track','PageView');"
+    lead = (f"fbq('track','Lead',{{}},{{eventID:'{ev_id}'}});" if ev_id else "fbq('track','Lead');") if event == "Lead" else ""
     return f"""<script>!function(f,b,e,v,n,t,s){{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)}};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}
-(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','{escape(pid)}');fbq('track','PageView');{"fbq('track','Lead');" if event == "Lead" else ""}</script>"""
+(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','{escape(pid)}');{pv}{lead}{extra}</script>"""
 
 
-def render(c: dict, offer: dict, v: dict, base: str, signed_up: bool = False) -> str:
+def render(c: dict, offer: dict, v: dict, base: str, signed_up: bool = False, pv_id: str = "", ev_id: str = "") -> str:
     from app.templates.landing import render_landing
 
-    return render_landing(c, offer, v, base, pixel_html=_pixel("Lead" if signed_up else "PageView"), signed_up=signed_up)
+    return render_landing(c, offer, v, base, pixel_html=_pixel("Lead" if signed_up else "PageView", pv_id, ev_id), signed_up=signed_up)
 
 
 def _render_legacy(c: dict, offer: dict, v: dict, base: str, signed_up: bool = False) -> str:
@@ -158,7 +161,11 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
                                       f"Tutte le postazioni: {base}/pl/postazioni")
     q = request.query_params
     offer = {**offer, "_utm": re.sub(r"[^A-Za-z0-9_./-]", "", "/".join(x for x in (q.get("utm_source"), q.get("utm_campaign"), q.get("utm_content")) if x) or ("meta" if q.get("fbclid") else "diretto"))[:80]}
-    resp = HTMLResponse(render(c, offer, var, base, signed_up=bool(ok)))
+    from app.services import capi
+
+    pv_id = capi.new_event_id()
+    capi.send("PageView", pv_id, str(request.url), capi.user_data(request))
+    resp = HTMLResponse(render(c, offer, var, base, signed_up=bool(ok), pv_id=pv_id, ev_id=str(q.get("eid") or "")))
     resp.set_cookie(f"lpv_{cluster_id}", var["key"], max_age=60 * 60 * 24 * 30, samesite="lax")
     return resp
 
@@ -204,16 +211,23 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
     base = get_settings().public_base_url.rstrip("/")
     lead = {"email": email.strip().lower(), "variant": variant, "answer": answer[:1000], "business": business[:200], "extra": extra, "placement": str(form.get("placement") or "lista")[:20], "at": db.now()}
     is_new = not ref.get().exists
+    eid = ""
     if is_new:
         ref.set(lead)
         _bump(cluster_id, variant, "signups")
+        from app.services import capi
+
+        eid = capi.new_event_id()
+        nm = (extra.get("nome") or "").split(" ")
+        capi.send("Lead", eid, f"{base}/lp/{cluster_id}", capi.user_data(request, email=lead["email"], phone=extra.get("telefono"), first_name=nm[0] if nm else None, last_name=nm[-1] if len(nm) > 1 else None, external_id=lead_id),
+                  {"content_name": cluster_id})
     if cluster_id == "poltrona_libera_titolari":  # owners go straight into the listing flow (magic link also sent by email)
         from app.services import poltrona as _pl
 
         draft = _pl.create_draft(lead if is_new else (ref.get().to_dict() or lead), lead_id)
         if is_new:
             _notify_signup(c, {**offer, "_link_annuncio": _pl.link(draft)}, lead)
-        return RedirectResponse(f"{_pl.link(draft)}?nuovo={int(is_new)}", status_code=303)
+        return RedirectResponse(f"{_pl.link(draft)}?nuovo={int(is_new)}&eid={eid}", status_code=303)
     if is_new:
         _notify_signup(c, offer, lead)
         if cluster_id == "poltrona_libera_professioniste":  # find her a chair right away
@@ -222,7 +236,7 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
             from app.services import matching
 
             threading.Thread(target=matching.match_lead, args=(lead_id, lead), daemon=True).start()
-    return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1", status_code=303)
+    return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1&eid={eid}", status_code=303)
 
 
 @router.post("/{cluster_id}/event")

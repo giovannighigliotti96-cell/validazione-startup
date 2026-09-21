@@ -96,7 +96,7 @@ def stripe_ready() -> bool:
 
 
 # ----------------------------------------------------------------------------- checkout
-def create_checkout(slug: str, utm: str = "") -> str | None:
+def create_checkout(slug: str, utm: str = "", fb: tuple[str, str] = ("", ""), ip: str = "", ua: str = "") -> str | None:
     """Stripe Checkout session; returns the URL to redirect to, or None if Stripe is not configured."""
     if slug not in CATALOG or not stripe_ready():
         return None
@@ -113,7 +113,7 @@ def create_checkout(slug: str, utm: str = "") -> str | None:
         customer_creation="always",
         billing_address_collection="auto",
         allow_promotion_codes=True,
-        metadata={"slug": slug, "utm": utm[:80]},
+        metadata={"slug": slug, "utm": utm[:80], "fbp": fb[0][:80], "fbc": fb[1][:120], "ip": ip[:45], "ua": ua[:200]},
         success_url=f"{base()}/pl/guida/{slug}/grazie?session_id={{CHECKOUT_SESSION_ID}}",
         cancel_url=f"{base()}/pl/guida/{slug}?annullato=1",
     )
@@ -141,6 +141,18 @@ def fulfil_session(session_id: str) -> dict | None:
     ref.set(buyer)
     buyer["id"] = session_id
     send_delivery(buyer)
+    try:  # Purchase to the Conversions API with full match data; same event_id as the browser pixel on the thank-you page
+        from app.services import capi
+
+        md = s.get("metadata") or {}
+        nm = (buyer["name"] or "").split(" ")
+        ud = capi.user_data(None, email=buyer["email"], phone=buyer.get("phone"), first_name=nm[0] if nm else None, last_name=nm[-1] if len(nm) > 1 else None, external_id=session_id)
+        for k_src, k_dst in (("fbp", "fbp"), ("fbc", "fbc"), ("ip", "client_ip_address"), ("ua", "client_user_agent")):
+            if md.get(k_src):
+                ud[k_dst] = md[k_src]
+        capi.send("Purchase", session_id, f"{base()}/pl/guida/{slug}", ud, {"content_name": slug, "content_type": "product", "value": buyer["amount"] / 100, "currency": "EUR", "order_id": session_id})
+    except Exception as e:  # noqa: BLE001
+        log.error("capi purchase: %s", e)
     return buyer
 
 

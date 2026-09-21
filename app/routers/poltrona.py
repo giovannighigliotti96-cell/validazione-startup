@@ -43,16 +43,29 @@ def _top(base: str) -> str:
     return f"<div class='top'><div class='w'><a href='{base}/pl/postazioni' style='display:flex;align-items:center;gap:12px'><img src='{base}/static/poltrona/logo_512.png' alt=''><b>Poltrona Libera</b></a></div></div>"
 
 
-def _pixel_html(event: str) -> str:
+def _pixel_html(event: str, request: Request | None = None, ev_id: str = "", url: str = "") -> str:
     from app.routers.landing import _pixel
+    from app.services import capi
 
-    return _pixel(event)
+    if not event:
+        return ""
+    pv_id = capi.new_event_id()
+    if request is not None:
+        capi.send("PageView", pv_id, url or str(request.url), capi.user_data(request))
+    return _pixel(event, pv_id, ev_id)
 
 
-def _page(title: str, body: str, pixel: str = "PageView", desc: str = "") -> HTMLResponse:
+def _page(title: str, body: str, pixel: str = "PageView", desc: str = "", request: Request | None = None, ev_id: str = "", beacon_id: str = "") -> HTMLResponse:
     base = P.base()
+    beacon = ""
+    if beacon_id:
+        from app.templates.landing import BEHAVIOR_JS
+
+        q = request.query_params if request is not None else {}
+        utm = "/".join(x for x in (q.get("utm_source"), q.get("utm_campaign"), q.get("utm_content")) if x) or ("meta" if q.get("fbclid") else "diretto")
+        beacon = BEHAVIOR_JS % {"cid": beacon_id, "variant": "A", "utm": utm, "base": base}
     return HTMLResponse(f"<!doctype html><html lang='it'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{escape(title)} — Poltrona Libera</title>"
-                        f"<meta name='description' content='{escape(desc)}'>{CSS}{_pixel_html(pixel)}</head><body>{_top(base)}<main class='w'>{body}</main>"
+                        f"<meta name='description' content='{escape(desc)}'>{CSS}{_pixel_html(pixel, request, ev_id)}</head><body>{_top(base)}<main class='w'>{body}</main>{beacon}"
                         f"<footer class='w muted' style='padding-bottom:30px'><div style='color:var(--ink);font-size:15px;margin-bottom:10px'>{P.footer_html()}</div>Poltrona Libera · Milano · <a href='{base}/pl/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
 
 
@@ -127,11 +140,11 @@ def _form_html(li: dict, saved: bool, base: str) -> str:
 
 
 @router.get("/annuncio/{token}", response_class=HTMLResponse)
-def annuncio(token: str, saved: int = 0, nuovo: int = 0):
+def annuncio(token: str, request: Request, saved: int = 0, nuovo: int = 0, eid: str = ""):
     li = P.by_token(token)
     if not li:
         raise HTTPException(404, "link non valido")
-    return _page("Pubblica la tua postazione", _form_html(li, bool(saved), P.base()), pixel="Lead" if nuovo else "PageView")
+    return _page("Pubblica la tua postazione", _form_html(li, bool(saved), P.base()), pixel="Lead" if nuovo else "PageView", request=request, ev_id=eid)
 
 
 @router.post("/annuncio/{token}")
@@ -188,7 +201,7 @@ def _card(lp: dict, base: str, real: bool) -> str:
 
 
 @router.get("/postazioni", response_class=HTMLResponse)
-def postazioni():
+def postazioni(request: Request):
     base = P.base()
     real = [P.public_card(x) for x in P.online_listings()]
     offer = (db.get(db.OPPORTUNITY_SCORING, P.PROS) or {}).get("offer") or {}
@@ -197,18 +210,21 @@ def postazioni():
     ex_html = "".join(_card(x, base, False) for x in examples)
     intro = (f"<p class='lead'>{len(real)} postazion{'e' if len(real) == 1 else 'i'} verificat{'a' if len(real) == 1 else 'e'} a Milano. Guardi gratis; quando ne trovi una che ti interessa chiami direttamente la titolare al numero nell'annuncio. Poi vi mettete d'accordo tra di voi."
              if real else "<p class='lead'>I primi saloni stanno pubblicando le loro postazioni. Registrati gratis: ti avvisiamo appena c'è una postazione nella tua zona.</p>")
-    body = f"""<h1>Postazioni disponibili a Milano</h1>{intro}
+    body = f"""<h1 data-sec='hero'>Postazioni disponibili a Milano</h1>{intro}
 {('<div class="grid">' + real_html + '</div>') if real else ''}
-<h2>{'Altri esempi di annuncio' if real else 'Così appaiono gli annunci'}</h2><p class='muted' style='margin:0 0 12px'>Esempi con dati indicativi e foto di saloni reali: mostrano cosa vedrai. Non sono saloni iscritti.</p>
+<h2 data-sec='esempi'>{'Altri esempi di annuncio' if real else 'Così appaiono gli annunci'}</h2><p class='muted' style='margin:0 0 12px'>Esempi con dati indicativi e foto di saloni reali: mostrano cosa vedrai. Non sono saloni iscritti.</p>
 <div class='grid'>{ex_html}</div>
 <div class='card' style='margin-top:28px'><h2 style='margin-top:0'>Non trovi la tua zona?</h2><p class='muted'>Registrati gratis e ti scriviamo appena un salone della tua zona pubblica una postazione.</p><a class='btn' href='{base}/lp/{P.PROS}#lista'>Registrati gratis</a></div>
 <script>function hit(id,k){{try{{navigator.sendBeacon('{base}/pl/click/'+id+'/'+k)}}catch(e){{}}try{{fbq('track','Contact')}}catch(e){{}}}}</script>"""
-    return _page("Postazioni disponibili a Milano", body, desc="Postazioni in affitto in saloni di Milano: guardi gratis e chiami direttamente la titolare.")
+    return _page("Postazioni disponibili a Milano", body, desc="Postazioni in affitto in saloni di Milano: guardi gratis e chiami direttamente la titolare.", request=request, beacon_id="catalogo")
 
 
 @router.post("/click/{listing_id}/{kind}")
-def click(listing_id: str, kind: str):
+def click(listing_id: str, kind: str, request: Request):
+    from app.services import capi
+
     P.track_call(listing_id, kind)
+    capi.send("Contact", capi.new_event_id(), f"{P.base()}/pl/postazioni", capi.user_data(request), {"content_name": listing_id, "content_category": kind})
     return {"ok": True}
 
 
@@ -349,6 +365,20 @@ async def admin_status(listing_id: str, request: Request):
     if not P.set_status(listing_id, str(form.get("status") or ""), str(form.get("note") or "")):
         raise HTTPException(400, "non approvabile: annuncio incompleto (foto, prezzo, giorni…) o stato non valido")
     return RedirectResponse(f"{P.base()}/pl/admin", status_code=303)
+
+
+@router.get("/admin/frizioni")
+def frizioni(request: Request, token: str | None = None, days: int = 14):
+    """Behaviour funnel per page (landings, sales pages, catalogue): what people reach, where they stop, what they click."""
+    from app.auth import require_api
+    from app.services import behaviour
+
+    if not _logged_in(request):
+        try:
+            require_api(request.headers.get("x-api-token", "") or token or "")
+        except Exception:
+            raise HTTPException(401, "login o X-API-Token")
+    return behaviour.report(days)
 
 
 @router.get("/admin/export.csv")

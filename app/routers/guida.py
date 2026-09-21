@@ -36,20 +36,22 @@ EXTRA_CSS = """<style>
 </style>"""
 
 
-def _pixel(event: str, extra: str = "") -> str:
+def _pixel(pv_id: str, extra: str = "") -> str:
     from app.routers.landing import _pixel as px
 
-    h = px(event)
-    if extra and h:
-        h = h.replace("</script>", extra + "</script>", 1)
-    return h
+    return px("PageView", pv_id, "", extra)
 
 
-def _shell(title: str, body: str, pixel_html: str, desc: str) -> HTMLResponse:
+def _shell(title: str, body: str, pixel_html: str, desc: str, beacon_id: str = "", utm: str = "") -> HTMLResponse:
     base = P.base()
+    beacon = ""
+    if beacon_id:
+        from app.templates.landing import BEHAVIOR_JS
+
+        beacon = BEHAVIOR_JS % {"cid": beacon_id, "variant": "A", "utm": utm, "base": base}
     top = f"<div class='top'><div class='w'><a href='{base}/lp/{P.OWNERS}' style='display:flex;align-items:center;gap:12px'><img src='{base}/static/poltrona/logo_512.png' alt=''><b>Poltrona Libera</b></a></div></div>"
     return HTMLResponse(f"<!doctype html><html lang='it'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{escape(title)}</title>"
-                        f"<meta name='description' content='{escape(desc)}'>{CSS}{EXTRA_CSS}{pixel_html}</head><body>{top}<main class='w'>{body}</main>"
+                        f"<meta name='description' content='{escape(desc)}'>{CSS}{EXTRA_CSS}{pixel_html}</head><body>{top}<main class='w'>{body}</main>{beacon}"
                         f"<footer class='w muted' style='padding-bottom:30px'><div style='color:var(--ink);font-size:15px;margin-bottom:10px'>{P.footer_html()}</div>Poltrona Libera · Milano · <a href='{base}/pl/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
 
 
@@ -63,15 +65,21 @@ def sales(slug: str, request: Request, annullato: int = 0):
     utm = "/".join(x for x in (q.get("utm_source"), q.get("utm_campaign"), q.get("utm_content")) if x) or ("meta" if q.get("fbclid") else "")
     other = G.CATALOG[g["other"]]
     now, was = G.price_str(G.PRICE_CENTS), G.price_str(G.LIST_PRICE_CENTS)
-    buy_form = (f"<form method='post' action='{base}/pl/guida/{slug}/checkout'><input type='hidden' name='utm' value='{escape(utm)}'>"
-                f"<button class='btn' type='submit' onclick=\"try{{fbq('track','InitiateCheckout',{{value:{G.PRICE_CENTS / 100},currency:'EUR'}})}}catch(e){{}}\">Scarica la guida · {now}</button></form>")
+    from app.services import capi
+
+    pv_id, vc_id, ic_id = capi.new_event_id(), capi.new_event_id(), capi.new_event_id()
+    ud = capi.user_data(request)
+    capi.send("PageView", pv_id, str(request.url), ud)
+    capi.send("ViewContent", vc_id, str(request.url), ud, {"content_name": slug, "content_type": "product", "value": G.PRICE_CENTS / 100, "currency": "EUR"})
+    buy_form = (f"<form method='post' action='{base}/pl/guida/{slug}/checkout'><input type='hidden' name='utm' value='{escape(utm)}'><input type='hidden' name='eid' value='{ic_id}'>"
+                f"<button class='btn' type='submit' onclick=\"try{{fbq('track','InitiateCheckout',{{content_name:'{slug}',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{ic_id}'}})}}catch(e){{}}\">Scarica la guida · {now}</button></form>")
     pains = "".join(f"<blockquote>{escape(p)}<small>Titolare di salone, Milano · settembre 2026</small></blockquote>" for p in g["pains"])
     chapters = "".join(f"<li><div><b>{escape(t)}</b><span>{escape(d)}</span></div></li>" for t, d in g["chapters"])
     previews = "".join(f"<img src='{base}/static/poltrona/guide/{slug}_p{p}.png' alt='Pagina {p} della guida' loading='lazy'>" for p in g["preview_pages"])
     kit = "".join(f"<span>{escape(k)}</span>" for k in g["kit"])
     body = f"""
 {"<div class='ok-box' style='background:var(--warnbg);color:var(--warn);margin-top:14px'>Pagamento annullato: nessun addebito. Quando vuoi, il bottone è qui sotto.</div>" if annullato else ""}
-<section class='hero'><div>
+<section class='hero' data-sec='hero'><div>
 <div class='kick'>Guida PDF · {g['pages']} pagine + kit · per titolari di salone</div>
 <h1>{escape(g['headline'])}</h1>
 <p class='lead' style='margin-top:12px'>{escape(g['sub'])}</p>
@@ -80,28 +88,28 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <div class='trustline'><span>PDF subito via email</span><span>Garanzia {G.GUARANTEE_DAYS} giorni: rimborso senza domande</span><span>Pagamento sicuro con carta (Stripe)</span></div>
 </div><div><img class='cover' src='{base}/static/poltrona/guide/{slug}_p1.png' alt='Copertina: {escape(g['title'])}'></div></section>
 
-<h2>Ti riconosci?</h2>
+<h2 data-sec='pains'>Ti riconosci?</h2>
 <p class='muted' style='margin:0 0 10px'>Le risposte esatte che ci hanno scritto le titolari di Milano quando abbiamo chiesto perché una postazione era vuota.</p>
 <div class='pains'>{pains}</div>
 
-<h2>Cosa c'è dentro</h2>
+<h2 data-sec='indice'>Cosa c'è dentro</h2>
 <ol class='chapters'>{chapters}</ol>
 <h3 style='margin-top:22px'>Il kit da stampare</h3><div class='kit'>{kit}</div>
 
-<h2>Sfoglia qualche pagina</h2>
+<h2 data-sec='anteprima'>Sfoglia qualche pagina</h2>
 <div class='previews'>{previews}</div>
 
-<div class='two'><div class='card'><h3 style='margin-top:0'>È per te se</h3><ul>{"".join(f"<li>{escape(x)}</li>" for x in g['for'])}</ul></div>
+<div class='two' data-sec='per_chi'><div class='card'><h3 style='margin-top:0'>È per te se</h3><ul>{"".join(f"<li>{escape(x)}</li>" for x in g['for'])}</ul></div>
 <div class='card'><h3 style='margin-top:0'>Non è per te se</h3><ul>{"".join(f"<li>{escape(x)}</li>" for x in g['not_for'])}</ul><p class='muted' style='margin-top:10px'>L'altra guida: <a href='{base}/pl/guida/{g['other']}' style='color:var(--acc)'>«{escape(other['title'])}»</a></p></div></div>
 
-<h2>Chi l'ha scritta</h2>
+<h2 data-sec='autore'>Chi l'ha scritta</h2>
 <div class='author'><img src='{base}/static/poltrona/logo_512.png' alt=''><div><p><b>Giovanni Ghigliotti</b>, fondatore di Poltrona Libera, il servizio che mette in contatto i saloni di Milano con le professioniste che cercano una postazione. Questa guida nasce dalle conversazioni con le titolari che si sono iscritte: hanno tutte lo stesso problema, e quasi nessuna aveva un metodo. Ho messo insieme quello che funziona, con i numeri del 2026 e le fonti in fondo al PDF.</p>
 <p class='muted'>Non è consulenza legale o fiscale: per il tuo caso restano necessari il consulente del lavoro e il commercialista. È il metodo, con i pezzi pronti.</p></div></div>
 
-<div class='buy' style='margin-top:30px'><div><h2>«{escape(g['title'])}»</h2><p class='muted'>{g['pages']} pagine + kit da stampare · PDF subito via email · {escape(was)} da novembre, oggi <b style='color:#fff'>{escape(now)}</b></p></div><div>{buy_form}</div></div>
+<div class='buy' data-sec='prezzo' style='margin-top:30px'><div><h2>«{escape(g['title'])}»</h2><p class='muted'>{g['pages']} pagine + kit da stampare · PDF subito via email · {escape(was)} da novembre, oggi <b style='color:#fff'>{escape(now)}</b></p></div><div>{buy_form}</div></div>
 <div class='guarantee' style='margin-top:14px'><span style='font-size:28px'>🛡️</span><span>Se entro {G.GUARANTEE_DAYS} giorni pensi che non ti sia servita, rispondi alla mail di consegna e ti rimborso. Senza domande.</span></div>
 
-<h2>Domande</h2>
+<h2 data-sec='faq'>Domande</h2>
 <div class='faq'>
 <details><summary>Come la ricevo?</summary><p>Subito dopo il pagamento arrivi su una pagina con il link e ricevi una email con lo stesso link. È un PDF: si apre su telefono, tablet e computer, e si stampa.</p></details>
 <details><summary>Vale anche se non sono a Milano?</summary><p>Il metodo sì, tutto. I prezzi delle postazioni e i riferimenti alla delibera comunale sono di Milano; nel resto d'Italia cambiano le cifre, non le regole.</p></details>
@@ -110,23 +118,29 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <details><summary>È aggiornata?</summary><p>Prima edizione settembre 2026, con tabelle CCNL 2026, aliquote INPS 2026 e regole di Milano in vigore. Le fonti sono elencate in fondo al PDF.</p></details>
 </div>
 <div class='sticky'>{buy_form}</div>"""
-    return _shell(f"{g['title']} — guida per titolari di salone", body, _pixel("ViewContent", f"fbq('track','ViewContent',{{content_name:'{slug}',value:{G.PRICE_CENTS / 100},currency:'EUR'}});"), g["headline"])
+    return _shell(f"{g['title']} — guida per titolari di salone", body, _pixel(pv_id, f"fbq('track','ViewContent',{{content_name:'{slug}',content_type:'product',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{vc_id}'}});"), g["headline"], beacon_id=f"guida_{slug}", utm=utm or "diretto")
 
 
 @router.post("/{slug}/checkout")
 async def checkout(slug: str, request: Request):
     form = await request.form()
-    url = G.create_checkout(slug, str(form.get("utm") or ""))
+    from app.services import capi
+
+    eid = str(form.get("eid") or "") or capi.new_event_id()
+    capi.send("InitiateCheckout", eid, f"{P.base()}/pl/guida/{slug}", capi.user_data(request), {"content_name": slug, "content_type": "product", "value": G.PRICE_CENTS / 100, "currency": "EUR"})
+    url = G.create_checkout(slug, str(form.get("utm") or ""), fb=(request.cookies.get("_fbp") or "", request.cookies.get("_fbc") or ""), ip=(request.headers.get("x-forwarded-for") or "").split(",")[0].strip(), ua=request.headers.get("user-agent") or "")
     if not url:
         raise HTTPException(503, "Pagamenti non ancora attivi: riprova tra poco o scrivi su WhatsApp al 392 590 9721.")
     return RedirectResponse(url, status_code=303)
 
 
 @router.get("/{slug}/grazie", response_class=HTMLResponse)
-def grazie(slug: str, session_id: str = ""):
+def grazie(slug: str, request: Request, session_id: str = ""):
     g = G.CATALOG.get(slug)
     if not g:
         raise HTTPException(404)
+    from app.services import capi
+
     buyer = None
     if session_id and G.stripe_ready():
         try:
@@ -140,7 +154,7 @@ def grazie(slug: str, session_id: str = ""):
 <p><a class='btn' href='{G.download_url(buyer)}'>Scarica «{escape(g['title'])}» (PDF)</a></p>
 <p class='muted' style='margin-top:18px'>{"Da dove partire: capitolo 2 (le prime 48 ore) e capitolo 5 (i premi sul fatturato)." if slug == "squadra" else "Da dove partire: capitolo 2 (i numeri) e capitolo 6 (il contratto in 12 punti)."}</p>
 <p class='muted'>Hai una postazione vuota? <a href='{base}/lp/{P.OWNERS}#lista-hero' style='color:var(--acc)'>Pubblicala gratis su Poltrona Libera</a> in cinque minuti.</p></div>"""
-        px = _pixel("Purchase", f"fbq('track','Purchase',{{value:{(buyer.get('amount') or G.PRICE_CENTS) / 100},currency:'EUR',content_name:'{slug}'}});")
+        px = _pixel(capi.new_event_id(), f"fbq('track','Purchase',{{value:{(buyer.get('amount') or G.PRICE_CENTS) / 100},currency:'EUR',content_name:'{slug}',content_type:'product'}},{{eventID:'{escape(buyer['id'])}'}});")
     else:
         body = "<div style='max-width:640px;margin:30px auto;text-align:center'><h1>Stiamo confermando il pagamento</h1><p class='lead'>Ricarica questa pagina tra qualche secondo. Se hai pagato ma non ricevi nulla entro 10 minuti, scrivi su WhatsApp al 392 590 9721.</p></div>"
         px = ""
