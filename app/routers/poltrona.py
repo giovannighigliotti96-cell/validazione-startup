@@ -253,8 +253,10 @@ def admin(request: Request, token: str | None = None):
     rows = ""
     for li in d["listings"]:
         pics = "".join(f"<a href='{escape(u)}' target='_blank'><img src='{escape(u)}' style='height:44px;border-radius:5px;margin-right:3px'></a>" for u in (li.get("photos") or [])[:3])
-        act = (f"<form method='post' action='{base}/pl/admin/listing/{li['id']}/status' class='row' style='gap:6px'>"
-               f"<button class='btn' name='status' value='online' style='padding:6px 12px'>Approva</button>"
+        miss = P.missing(li)
+        approve = (f"<button class='btn' name='status' value='online' style='padding:6px 12px'>Approva</button>" if not miss
+                   else f"<span class='pill bad' title='Non approvabile'>⚠ manca: {escape(', '.join(miss))}</span>")
+        act = (f"<form method='post' action='{base}/pl/admin/listing/{li['id']}/status' class='row' style='gap:6px'>{approve}"
                f"<input name='note' placeholder='motivo (se rifiuti)' style='width:150px;padding:6px 8px'><button class='btn sec' name='status' value='rifiutato' style='padding:6px 12px'>Rifiuta</button>"
                f"<button class='btn sec' name='status' value='chiuso' style='padding:6px 12px'>Chiudi</button></form>")
         rows += (f"<tr><td><span class='pill {pill.get(li.get('status'), 'gray')}'>{escape(li.get('status') or '')}</span><br><small class='muted'>{str(li.get('updated_at'))[:16]}</small></td>"
@@ -301,7 +303,7 @@ async def admin_status(listing_id: str, request: Request):
     _auth(request)
     form = await request.form()
     if not P.set_status(listing_id, str(form.get("status") or ""), str(form.get("note") or "")):
-        raise HTTPException(400, "stato non valido")
+        raise HTTPException(400, "non approvabile: annuncio incompleto (foto, prezzo, giorni…) o stato non valido")
     return RedirectResponse(f"{P.base()}/pl/admin", status_code=303)
 
 

@@ -136,6 +136,17 @@ def _on_submitted(listing: dict) -> None:
         log.error("admin notify failed: %s", e)
 
 
+REQUIRED = (("salone", "nome del salone"), ("zona", "zona"), ("giorni", "giorni"), ("prezzo", "prezzo"), ("telefono", "telefono"), ("titolare", "nome della titolare"))
+
+
+def missing(listing: dict) -> list[str]:
+    """What still stops a listing from going online (the same rule the owner form applies)."""
+    out = [label for k, label in REQUIRED if not (listing.get(k) or "").strip()]
+    if not listing.get("photos"):
+        out.append("foto")
+    return out
+
+
 def set_status(listing_id: str, status: str, note: str = "", quiet: bool = False) -> dict | None:
     if status not in STATUSES:
         return None
@@ -144,6 +155,8 @@ def set_status(listing_id: str, status: str, note: str = "", quiet: bool = False
     if not snap.exists:
         return None
     listing = {"id": listing_id, **snap.to_dict()}
+    if status == "online" and missing(listing):
+        return None  # never publish an incomplete listing, whoever clicks
     upd = {"status": status, "updated_at": db.now(), "admin_note": note[:500]}
     if status == "online":
         upd["approved_at"] = db.now()
