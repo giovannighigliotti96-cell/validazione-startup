@@ -115,6 +115,24 @@ def _notify(listing: dict, lead: dict, v: Verdict) -> None:
             notify.send_email(f"Trovata una postazione per te a {listing.get('zona')} — Poltrona Libera", P._mail([p for p in pro_paras if p]), to=lead["email"], from_name=P.BRAND, reply_to=get_settings().notify_email_to)
         except Exception as ex:  # noqa: BLE001
             log.error("match email to pro failed: %s", ex)
+    # the owner too: a professional who fits has just been sent her number
+    owner_first = (listing.get("titolare") or "").strip().split(" ")[0]
+    owner_paras = [
+        f"Ciao {owner_first}," if owner_first else "Ciao,",
+        f"buone notizie: una professionista in linea con il tuo annuncio di <b>{escape(listing.get('salone') or '')}</b> si è iscritta su Poltrona Libera e le abbiamo appena mandato il tuo numero.",
+        f"<ul><li><b>{escape(e.get('nome') or '')}</b></li><li>Cosa fa: {escape(e.get('specialita') or '-')}</li><li>Zona: {escape(e.get('zona') or '-')}</li>"
+        + (f"<li>Come lavora oggi: {escape(lead.get('answer') or '')}</li>" if lead.get("answer") else "") + "</ul>",
+        f"Perché è adatta: {escape(v.reason)}",
+        f"Probabilmente ti chiamerà lei. Se preferisci anticiparla, il suo numero è <a href='tel:{_tel(e.get('telefono') or '')}'><b>{escape(e.get('telefono') or '')}</b></a>"
+        + (f" oppure <a href='{_wa(e.get('telefono') or '', 'Ciao ' + first + ', sono ' + (listing.get('titolare') or '') + ' di ' + (listing.get('salone') or '') + ': ho visto su Poltrona Libera che cerchi una postazione')}'>scrivile su WhatsApp</a>." if e.get("telefono") else "."),
+        "Come vi accordate (giorni, orari, prezzo, prova) lo decidete tra di voi. Per qualsiasi dubbio scrivimi su WhatsApp al 392 590 9721.",
+        "A presto,<br>Giovanni Ghigliotti<br>Poltrona Libera",
+    ]
+    if listing.get("email"):
+        try:
+            notify.send_email(f"Una professionista per la tua postazione — Poltrona Libera", P._mail(owner_paras), to=listing["email"], from_name=P.BRAND, reply_to=get_settings().notify_email_to)
+        except Exception as ex:  # noqa: BLE001
+            log.error("match email to owner failed: %s", ex)
     wa_text = (f"Ciao {first}, sono Giovanni di Poltrona Libera. È online una postazione che fa al caso tuo: {listing.get('salone')} a {listing.get('zona')} "
                f"({listing.get('giorni')}, {listing.get('prezzo')}). {v.reason} Chiama {listing.get('titolare')} al {listing.get('telefono')}: è l'unica di questo tipo online adesso. "
                f"Dettagli e foto: {base}/pl/postazioni")
