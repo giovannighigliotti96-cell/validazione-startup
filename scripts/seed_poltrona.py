@@ -6,7 +6,7 @@ from app import db
 
 NL = chr(10)
 NL2 = NL + NL
-BASE = "https://validazione-startup-148506634481.europe-west1.run.app"
+BASE = "https://poltronalibera.it"
 COMMON = dict(product_name="Poltrona Libera", logo_url=f"{BASE}/static/poltrona/logo_512.png", cover_url=f"{BASE}/static/poltrona/cover_1640x856.png",
               active_variants=["A"], generated_by="manual", theme="warm", hero_photo_url=f"{BASE}/static/poltrona/salone_1.jpg",
               photo_credits="Foto: pig1103pig (CC BY-SA 2.0), The Miami Story (CC BY 2.0), Welcome to Switzerland backstage! (CC BY 2.0), bzmills (CC BY 2.0), Phalinn Ooi (CC BY 2.0), Haldane Martin / Micky Hoyle (CC BY 2.0), via Flickr. Immagini di esempio, non dei saloni iscritti.",
