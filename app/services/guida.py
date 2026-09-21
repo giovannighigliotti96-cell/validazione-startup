@@ -35,7 +35,7 @@ CATALOG = {
         "subtitle": "Come ricostruire la squadra del tuo salone in 90 giorni, tenerla, e non ritrovarti mai più con una poltrona vuota.",
         "pages": 24,
         "headline": "La tua dipendente è andata via. Ecco cosa fare nelle prossime 48 ore, nei prossimi 30 giorni e per non ritrovarti mai più qui.",
-        "sub": "Una guida pratica, scritta per titolari di salone di Milano: annunci che ricevono candidature, il colloquio di 20 minuti, i premi sul fatturato che trattengono, il progetto a 12 mesi, il piano dei 90 giorni. Con il kit da stampare.",
+        "sub": "Una guida pratica per titolari di salone: annunci che ricevono candidature, il colloquio di 20 minuti, i premi sul fatturato che trattengono, il progetto a 12 mesi, il piano dei 90 giorni. Con il kit da stampare.",
         "pains": ["«Dipendente andata via.»", "«Non trovo personale.»", "«In maternità, e mi ha detto che non rientra.»"],
         "chapters": [
             ("Prima di tutto: respira", "le tre verità da cui partire, e come usare la guida nell'emergenza"),
@@ -58,7 +58,7 @@ CATALOG = {
         "subtitle": "Affitta le postazioni del tuo salone a professioniste in proprio: canone mensile al posto della busta paga.",
         "pages": 20,
         "headline": "Stanca di dipendenti che se ne vanno? La postazione vuota può pagarti un canone ogni mese, invece di costarti una busta paga.",
-        "sub": "La guida completa all'affitto di poltrona per titolari di Milano: i numeri veri, le regole che ti proteggono, formula e prezzo, come trovare la professionista giusta in una settimana, il contratto in 12 punti, la convivenza, i casi che vanno storti. Con il kit da stampare.",
+        "sub": "La guida completa all'affitto di poltrona per titolari di salone: i numeri veri, le regole che ti proteggono, formula e prezzo, come trovare la professionista giusta in una settimana, il contratto in 12 punti, la convivenza, i casi che vanno storti. Con il kit da stampare.",
         "pains": ["«Si è licenziato, e ora non voglio più personale.»", "«Non trovo personale.»", "«Dipendente andata via.»"],
         "chapters": [
             ("Perché sempre più saloni smettono di assumere", "dipendente vs professionista in affitto, in una tabella; per chi è e per chi no"),

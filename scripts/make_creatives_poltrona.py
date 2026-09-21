@@ -51,10 +51,10 @@ def photo_bg(path, size, darken=0.45):
     return im
 
 
-def brand_bar(d, w, h, light: bool):
+def brand_bar(d, w, h, light: bool, tagline: str = "poltronalibera · Milano"):
     fill = PAPER if light else INK
     d.text((72, h - 96), "Poltrona Libera", font=F(SANS_B, 34), fill=fill)
-    d.text((72, h - 56), "poltronalibera · Milano", font=F(SANS, 26), fill=(MUT if not light else (200, 190, 175)))
+    d.text((72, h - 56), tagline, font=F(SANS, 26), fill=(MUT if not light else (200, 190, 175)))
 
 
 def ad_photo(subject, photo, headline, sub, badge, size_key):

@@ -89,7 +89,7 @@ def sales(slug: str, request: Request, annullato: int = 0):
 </div><div><img class='cover' src='{base}/static/poltrona/guide/{slug}_p1.png' alt='Copertina: {escape(g['title'])}'></div></section>
 
 <h2 data-sec='pains'>Ti riconosci?</h2>
-<p class='muted' style='margin:0 0 10px'>Le risposte esatte che ci hanno scritto le titolari di Milano quando abbiamo chiesto perché una postazione era vuota.</p>
+<p class='muted' style='margin:0 0 10px'>Le risposte esatte che ci hanno scritto le titolari di salone quando abbiamo chiesto perché una postazione era vuota.</p>
 <div class='pains'>{pains}</div>
 
 <h2 data-sec='indice'>Cosa c'è dentro</h2>
@@ -103,7 +103,7 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <div class='card'><h3 style='margin-top:0'>Non è per te se</h3><ul>{"".join(f"<li>{escape(x)}</li>" for x in g['not_for'])}</ul><p class='muted' style='margin-top:10px'>L'altra guida: <a href='{base}/pl/guida/{g['other']}' style='color:var(--acc)'>«{escape(other['title'])}»</a></p></div></div>
 
 <h2 data-sec='autore'>Chi l'ha scritta</h2>
-<div class='author'><img src='{base}/static/poltrona/logo_512.png' alt=''><div><p><b>Giovanni Ghigliotti</b>, fondatore di Poltrona Libera, il servizio che mette in contatto i saloni di Milano con le professioniste che cercano una postazione. Questa guida nasce dalle conversazioni con le titolari che si sono iscritte: hanno tutte lo stesso problema, e quasi nessuna aveva un metodo. Ho messo insieme quello che funziona, con i numeri del 2026 e le fonti in fondo al PDF.</p>
+<div class='author'><img src='{base}/static/poltrona/logo_512.png' alt=''><div><p><b>Giovanni Ghigliotti</b>, fondatore di Poltrona Libera, il servizio che mette in contatto i saloni con le professioniste che cercano una postazione. Questa guida nasce dalle conversazioni con le titolari che si sono iscritte: hanno tutte lo stesso problema, e quasi nessuna aveva un metodo. Ho messo insieme quello che funziona, con i numeri del 2026 e le fonti in fondo al PDF.</p>
 <p class='muted'>Non è consulenza legale o fiscale: per il tuo caso restano necessari il consulente del lavoro e il commercialista. È il metodo, con i pezzi pronti.</p></div></div>
 
 <div class='buy' data-sec='prezzo' style='margin-top:30px'><div><h2>«{escape(g['title'])}»</h2><p class='muted'>{g['pages']} pagine + kit da stampare · PDF subito via email · {escape(was)} da novembre, oggi <b style='color:#fff'>{escape(now)}</b></p></div><div>{buy_form}</div></div>
@@ -112,7 +112,7 @@ def sales(slug: str, request: Request, annullato: int = 0):
 <h2 data-sec='faq'>Domande</h2>
 <div class='faq'>
 <details><summary>Come la ricevo?</summary><p>Subito dopo il pagamento arrivi su una pagina con il link e ricevi una email con lo stesso link. È un PDF: si apre su telefono, tablet e computer, e si stampa.</p></details>
-<details><summary>Vale anche se non sono a Milano?</summary><p>Il metodo sì, tutto. I prezzi delle postazioni e i riferimenti alla delibera comunale sono di Milano; nel resto d'Italia cambiano le cifre, non le regole.</p></details>
+<details><summary>Vale per tutta Italia?</summary><p>Sì. Le regole (CCNL, INPS, affitto di poltrona) sono nazionali; gli esempi di prezzo delle postazioni sono di Milano e nel kit trovi il calcolo per la tua zona.</p></details>
 <details><summary>Posso avere la fattura?</summary><p>Sì: rispondi alla mail di consegna con i dati del salone (ragione sociale, P.IVA, codice destinatario) e la ricevi entro 2 giorni lavorativi.</p></details>
 <details><summary>Che differenza c'è con l'altra guida?</summary><p>«La dipendente è andata via» è per chi vuole ricostruire la squadra (annunci, colloqui, premi, progetto). «Basta dipendenti» è per chi vuole smettere di assumere e affittare le postazioni. Se sei indecisa, parti dalla situazione di oggi: hai una poltrona vuota adesso? Leggi prima «Basta dipendenti».</p></details>
 <details><summary>È aggiornata?</summary><p>Prima edizione settembre 2026, con tabelle CCNL 2026, aliquote INPS 2026 e regole di Milano in vigore. Le fonti sono elencate in fondo al PDF.</p></details>
