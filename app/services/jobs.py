@@ -29,7 +29,7 @@ def trigger(name: str, *args: str) -> bool:
         creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
         creds.refresh(google.auth.transport.requests.Request())
         url = f"https://run.googleapis.com/v2/projects/{PROJECT}/locations/{REGION}/jobs/{JOB}:run"
-        body = {"overrides": {"containerOverrides": [{"args": ["python", "-m", "scripts.job", name, *args]}]}}
+        body = {"overrides": {"containerOverrides": [{"args": ["-m", "scripts.job", name, *args]}]}}
         r = httpx.post(url, json=body, headers={"Authorization": f"Bearer {creds.token}"}, timeout=15)
         if r.status_code >= 300:
             log.error("job %s trigger failed: %s %s", name, r.status_code, r.text[:200])
