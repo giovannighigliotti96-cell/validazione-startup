@@ -163,9 +163,7 @@ def publish_instagram(post: dict) -> str | None:
     for u in ("https://poltronalibera.it/pl/postazioni", "https://poltronalibera.it/lp/poltrona_libera_titolari", "https://poltronalibera.it/lp/poltrona_libera_professioniste",
               "https://poltronalibera.it/pl/guida/squadra", "https://poltronalibera.it/pl/guida/poltrona"):
         caption = caption.replace(u, "link in bio")
-    caption = (caption + "
-
-#parrucchieri #barbieri #milano #salone #affittopoltrona #poltronalibera")[:2200]
+    caption = (caption + "\n\n#parrucchieri #barbieri #milano #salone #affittopoltrona #poltronalibera")[:2200]
     c = httpx.post(f"{GRAPH}/{ig}/media", data={"image_url": post["image_url"], "caption": caption, "access_token": tok}, timeout=60).json()
     if "error" in c:
         raise RuntimeError("IG: " + c["error"].get("message", "")[:160])
