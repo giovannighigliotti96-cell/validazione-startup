@@ -98,6 +98,19 @@ def social_now(post_id: str) -> None:
     log.info("social published now: %s", _s.publish_due(force_id=post_id))
 
 
+def inbox() -> None:
+    from app.services import inbox as _i
+
+    log.info("inbox: %s", _i.run())
+
+
+def report() -> None:
+    from app.services import daily
+
+    daily.report(send=True)
+    log.info("zone alerts: %s", daily.zone_alerts())
+
+
 def match_lead(lead_id: str) -> None:
     from app import db
     from app.services import matching
@@ -118,7 +131,7 @@ def match_listing(listing_id: str) -> None:
 
 
 JOBS = {"scrape": scrape, "funnel": funnel, "adlib": adlib, "discover": discover, "arbitrage": arbitrage, "distressed": distressed,
-        "procedures": procedures, "digest": digest, "match_lead": match_lead, "match_listing": match_listing, "social": social, "social_now": social_now}
+        "procedures": procedures, "digest": digest, "match_lead": match_lead, "match_listing": match_listing, "social": social, "social_now": social_now, "inbox": inbox, "report": report}
 
 if __name__ == "__main__":
     name = sys.argv[1] if len(sys.argv) > 1 else "funnel"

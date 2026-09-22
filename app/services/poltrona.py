@@ -128,7 +128,8 @@ def upload_photo(listing_id: str, data: bytes, idx: int) -> str | None:
 
 def save(listing: dict, fields: dict, new_photos: list[bytes], submit: bool) -> dict:
     client = db.get_db()
-    upd = {k: str(fields.get(k) or "").strip()[:600] for k in ("salone", "titolare", "telefono", "zona", "giorni", "prezzo", "incluso", "chi_cerchi", "descrizione")}
+    upd = {k: str(fields.get(k) or "").strip()[:600] for k in ("salone", "titolare", "telefono", "zona", "giorni", "prezzo", "incluso", "chi_cerchi", "descrizione", "instagram")}
+    upd["instagram"] = upd["instagram"].strip().lstrip("@").split("/")[-1].split("?")[0][:60]
     photos = list(listing.get("photos") or [])
     for i, data in enumerate(new_photos):
         if len(photos) >= 6:

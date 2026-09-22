@@ -156,6 +156,7 @@ def _form_html(li: dict, saved: bool, base: str) -> str:
 <label for='incluso'>Cosa è incluso <small>lavatesta, prodotti, phon, asciugamani, ricevimento clienti…</small></label><input id='incluso' name='incluso' value='{v("incluso")}'>
 <label for='descrizione'>Due righe sul salone <small>com'è, che clientela ha, da quanto è aperto</small></label><textarea id='descrizione' name='descrizione' rows='3'>{v("descrizione")}</textarea>
 <h2>2 · Chi cerchi</h2>
+<label for='instagram'>Instagram del salone <small>facoltativo: ti tagghiamo nei nostri post, cos&igrave; l'annuncio lo vedono anche i tuoi follower</small></label><input id='instagram' name='instagram' placeholder='@ilmiosalone' value='{v("instagram")}'>
 <label for='chi_cerchi'>Che professionista cerchi? <small>es. "parrucchiera esperta in schiariture e taglio donna", "barber", "anche part-time"</small></label><input id='chi_cerchi' name='chi_cerchi' value='{v("chi_cerchi")}'>
 <h2>3 · Foto</h2>
 <p class='muted' style='margin:0 0 6px'>Almeno una foto della postazione o del salone. Senza foto le professioniste non chiamano.</p>
@@ -195,7 +196,7 @@ async def annuncio_post(token: str, request: Request):
         P.set_status(li["id"], "chiuso" if action == "pausa" else ("online" if li.get("approved_at") else "in_verifica"), quiet=True)
         return RedirectResponse(f"{P.base()}/pl/annuncio/{token}", status_code=303)
     submit = action == "1"
-    out = P.save(li, {k: form.get(k) for k in ("salone", "titolare", "telefono", "zona", "giorni", "prezzo", "incluso", "chi_cerchi", "descrizione")}, photos, submit)
+    out = P.save(li, {k: form.get(k) for k in ("salone", "titolare", "telefono", "zona", "giorni", "prezzo", "incluso", "chi_cerchi", "descrizione", "instagram")}, photos, submit)
     if out.get("status") in ("bozza", "rifiutato") and not P.is_test(out.get("email")):  # left without publishing: say right away what is missing
         try:
             P.reminder_email(out, int(out.get("reminders_sent") or 0))
@@ -225,14 +226,19 @@ def grazie(token: str):
 
 
 # ----------------------------------------------------------------------------- public catalogue
-def _card(lp: dict, base: str, real: bool) -> str:
+def _card(lp: dict, base: str, real: bool, variant: str = "A") -> str:
     tags = "".join(f"<span class='tag'>{escape(x)}</span>" for x in lp.get("tags", []))
     ph = f"<div class='ph' style=\"background-image:url('{escape(lp['photo_url'])}')\"></div>" if lp.get("photo_url") else "<div class='ph'></div>"
     tel = "".join(ch for ch in (lp.get("telefono") or "") if ch.isdigit() or ch == "+")
     wa = ("39" + tel.lstrip("0")) if tel and not tel.startswith("+") else tel.lstrip("+")
-    cta = ((f"<div class='row' style='margin-top:10px'><a class='btn' href='tel:{escape(tel)}' onclick=\"hit('{escape(lp['id'])}','call')\">Chiama {escape(lp.get('titolare') or 'la titolare')}</a>"
-            f"<a class='btn sec' href='https://wa.me/{escape(wa)}?text={escape('Ciao, ho visto la postazione su Poltrona Libera')}' target='_blank' rel='noopener' onclick=\"hit('{escape(lp['id'])}','wa')\">WhatsApp</a></div>") if real
-           else f"<a class='btn sec' style='margin-top:10px' href='{base}/lp/{P.PROS}#lista'>Registrati: ti avvisiamo noi</a>")
+    if not real:
+        cta = f"<a class='btn sec' style='margin-top:10px' href='{base}/lp/{P.PROS}#lista'>Registrati: ti avvisiamo noi</a>"
+    elif variant == "B":  # B: the number is revealed after a short form
+        cta = (f"<button class='btn' style='margin-top:10px' onclick=\"unlock('{escape(lp['id'])}','{escape(lp.get('titolare') or '')}','{escape(tel)}','{escape(wa)}')\">Mostra il numero e chiama</button>"
+               f"<div class='muted' style='font-size:13px;margin-top:6px'>Gratis: lasci nome e cellulare e vedi subito il numero.</div>")
+    else:  # A: number in the clear, one tap
+        cta = (f"<div class='row' style='margin-top:10px'><a class='btn' href='tel:{escape(tel)}' onclick=\"hit('{escape(lp['id'])}','call')\">Chiama {escape(lp.get('titolare') or 'la titolare')}</a>"
+               f"<a class='btn sec' href='https://wa.me/{escape(wa)}?text={escape('Ciao, ho visto la postazione su Poltrona Libera')}' target='_blank' rel='noopener' onclick=\"hit('{escape(lp['id'])}','wa')\">WhatsApp</a></div>")
     return (f"<div class='listing'>{ph}<div class='body'>{tags and '<div>' + tags + '</div>'}<h3>{escape(lp.get('title') or '')}</h3><p>{escape(lp.get('text') or '')}</p>"
             f"<div class='price'>{escape(lp.get('price') or '')}<span> {escape(lp.get('price_note') or '')}</span></div><div class='note'>{escape(lp.get('note') or '')}</div>{cta}</div></div>")
 
@@ -243,8 +249,11 @@ def postazioni(request: Request):
     real = [P.public_card(x) for x in P.online_listings()]
     offer = (db.get(db.OPPORTUNITY_SCORING, P.PROS) or {}).get("offer") or {}
     examples = offer.get("listings") or []
-    real_html = "".join(_card(x, base, True) for x in real)
-    ex_html = "".join(_card(x, base, False) for x in examples)
+    import secrets as _secrets
+
+    variant = request.cookies.get("plcat") or _secrets.choice(["A", "B"])
+    real_html = "".join(_card(x, base, True, variant) for x in real)
+    ex_html = "".join(_card(x, base, False, variant) for x in examples)
     intro = (f"<p class='lead'>{len(real)} postazion{'e' if len(real) == 1 else 'i'} verificat{'a' if len(real) == 1 else 'e'} a Milano. Guardi gratis; quando ne trovi una che ti interessa chiami direttamente la titolare al numero nell'annuncio. Poi vi mettete d'accordo tra di voi."
              if real else "<p class='lead'>I primi saloni stanno pubblicando le loro postazioni. Registrati gratis: ti avvisiamo appena c'è una postazione nella tua zona.</p>")
     body = f"""<h1 data-sec='hero'>Postazioni disponibili a Milano</h1>{intro}
@@ -252,8 +261,32 @@ def postazioni(request: Request):
 <h2 data-sec='esempi'>{'Altri esempi di annuncio' if real else 'Così appaiono gli annunci'}</h2><p class='muted' style='margin:0 0 12px'>Esempi con dati indicativi e foto di saloni reali: mostrano cosa vedrai. Non sono saloni iscritti.</p>
 <div class='grid'>{ex_html}</div>
 <div class='card' style='margin-top:28px'><h2 style='margin-top:0'>Hai un salone con una poltrona vuota?</h2><p class='muted'>Pubblicala: è gratis, ci vogliono cinque minuti, e ti chiamano direttamente le professioniste.</p><a class='btn sec' href='{base}/lp/{P.OWNERS}'>Pubblica gratis la tua postazione</a></div><div class='card' style='margin-top:18px'><h2 style='margin-top:0'>Non trovi la tua zona?</h2><p class='muted'>Registrati gratis e ti scriviamo appena un salone della tua zona pubblica una postazione.</p><a class='btn' href='{base}/lp/{P.PROS}#lista'>Registrati gratis</a></div>
-<script>function hit(id,k){{try{{navigator.sendBeacon('{base}/pl/click/'+id+'/'+k)}}catch(e){{}}try{{fbq('track','Contact')}}catch(e){{}}}}</script>"""
-    return _page("Postazioni disponibili a Milano", body, desc="Postazioni in affitto in saloni di Milano: guardi gratis e chiami direttamente la titolare.", request=request, beacon_id="catalogo")
+<dialog id='dlgu'><form class='in' id='uf' onsubmit="return sendUnlock(event)"><h2 style='margin:0 0 4px'>Il numero della titolare</h2><p class='muted' id='ufz' style='margin:0 0 8px'></p>
+<label for='u_nome'>Nome e cognome</label><input id='u_nome' name='nome' required><label for='u_tel'>Il tuo cellulare</label><input id='u_tel' name='telefono' type='tel' required>
+<label for='u_mail'>Email</label><input id='u_mail' name='email' type='email' required>
+<div class='row' style='margin-top:14px'><button class='btn' type='submit'>Mostra il numero</button><button class='btn sec' type='button' onclick="document.getElementById('dlgu').close()">Annulla</button></div>
+<p class='muted' style='margin-top:10px'>Ti avvisiamo anche quando escono postazioni nella tua zona. Niente spam.</p></form>
+<div class='in' id='ufok' hidden style='text-align:center'><h2 style='margin:0 0 8px'>Ecco il numero</h2><p style='font-size:22px;font-weight:700' id='ufnum'></p><a class='btn' id='ufcall' href='#'>Chiama ora</a><p class='muted' style='margin-top:10px'>Dille che l'hai vista su Poltrona Libera.</p></div></dialog>
+<script>var U={{}};
+function hit(id,k){{try{{navigator.sendBeacon('{base}/pl/click/'+id+'/'+k)}}catch(e){{}}try{{fbq('track','Contact')}}catch(e){{}}}}
+function unlock(id,nome,tel,wa){{U={{id:id,nome:nome,tel:tel,wa:wa}};document.getElementById('ufz').textContent=nome?('Postazione di '+nome):'';document.getElementById('uf').hidden=false;document.getElementById('ufok').hidden=true;document.getElementById('dlgu').showModal();try{{fbq('track','Lead')}}catch(e){{}}}}
+function sendUnlock(e){{e.preventDefault();var f=e.target,d=new FormData(f);d.append('listing_id',U.id);fetch('{base}/pl/sblocca',{{method:'POST',body:d}});hit(U.id,'call');
+document.getElementById('ufnum').textContent=U.tel;document.getElementById('ufcall').href='tel:'+U.tel;f.hidden=true;document.getElementById('ufok').hidden=false;return false;}}</script>"""
+    resp = _page("Postazioni disponibili a Milano", body, desc="Postazioni in affitto in saloni di Milano: guardi gratis e chiami direttamente la titolare.", request=request, beacon_id="catalogo")
+    resp.set_cookie("plcat", variant, max_age=60 * 60 * 24 * 30, samesite="lax")
+    return resp
+
+
+@router.post("/sblocca")
+async def sblocca(request: Request):
+    """Variant B of the catalogue: the professional leaves name/phone/email and gets the owner's number."""
+    form = await request.form()
+    lid = str(form.get("listing_id") or "")
+    snap = db.get_db().collection("listings").document(lid).get()
+    li = {"id": lid, **snap.to_dict()} if snap.exists else {}
+    P.request_contact(lid, {**{k: form.get(k) for k in ("nome", "telefono", "email", "specialita")}, "messaggio": "sblocco numero dal catalogo"}) if li else None
+    P.track_call(lid, "call")
+    return {"ok": True, "telefono": li.get("telefono")}
 
 
 @router.post("/click/{listing_id}/{kind}")

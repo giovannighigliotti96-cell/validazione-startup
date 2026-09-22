@@ -126,6 +126,7 @@ def enqueue_listing(listing: dict) -> str | None:
     text = (f"🪑 Postazione libera a {zona}\n\n{salone} affitta una postazione: {listing.get('giorni') or 'giorni da concordare'} · {listing.get('prezzo') or 'prezzo da concordare'}."
             + (f"\nIncluso: {listing['incluso']}." if listing.get("incluso") else "")
             + (f"\nCerca: {listing['chi_cerchi']}." if listing.get("chi_cerchi") else "")
+            + (f"\n\nIl salone è @{listing['instagram']}" if listing.get("instagram") else "")
             + f"\n\nChiama {listing.get('titolare') or 'la titolare'} al {listing.get('telefono')}, direttamente. Gratis.\n\nTutte le postazioni a Milano: {base()}/pl/postazioni")
     ref.set({"slug": f"annuncio_{listing['id']}", "kind": "annuncio", "audience": "professioniste", "headline": f"{salone} · {zona}", "text": text,
              "image_url": listing["photos"][0], "link": f"{base()}/pl/postazioni", "listing_id": listing["id"], "when": when.astimezone(timezone.utc),
