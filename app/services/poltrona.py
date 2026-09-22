@@ -26,7 +26,7 @@ PROS = "poltrona_libera_professioniste"
 BRAND = "Poltrona Libera"
 BUCKET = "poltrona-libera-foto"
 STATUSES = ("bozza", "in_verifica", "online", "rifiutato", "chiuso")
-REMINDERS_H = (24, 72, 168)  # hours after the draft was created
+REMINDERS_H = (1, 24, 72, 168)  # hours after the draft was created (the first one lands right away, at the next hourly run)
 
 
 PHONE = "3925909721"
@@ -246,24 +246,35 @@ def track_call(listing_id: str, kind: str) -> None:
 
 
 # ----------------------------------------------------------------------------- reminders
+def reminder_email(li: dict, sent: int) -> None:
+    """One nudge for an unfinished listing; says exactly what is missing."""
+    miss = missing(li)
+    what = ", ".join(miss) if miss else "l'invio"
+    subjects = ("Il tuo annuncio non è completo", "Non hai finito il tuo annuncio", "Ci sono professioniste che aspettano il tuo annuncio", "Ultimo promemoria: la tua postazione")
+    subject = subjects[min(sent, len(subjects) - 1)]
+    _sender(f"{subject} — {BRAND}", _mail([
+        hi(li.get("titolare") or ""),
+        f"l'annuncio della postazione di <b>{escape(li.get('salone') or 'del tuo salone')}</b> non è ancora online: manca <b>{escape(what)}</b>."
+        + (" Basta una foto della postazione fatta col telefono." if miss == ["foto"] else " Ci vogliono due minuti."),
+        f"<p style='margin:20px 0'><a href='{link(li)}' style='display:inline-block;background:#b5532c;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700'>Completa l'annuncio</a></p>",
+        "Le professioniste vedono solo gli annunci completi. Se preferisci, mandami la foto (e giorni e prezzo) su WhatsApp al 392 590 9721 e lo completo io per te.",
+        "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), li["email"])
+
+
 def send_reminders() -> int:
-    """Hourly: owners who started a listing and did not send it get 3 nudges (24h, 72h, 7 days)."""
+    """Hourly: owners who started a listing and did not send it get nudges at 1h, 24h, 72h and 7 days."""
     client = db.get_db()
     n = 0
     for d in client.collection("listings").where("status", "==", "bozza").stream():
         li = {"id": d.id, **d.to_dict()}
+        if is_test(li.get("email")):
+            continue
         sent = int(li.get("reminders_sent") or 0)
         if sent >= len(REMINDERS_H) or not li.get("created_at"):
             continue
         if db.now() - li["created_at"] < timedelta(hours=REMINDERS_H[sent]):
             continue
-        nth = ("Non hai finito il tuo annuncio", "Ci sono professioniste che aspettano il tuo annuncio", "Ultimo promemoria: la tua postazione")[sent]
-        _sender(f"{nth} — {BRAND}", _mail([
-            hi(li.get("titolare") or ""),
-            f"l'annuncio della postazione di {li.get('salone') or 'del tuo salone'} è rimasto a metà. Ci vogliono due minuti: giorni, prezzo, una foto e il numero da chiamare.",
-            f"Riprendi da dove eri: {link(li)}",
-            "Pubblicare è gratis e le professioniste della tua zona vedono solo gli annunci completi.",
-            "A presto,<br>Giovanni Ghigliotti<br>" + BRAND]), li["email"])
+        reminder_email(li, sent)
         d.reference.update({"reminders_sent": sent + 1, "last_reminder_at": db.now()})
         n += 1
     return n

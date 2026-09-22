@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import logging
 import io
 from html import escape
 
@@ -12,6 +13,7 @@ from app import db
 from app.config import get_settings
 from app.services import poltrona as P
 
+log = logging.getLogger("poltrona.web")
 router = APIRouter(prefix="/pl", tags=["poltrona"])
 
 CSS = """<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -165,6 +167,12 @@ async def annuncio_post(token: str, request: Request):
         return RedirectResponse(f"{P.base()}/pl/annuncio/{token}", status_code=303)
     submit = action == "1"
     out = P.save(li, {k: form.get(k) for k in ("salone", "titolare", "telefono", "zona", "giorni", "prezzo", "incluso", "chi_cerchi", "descrizione")}, photos, submit)
+    if out.get("status") in ("bozza", "rifiutato") and not P.is_test(out.get("email")):  # left without publishing: say right away what is missing
+        try:
+            P.reminder_email(out, int(out.get("reminders_sent") or 0))
+            db.get_db().collection("listings").document(li["id"]).update({"reminders_sent": int(out.get("reminders_sent") or 0) + 1, "last_reminder_at": db.now()})
+        except Exception as e:  # noqa: BLE001
+            log.error("immediate reminder: %s", e)
     if submit and out.get("status") == "in_verifica" and li.get("status") != "in_verifica":
         return RedirectResponse(f"{P.base()}/pl/annuncio/{token}/grazie", status_code=303)
     return RedirectResponse(f"{P.base()}/pl/annuncio/{token}?saved=1", status_code=303)
