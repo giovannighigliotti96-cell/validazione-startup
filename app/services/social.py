@@ -144,6 +144,46 @@ def set_status(post_id: str, status: str) -> None:
 
 
 # ----------------------------------------------------------------------------- publish
+def _instagram_id(pid: str, tok: str) -> str | None:
+    r = httpx.get(f"{GRAPH}/{pid}", params={"access_token": tok, "fields": "instagram_business_account"}, timeout=15).json()
+    return (r.get("instagram_business_account") or {}).get("id")
+
+
+def publish_instagram(post: dict) -> str | None:
+    """Same post on @poltronalibera (image required; links are not clickable on IG, so the caption says 'link in bio')."""
+    if not post.get("image_url"):
+        return None
+    s = get_settings()
+    tok = getattr(s, "meta_access_token", "") or os.environ.get("META_ACCESS_TOKEN", "")
+    pid = getattr(s, "meta_page_id", "") or os.environ.get("META_PAGE_ID", "")
+    ig = _instagram_id(pid, tok)
+    if not ig:
+        return None
+    caption = post["text"]
+    for u in ("https://poltronalibera.it/pl/postazioni", "https://poltronalibera.it/lp/poltrona_libera_titolari", "https://poltronalibera.it/lp/poltrona_libera_professioniste",
+              "https://poltronalibera.it/pl/guida/squadra", "https://poltronalibera.it/pl/guida/poltrona"):
+        caption = caption.replace(u, "link in bio")
+    caption = (caption + "
+
+#parrucchieri #barbieri #milano #salone #affittopoltrona #poltronalibera")[:2200]
+    c = httpx.post(f"{GRAPH}/{ig}/media", data={"image_url": post["image_url"], "caption": caption, "access_token": tok}, timeout=60).json()
+    if "error" in c:
+        raise RuntimeError("IG: " + c["error"].get("message", "")[:160])
+    import time as _t
+
+    for _ in range(10):  # wait for Meta to fetch the image
+        st = httpx.get(f"{GRAPH}/{c['id']}", params={"access_token": tok, "fields": "status_code"}, timeout=15).json().get("status_code")
+        if st == "FINISHED":
+            break
+        if st == "ERROR":
+            raise RuntimeError("IG: media container error")
+        _t.sleep(3)
+    r = httpx.post(f"{GRAPH}/{ig}/media_publish", data={"creation_id": c["id"], "access_token": tok}, timeout=60).json()
+    if "error" in r:
+        raise RuntimeError("IG publish: " + r["error"].get("message", "")[:160])
+    return r.get("id")
+
+
 def publish(post: dict) -> dict:
     pid, ptok = _page()
     if post.get("image_url"):
@@ -152,6 +192,11 @@ def publish(post: dict) -> dict:
         r = httpx.post(f"{GRAPH}/{pid}/feed", data={"message": post["text"], "link": post.get("link") or "", "access_token": ptok}, timeout=60).json()
     if "error" in r:
         raise RuntimeError(r["error"].get("message", str(r))[:200])
+    try:
+        r["ig_id"] = publish_instagram(post)
+    except Exception as e:  # noqa: BLE001
+        log.error("instagram publish: %s", e)
+        r["ig_error"] = str(e)[:160]
     return r
 
 
@@ -175,7 +220,7 @@ def publish_due(force_id: str | None = None) -> int:
                 p["text"], p["image_url"] = text, img
                 d.reference.update({"text": text, "image_url": img})
             r = publish(p)
-            d.reference.update({"status": "pubblicato", "fb_id": r.get("post_id") or r.get("id"), "published_at": db.now()})
+            d.reference.update({"status": "pubblicato", "fb_id": r.get("post_id") or r.get("id"), "ig_id": r.get("ig_id"), "ig_error": r.get("ig_error"), "published_at": db.now()})
             n += 1
         except Exception as e:  # noqa: BLE001
             log.error("publish %s: %s", p["id"], e)
