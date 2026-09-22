@@ -210,6 +210,13 @@ def publish_due(force_id: str | None = None) -> int:
         if not force_id and p.get("when") and p["when"] > now:
             continue
         try:
+            if str(p.get("kind", "")).startswith("ig_"):
+                from app.services import instagram
+
+                r = instagram.publish_ig(p)
+                d.reference.update({"status": "pubblicato", "ig_id": r.get("ig_id"), "published_at": db.now()})
+                n += 1
+                continue
             if p.get("kind") == "postazioni":
                 text, img = _roundup_text()
                 if not text:

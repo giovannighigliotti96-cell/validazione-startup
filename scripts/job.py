@@ -85,9 +85,10 @@ def digest() -> None:
 
 
 def social() -> None:
-    from app.services import social as _s
+    from app.services import instagram, social as _s
 
     _s.seed_plan()
+    instagram.seed()
     log.info("social published: %s", _s.publish_due())
 
 
