@@ -92,19 +92,27 @@ def listing_story_url(listing: dict) -> str | None:
         scale = max(w / im.width, h / im.height)
         im = im.resize((int(im.width * scale) + 1, int(im.height * scale) + 1))
         im = im.crop(((im.width - w) // 2, (im.height - h) // 2, (im.width - w) // 2 + w, (im.height - h) // 2 + h))
-        dark = Image.new("RGB", (w, h), (0, 0, 0))
-        im = Image.blend(im, dark, 0.45)
+        im = Image.blend(im, Image.new("RGB", (w, h), (0, 0, 0)), 0.30)
+        veil = Image.new("L", (w, h), 0)  # dark band behind the text, photo visible in the middle
+        vd = ImageDraw.Draw(veil)
+        vd.rectangle((0, 0, w, 760), fill=205)
+        vd.rectangle((0, h - 620, w, h), fill=190)
+        im = Image.composite(Image.new("RGB", (w, h), (16, 14, 12)), im, veil.filter(ImageFilter.GaussianBlur(90)))
         d = ImageDraw.Draw(im)
-        d.text((72, 520), "POSTAZIONE DEL GIORNO", font=F(SANS_B, 30), fill=(230, 130, 90))
-        tf = F(SERIF_B, 84)
-        y = draw_lines(d, 72, 600, wrap(d, f"{listing.get('salone')} · {listing.get('zona')}", tf, w - 144), tf, PAPER, 96)
-        bf = F(SANS, 46)
-        for ln in (listing.get("giorni") or "", listing.get("prezzo") or "", (listing.get("chi_cerchi") or "")[:60]):
+        d.text((90, 300), "POSTAZIONE DEL GIORNO", font=F(SANS_B, 32), fill=(240, 150, 110))
+        tf = F(SERIF_B, 92)
+        from app.services import poltrona as _P
+
+        y = draw_lines(d, 90, 380, wrap(d, f"{listing.get('salone')} · {_P.pretty_zone(listing.get('zona') or '')}", tf, w - 180), tf, (255, 252, 248), 104)
+        bf = F(SANS, 48)
+        cerca = (listing.get("chi_cerchi") or "").strip()
+        cerca = (cerca[:70].rsplit(" ", 1)[0] + "…") if len(cerca) > 70 else cerca
+        for ln in (listing.get("giorni") or "", _P.pretty_price(listing.get("prezzo") or ""), cerca):
             if ln:
-                y = draw_lines(d, 72, y + 22, wrap(d, ln, bf, w - 150), bf, (235, 228, 218), 60)
-        d.rounded_rectangle((72, h - 460, 72 + 760, h - 460 + 104), radius=999, fill=ACC)
-        d.text((72 + 44, h - 460 + 28), f"chiama {listing.get('telefono')}", font=F(SANS_B, 38), fill=PAPER)
-        d.text((72, h - 200), "@poltronalibera · link in bio", font=F(SANS_B, 34), fill=PAPER)
+                y = draw_lines(d, 90, y + 24, wrap(d, ln, bf, w - 190), bf, (238, 232, 224), 62)
+        d.rounded_rectangle((90, h - 470, 90 + 800, h - 470 + 112), radius=999, fill=ACC)
+        d.text((90 + 48, h - 470 + 32), f"chiama {listing.get('telefono')}", font=F(SANS_B, 40), fill=PAPER)
+        d.text((90, h - 220), "@poltronalibera · link in bio", font=F(SANS_B, 34), fill=(255, 252, 248))
         out = io.BytesIO()
         im.save(out, "JPEG", quality=88)
         db.get_db()
@@ -113,7 +121,7 @@ def listing_story_url(listing: dict) -> str | None:
         blob.upload_from_string(out.getvalue(), content_type="image/jpeg")
         return f"https://storage.googleapis.com/poltrona-libera-foto/{blob.name}"
     except Exception as e:  # noqa: BLE001
-        log.error("listing story image: %s", e)
+        log.error("listing story image (%s): %r", listing.get("salone"), e)
         return None
 
 

@@ -20,8 +20,23 @@ PAPER, INK, ACC, MUT, SAGE = (247, 242, 234), (28, 25, 23), (181, 72, 43), (107,
 SIZES = {"1x1": (1080, 1080), "4x5": (1080, 1350), "9x16": (1080, 1920)}
 
 
+REPO_FONTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "fonts")
+# axes: Fraunces = (Optical size, Weight, Softness, Wonky) · Source Sans 3 = (Weight,)
+FALLBACK = {SERIF_B: ("Fraunces.ttf", 800), SERIF_I: ("Fraunces.ttf", 600), SANS: ("SourceSans3.ttf", 400), SANS_B: ("SourceSans3.ttf", 700)}
+
+
 def F(path, size):
-    return ImageFont.truetype(path, size)
+    """Brand fonts; on Linux (Cloud Run) the Windows files do not exist, so fall back to the bundled variable fonts."""
+    try:
+        return ImageFont.truetype(path, size)
+    except Exception:  # noqa: BLE001
+        name, weight = FALLBACK.get(path, ("SourceSans3.ttf", 400))
+        f = ImageFont.truetype(os.path.join(REPO_FONTS, name), size)
+        try:
+            f.set_variation_by_axes([min(144, max(9, size)), weight, 0, 0] if name == "Fraunces.ttf" else [weight])
+        except Exception:  # noqa: BLE001
+            pass
+        return f
 
 
 def wrap(d, text, font, max_w):

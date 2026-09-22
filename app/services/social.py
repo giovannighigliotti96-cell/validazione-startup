@@ -122,8 +122,10 @@ def enqueue_listing(listing: dict) -> str | None:
     when = when + timedelta(hours=3 * len(same_day))
     if when.hour >= 21:
         when = (when + timedelta(days=1)).replace(hour=10, minute=30)
-    salone, zona = listing.get("salone") or "Salone", listing.get("zona") or "Milano"
-    text = (f"🪑 Postazione libera a {zona}\n\n{salone} affitta una postazione: {listing.get('giorni') or 'giorni da concordare'} · {listing.get('prezzo') or 'prezzo da concordare'}."
+    from app.services import poltrona as _P
+
+    salone, zona = listing.get("salone") or "Salone", _P.pretty_zone(listing.get("zona") or "Milano")
+    text = (f"🪑 Postazione libera a {zona}\n\n{salone} affitta una postazione: {listing.get('giorni') or 'giorni da concordare'} · {_P.pretty_price(listing.get('prezzo') or '') or 'prezzo da concordare'}."
             + (f"\nIncluso: {listing['incluso']}." if listing.get("incluso") else "")
             + (f"\nCerca: {listing['chi_cerchi']}." if listing.get("chi_cerchi") else "")
             + (f"\n\nIl salone è @{listing['instagram']}" if listing.get("instagram") else "")

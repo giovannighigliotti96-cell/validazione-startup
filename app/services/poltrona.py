@@ -225,6 +225,16 @@ def online_listings() -> list[dict]:
     return items
 
 
+def pretty_zone(z: str) -> str:
+    parts = [p.strip() for p in re.split(r"[,/]", z or "") if p.strip()]
+    return ", ".join(p if (p.isupper() or p[:1].isupper()) else p.capitalize() for p in parts) or (z or "")
+
+
+def pretty_price(p: str) -> str:
+    out = re.sub(r"(\d)\s*€", r"\1 €", (p or "").strip())
+    return out[:1].upper() + out[1:] if out else out
+
+
 def public_card(listing: dict) -> dict:
     """Card for the landing rail and the catalogue: everything in the clear, the professional calls the owner directly."""
     tags = [t for t in (listing.get("zona"), listing.get("giorni")) if t][:2]
