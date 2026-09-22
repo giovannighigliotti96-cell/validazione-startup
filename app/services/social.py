@@ -18,7 +18,8 @@ from app.config import get_settings
 
 log = logging.getLogger("social")
 ROME = ZoneInfo("Europe/Rome")
-SLOTS = [(1, 12, 30), (3, 12, 30), (5, 12, 30)]  # weekday (0=Mon), hour, minute: Tue / Thu / Sat 12:30
+SLOTS = [(1, 12, 30), (3, 12, 30), (5, 11, 0), (6, 18, 0)]  # weekday (0=Mon), hour, minute: Tue/Thu 12:30 valore · Sat 11:00 postazioni · Sun 18:00 community
+SLOT_NAME = {1: "tue", 3: "thu", 5: "sat", 6: "sun"}
 GRAPH = "https://graph.facebook.com/v21.0"
 
 
@@ -35,14 +36,14 @@ def _page() -> tuple[str, str]:
     return pid, r.get("access_token") or tok
 
 
-def next_slots(n: int, start: datetime | None = None) -> list[datetime]:
-    """The next n editorial slots (Rome time) after `start`."""
+def next_slots(n: int, start: datetime | None = None, only: str | None = None) -> list[datetime]:
+    """The next n editorial slots (Rome time) after `start`; `only` = 'tue'|'thu'|'sat'|'sun' to pick one kind of slot."""
     t = (start or datetime.now(ROME)).astimezone(ROME)
     out = []
     day = t.replace(hour=0, minute=0, second=0, microsecond=0)
     while len(out) < n:
         for wd, h, m in SLOTS:
-            if day.weekday() == wd:
+            if day.weekday() == wd and (only is None or SLOT_NAME[wd] == only):
                 when = day.replace(hour=h, minute=m)
                 if when > t:
                     out.append(when)
@@ -58,15 +59,50 @@ def seed_plan(force: bool = False) -> int:
     client = db.get_db()
     existing = {d.to_dict().get("slug") for d in client.collection("social_posts").stream()}
     todo = [p for p in POSTS if force or p[0] not in existing]
-    slots = next_slots(len(todo))
+    used: dict[str, int] = {}
     n = 0
-    for (slug, audience, headline, _acc, text), when in zip(todo, slots):
+    for slug, slot, audience, headline, _acc, text in todo:
+        k = used.get(slot, 0)
+        when = next_slots(k + 1, only=slot)[k]  # k-th upcoming slot of that kind
+        used[slot] = k + 1
         client.collection("social_posts").document(f"piano_{slug}").set({
             "slug": slug, "kind": "piano", "audience": audience, "headline": headline, "text": text,
             "image_url": f"{base()}/static/poltrona/social/{slug}.png", "link": "", "when": when.astimezone(timezone.utc),
             "status": "in_coda", "created_at": db.now()})
         n += 1
+    n += roundup_posts()
     return n
+
+
+def roundup_posts() -> int:
+    """Saturday 11:00: 'Postazioni della settimana', built from what is online at publish time (text refreshed then)."""
+    client = db.get_db()
+    n = 0
+    for when in next_slots(4, only="sat"):
+        pid = f"postazioni_{when.strftime('%Y%m%d')}"
+        if client.collection("social_posts").document(pid).get().exists:
+            continue
+        client.collection("social_posts").document(pid).set({
+            "slug": pid, "kind": "postazioni", "audience": "professioniste", "headline": "Postazioni della settimana", "text": "",
+            "image_url": "", "link": f"{base()}/pl/postazioni", "when": when.astimezone(timezone.utc), "status": "in_coda", "created_at": db.now()})
+        n += 1
+    return n
+
+
+def _roundup_text() -> tuple[str, str]:
+    """(text, image) for the weekly roundup from the listings online now."""
+    from app.services import poltrona as P
+
+    items = P.online_listings()
+    if not items:
+        return "", ""
+    lines = []
+    for li in items[:6]:
+        lines.append(f"• {li.get('salone')} · {li.get('zona')} — {li.get('giorni') or 'giorni da concordare'} · {li.get('prezzo') or 'da concordare'} · chiama {P.first_name(li.get('titolare') or '')} {li.get('telefono')}")
+    text = ("🪑 Postazioni disponibili questa settimana a Milano\n\n" + "\n".join(lines) +
+            f"\n\nTutte con foto e dettagli, e il numero della titolare: chiami tu, direttamente, gratis. 👉 {base()}/pl/postazioni"
+            f"\n\nHai una poltrona libera nel tuo salone? Pubblicala gratis: {base()}/lp/{P.OWNERS}")
+    return text, (items[0].get("photos") or [""])[0]
 
 
 def enqueue_listing(listing: dict) -> str | None:
@@ -131,6 +167,13 @@ def publish_due(force_id: str | None = None) -> int:
         if not force_id and p.get("when") and p["when"] > now:
             continue
         try:
+            if p.get("kind") == "postazioni":
+                text, img = _roundup_text()
+                if not text:
+                    d.reference.update({"status": "saltato", "error": "nessuna postazione online", "updated_at": db.now()})
+                    continue
+                p["text"], p["image_url"] = text, img
+                d.reference.update({"text": text, "image_url": img})
             r = publish(p)
             d.reference.update({"status": "pubblicato", "fb_id": r.get("post_id") or r.get("id"), "published_at": db.now()})
             n += 1

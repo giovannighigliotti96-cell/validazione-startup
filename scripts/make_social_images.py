@@ -41,7 +41,7 @@ def card(headline: str, accent: str | None, audience: str, dark: bool) -> Image.
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    for i, (slug, audience, headline, accent, _text) in enumerate(POSTS):
+    for i, (slug, _slot, audience, headline, accent, _text) in enumerate(POSTS):
         card(headline, accent, audience, dark=bool(i % 2)).save(f"{OUT}/{slug}.png")
     print("ok", len(POSTS), "images")
 
