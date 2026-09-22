@@ -66,7 +66,8 @@ class Settings(BaseSettings):
     llm_strong_fallback_models: str = "openai/gpt-oss-20b,qwen/qwen3.8-27b"  # each has its own daily token limit on Groq
     meta_pixel_id: str = ""
     meta_access_token: str = ""  # system user token (ads + CAPI)
-    meta_capi_token: str = ""  # optional dedicated Conversions API token
+    meta_capi_token: str = ""
+    meta_page_id: str = ""  # optional dedicated Conversions API token
     landing_home_cluster: str = ""   # if set, "/" redirects to /lp/<cluster> (used by the product-named Cloud Run service)   # optional: injects the Meta pixel into hosted landing pages (PageView / Lead)
 
     public_base_url: str = "http://localhost:8000"

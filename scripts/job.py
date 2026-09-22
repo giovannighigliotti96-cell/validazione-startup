@@ -75,8 +75,26 @@ def procedures() -> None:
 
 def digest() -> None:
     from app.services import funnel as _f
+    from app.services import notify, social as _s
 
     log.info("digest: %s", _f.send_weekly_digest())
+    try:
+        notify.send_email("Pagina Facebook: riepilogo settimanale — Poltrona Libera", _s.week_summary())
+    except Exception as e:  # noqa: BLE001
+        log.error("social summary: %s", e)
+
+
+def social() -> None:
+    from app.services import social as _s
+
+    _s.seed_plan()
+    log.info("social published: %s", _s.publish_due())
+
+
+def social_now(post_id: str) -> None:
+    from app.services import social as _s
+
+    log.info("social published now: %s", _s.publish_due(force_id=post_id))
 
 
 def match_lead(lead_id: str) -> None:
@@ -99,7 +117,7 @@ def match_listing(listing_id: str) -> None:
 
 
 JOBS = {"scrape": scrape, "funnel": funnel, "adlib": adlib, "discover": discover, "arbitrage": arbitrage, "distressed": distressed,
-        "procedures": procedures, "digest": digest, "match_lead": match_lead, "match_listing": match_listing}
+        "procedures": procedures, "digest": digest, "match_lead": match_lead, "match_listing": match_listing, "social": social, "social_now": social_now}
 
 if __name__ == "__main__":
     name = sys.argv[1] if len(sys.argv) > 1 else "funnel"

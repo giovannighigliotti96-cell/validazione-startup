@@ -332,6 +332,18 @@ def admin(request: Request, token: str | None = None):
     pros = "".join(lead_row(l, "p") for l in sorted(d["pros"], key=lambda x: str(x.get("at")), reverse=True))
     from app.services import guida as _g
     from app.services import matching as _m
+    from app.services import social as _soc
+    from zoneinfo import ZoneInfo as _Z
+
+    def _srow(p: dict) -> str:
+        when = p.get("when").astimezone(_Z("Europe/Rome")).strftime("%a %d/%m %H:%M") if p.get("when") else ""
+        st = {"in_coda": "warn", "pubblicato": "ok", "saltato": "gray", "errore": "bad"}.get(p.get("status"), "gray")
+        act = (f"<form method='post' action='{base}/pl/admin/social/{p['id']}' class='row' style='gap:6px'><button class='btn' name='op' value='now' style='padding:6px 12px'>Pubblica ora</button>"
+               f"<button class='btn sec' name='op' value='skip' style='padding:6px 12px'>Salta</button></form>") if p.get("status") == "in_coda" else (f"<a href='https://facebook.com/{escape(str(p.get('fb_id') or ''))}' target='_blank'>vedi ↗</a>" if p.get("fb_id") else escape(p.get("error") or ""))
+        return (f"<tr><td style='white-space:nowrap'>{when}</td><td>{escape(p.get('kind') or '')}<br><small class='muted'>{escape(p.get('audience') or '')}</small></td><td><b>{escape(p.get('headline') or '')}</b><br><small>{escape((p.get('text') or '')[:160])}…</small></td>"
+                f"<td>{('<img src=' + chr(39) + escape(p['image_url']) + chr(39) + ' style=' + chr(39) + 'height:56px;border-radius:5px' + chr(39) + '>') if p.get('image_url') else ''}</td><td><span class='pill {st}'>{escape(p.get('status') or '')}</span></td><td>{act}</td></tr>")
+
+    social_rows = "".join(_srow(p) for p in _soc.queue()[:30])
 
     buyers_rows = "".join(f"<tr><td>{str(b.get('created_at'))[:16]}</td><td><b>{escape(b.get('name') or '')}</b><br>{escape(b.get('email') or '')}<br>{escape(b.get('phone') or '')}</td><td>{escape(_g.CATALOG.get(b.get('slug'), {}).get('title', b.get('slug') or ''))}</td>"
                           f"<td>{_g.price_str(int(b.get('amount') or 0))}</td><td>{escape(b.get('utm') or 'diretto')}</td><td>{int(b.get('downloads') or 0)}</td><td>{int(b.get('steps_sent') or 0)}/3</td></tr>" for b in _g.buyers())
@@ -356,6 +368,8 @@ def admin(request: Request, token: str | None = None):
 <div class='grid' style='grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:8px'>{kpi(len(d['owners']), 'saloni iscritti')}{kpi(n_sub, 'annunci inviati')}{kpi(n_wait, 'da approvare')}{kpi(n_on, 'online')}{kpi(n_draft, 'bozze non finite')}{kpi(len(d['pros']), 'professioniste iscritte')}{kpi(calls, 'tap su chiama / WhatsApp')}{kpi(len(_g.buyers()), 'guide vendute')}</div>
 <p class='muted'><a href='{base}/pl/admin/export.csv?what=owners'>CSV saloni</a> · <a href='{base}/pl/admin/export.csv?what=pros'>CSV professioniste</a> · <a href='{base}/pl/admin/export.csv?what=listings'>CSV annunci</a> · <a href='{base}/pl/postazioni' target='_blank'>catalogo pubblico ↗</a></p>
 <h2>Annunci</h2><div class='tbl'><table><thead><tr><th>Stato</th><th>Salone</th><th>Zona · giorni · prezzo</th><th>Cerca</th><th>Foto</th><th>Azioni</th></tr></thead><tbody>{rows or '<tr><td colspan=6 class=muted>nessun annuncio</td></tr>'}</tbody></table></div>
+<h2>Pagina Facebook · coda dei post</h2><p class='muted' style='margin:0 0 8px'>3 post a settimana (mar/gio/sab 12:30) più un post per ogni annuncio approvato. Escono da soli; qui puoi saltarli o pubblicarli subito.</p>
+<div class='tbl'><table><thead><tr><th>Quando</th><th>Tipo</th><th>Post</th><th>Immagine</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>{social_rows or '<tr><td colspan=6 class=muted>coda vuota</td></tr>'}</tbody></table></div>
 <h2>Guide vendute</h2><div class='tbl'><table><thead><tr><th>Quando</th><th>Acquirente</th><th>Guida</th><th>Importo</th><th>Provenienza</th><th>Download</th><th>Mail workflow</th></tr></thead><tbody>{buyers_rows or '<tr><td colspan=7 class=muted>nessuna vendita ancora</td></tr>'}</tbody></table></div>
 <h2>Match automatici</h2><p class='muted' style='margin:0 0 8px'>Ogni annuncio online viene confrontato con ogni professionista iscritta (specialità prima, poi zona). Match ≥ 70: email alla professionista con il numero della titolare, e a te il link WhatsApp.</p>
 <div class='tbl'><table><thead><tr><th>Punteggio</th><th>Professionista</th><th>Postazione</th><th>Perché</th><th>Stato</th><th>WhatsApp</th></tr></thead><tbody>{matches or '<tr><td colspan=6 class=muted>nessun confronto ancora</td></tr>'}</tbody></table></div>
@@ -364,6 +378,19 @@ def admin(request: Request, token: str | None = None):
 <h2>Saloni iscritti</h2><div class='tbl'><table><thead><tr><th>Data</th><th>Titolare · salone</th><th>Contatti</th><th>Zona</th><th>P.IVA</th><th>Risposta</th><th>Form</th></tr></thead><tbody>{owners}</tbody></table></div>
 <h2>Professioniste iscritte</h2><div class='tbl'><table><thead><tr><th>Data</th><th>Nome</th><th>Contatti</th><th>Zona</th><th>Specialità</th><th>Risposta</th><th>Form</th></tr></thead><tbody>{pros}</tbody></table></div>"""
     return _page("Pannello", body, pixel="")
+
+
+@router.post("/admin/social/{post_id}")
+async def admin_social(post_id: str, request: Request):
+    _auth(request)
+    from app.services import jobs, social
+
+    form = await request.form()
+    if form.get("op") == "skip":
+        social.set_status(post_id, "saltato")
+    elif form.get("op") == "now":
+        jobs.trigger("social_now", post_id)
+    return RedirectResponse(f"{P.base()}/pl/admin", status_code=303)
 
 
 @router.post("/admin/listing/{listing_id}/status")

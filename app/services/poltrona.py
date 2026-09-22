@@ -194,9 +194,13 @@ def set_status(listing_id: str, status: str, note: str = "", quiet: bool = False
     ref.update(upd)
     listing.update(upd)
     if status == "online":
-        from app.services import jobs
+        from app.services import jobs, social
 
         jobs.trigger("match_listing", listing_id)
+        try:
+            social.enqueue_listing(listing)
+        except Exception as e:  # noqa: BLE001
+            log.error("social enqueue: %s", e)
     if quiet:
         return listing
     if status == "online":
