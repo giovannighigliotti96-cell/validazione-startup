@@ -36,12 +36,7 @@ app.mount("/static", StaticFiles(directory="public"), name="static")  # page ass
 def root():
     from fastapi.responses import RedirectResponse
 
-    from app.config import get_settings
-
-    home = get_settings().landing_home_cluster
-    if home:
-        return RedirectResponse(f"/lp/{home}", status_code=302)
-    return {"service": "validazione-startup", "docs": "/docs"}
+    return RedirectResponse("/pl", status_code=302)  # the two-door home
 
 
 @app.get("/healthz", include_in_schema=False)
@@ -69,6 +64,6 @@ def _robots():
 @app.get("/sitemap.xml", include_in_schema=False)
 def _sitemap():
     base = "https://poltronalibera.it"
-    urls = ["/lp/poltrona_libera_titolari", "/lp/poltrona_libera_professioniste", "/pl/postazioni", "/pl/guida/squadra", "/pl/guida/poltrona", "/pl/privacy"]
+    urls = ["/pl", "/lp/poltrona_libera_titolari", "/lp/poltrona_libera_professioniste", "/pl/postazioni", "/pl/guida/squadra", "/pl/guida/poltrona", "/pl/privacy"]
     body = "".join(f"<url><loc>{base}{u}</loc><changefreq>daily</changefreq></url>" for u in urls)
     return _Resp(content=f"<?xml version='1.0' encoding='UTF-8'?><urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>{body}</urlset>", media_type="application/xml")

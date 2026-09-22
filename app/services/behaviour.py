@@ -7,7 +7,7 @@ from datetime import timedelta
 
 from app import db
 
-PAGES = {"poltrona_libera_titolari": "landing titolari", "poltrona_libera_professioniste": "landing professioniste",
+PAGES = {"home": "home (link in bio)", "poltrona_libera_titolari": "landing titolari", "poltrona_libera_professioniste": "landing professioniste",
          "guida_squadra": "sales page A · dipendente andata via", "guida_poltrona": "sales page B · basta dipendenti", "catalogo": "catalogo postazioni"}
 
 

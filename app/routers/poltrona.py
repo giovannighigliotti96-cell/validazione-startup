@@ -42,7 +42,7 @@ footer a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1px
 
 
 def _top(base: str) -> str:
-    return f"<div class='top'><div class='w'><a href='{base}/pl/postazioni' style='display:flex;align-items:center;gap:12px'><img src='{base}/static/poltrona/logo_512.png' alt=''><b>Poltrona Libera</b></a></div></div>"
+    return f"<div class='top'><div class='w'><a href='{base}/pl' style='display:flex;align-items:center;gap:12px'><img src='{base}/static/poltrona/logo_512.png' alt=''><b>Poltrona Libera</b></a></div></div>"
 
 
 def _pixel_html(event: str, request: Request | None = None, ev_id: str = "", url: str = "") -> str:
@@ -69,6 +69,36 @@ def _page(title: str, body: str, pixel: str = "PageView", desc: str = "", reques
     return HTMLResponse(f"<!doctype html><html lang='it'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>{escape(title)} — Poltrona Libera</title>"
                         f"<meta name='description' content='{escape(desc)}'>{CSS}{_pixel_html(pixel, request, ev_id)}</head><body>{_top(base)}<main class='w'>{body}</main>{beacon}"
                         f"<footer class='w muted' style='padding-bottom:30px'><div style='color:var(--ink);font-size:15px;margin-bottom:10px'>{P.footer_html()}</div>Poltrona Libera · Milano · <a href='{base}/pl/privacy' style='color:inherit'>Privacy</a></footer></body></html>")
+
+
+
+# ----------------------------------------------------------------------------- home: the door (link in bio, ads, direct traffic)
+@router.get("", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    """Two doors: salon owner -> owners landing; professional -> catalogue. Nothing else on the page."""
+    base = P.base()
+    n = len(P.online_listings())
+    body = f"""<section style='text-align:center;padding:34px 0 10px'>
+<h1 style='font-size:34px;margin-bottom:10px'>Postazioni in affitto nei saloni di Milano</h1>
+<p class='lead' style='margin:0 auto 26px'>I saloni pubblicano la poltrona libera, gratis. Parrucchiere e barbieri la vedono con foto, giorni, prezzo e numero, e chiamano direttamente.</p>
+<p class='muted' style='margin:0 0 22px'><b>Chi sei?</b></p></section>
+<div class='grid' style='grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;align-items:stretch'>
+  <a class='card' href='{base}/pl/postazioni' style='text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px'>
+    <div style='font-size:34px'>&#128136;</div>
+    <h2 style='margin:0;font-size:22px'>Sono parrucchiera o barbiere</h2>
+    <p class='muted' style='margin:0'>Cerco una postazione dove lavorare in proprio. Guardo gli annunci e chiamo io il salone. Gratis.</p>
+    <span class='btn' style='margin-top:auto;align-self:flex-start'>Vedi le {n} postazioni &rarr;</span></a>
+  <a class='card' href='{base}/lp/{P.OWNERS}' style='text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px'>
+    <div style='font-size:34px'>&#129681;</div>
+    <h2 style='margin:0;font-size:22px'>Ho un salone</h2>
+    <p class='muted' style='margin:0'>Ho una poltrona vuota e voglio affittarla. Pubblico l'annuncio in cinque minuti e mi chiamano loro.</p>
+    <span class='btn sec' style='margin-top:auto;align-self:flex-start'>Pubblica gratis la tua postazione &rarr;</span></a>
+</div>
+<div class='card' style='margin-top:24px'><h2 style='margin-top:0;font-size:19px'>Come funziona</h2>
+<p class='muted' style='margin:0'>Il salone pubblica zona, giorni, prezzo, cosa &egrave; incluso, una foto e il numero da chiamare. Noi controlliamo l'annuncio e lo mettiamo online. La professionista chiama direttamente la titolare e si accordano tra loro: giorni, orari, prezzo, prova. Per entrambe &egrave; gratis.</p></div>
+<p class='muted' style='text-align:center;margin-top:22px'>Titolare di salone? Le guide pratiche: <a href='{base}/pl/guida/squadra' style='color:var(--acc)'>&laquo;La dipendente &egrave; andata via&raquo;</a> &middot; <a href='{base}/pl/guida/poltrona' style='color:var(--acc)'>&laquo;Basta dipendenti&raquo;</a></p>"""
+    return _page("Poltrona Libera - postazioni in affitto a Milano", body, desc="Postazioni in affitto nei saloni di Milano: i saloni pubblicano gratis, parrucchiere e barbieri chiamano direttamente.", request=request, beacon_id="home")
 
 
 # ----------------------------------------------------------------------------- privacy (also the Meta app's privacy policy URL)
@@ -222,7 +252,7 @@ def postazioni(request: Request):
 {('<div class="grid">' + real_html + '</div>') if real else ''}
 <h2 data-sec='esempi'>{'Altri esempi di annuncio' if real else 'Così appaiono gli annunci'}</h2><p class='muted' style='margin:0 0 12px'>Esempi con dati indicativi e foto di saloni reali: mostrano cosa vedrai. Non sono saloni iscritti.</p>
 <div class='grid'>{ex_html}</div>
-<div class='card' style='margin-top:28px'><h2 style='margin-top:0'>Non trovi la tua zona?</h2><p class='muted'>Registrati gratis e ti scriviamo appena un salone della tua zona pubblica una postazione.</p><a class='btn' href='{base}/lp/{P.PROS}#lista'>Registrati gratis</a></div>
+<div class='card' style='margin-top:28px'><h2 style='margin-top:0'>Hai un salone con una poltrona vuota?</h2><p class='muted'>Pubblicala: è gratis, ci vogliono cinque minuti, e ti chiamano direttamente le professioniste.</p><a class='btn sec' href='{base}/lp/{P.OWNERS}'>Pubblica gratis la tua postazione</a></div><div class='card' style='margin-top:18px'><h2 style='margin-top:0'>Non trovi la tua zona?</h2><p class='muted'>Registrati gratis e ti scriviamo appena un salone della tua zona pubblica una postazione.</p><a class='btn' href='{base}/lp/{P.PROS}#lista'>Registrati gratis</a></div>
 <script>function hit(id,k){{try{{navigator.sendBeacon('{base}/pl/click/'+id+'/'+k)}}catch(e){{}}try{{fbq('track','Contact')}}catch(e){{}}}}</script>"""
     return _page("Postazioni disponibili a Milano", body, desc="Postazioni in affitto in saloni di Milano: guardi gratis e chiami direttamente la titolare.", request=request, beacon_id="catalogo")
 
