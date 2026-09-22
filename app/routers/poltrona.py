@@ -78,7 +78,6 @@ def _page(title: str, body: str, pixel: str = "PageView", desc: str = "", reques
 def home(request: Request):
     """Two doors: salon owner -> owners landing; professional -> catalogue. Nothing else on the page."""
     base = P.base()
-    n = len(P.online_listings())
     body = f"""<section style='text-align:center;padding:34px 0 10px'>
 <h1 style='font-size:34px;margin-bottom:10px'>Postazioni in affitto nei saloni di Milano</h1>
 <p class='lead' style='margin:0 auto 26px'>I saloni pubblicano la poltrona libera, gratis. Parrucchiere e barbieri la vedono con foto, giorni, prezzo e numero, e chiamano direttamente.</p>
@@ -88,7 +87,7 @@ def home(request: Request):
     <div style='font-size:34px'>&#128136;</div>
     <h2 style='margin:0;font-size:22px'>Sono parrucchiera o barbiere</h2>
     <p class='muted' style='margin:0'>Cerco una postazione dove lavorare in proprio. Guardo gli annunci e chiamo io il salone. Gratis.</p>
-    <span class='btn' style='margin-top:auto;align-self:flex-start'>Vedi le {n} postazioni &rarr;</span></a>
+    <span class='btn' style='margin-top:auto;align-self:flex-start'>Vedi le postazioni &rarr;</span></a>
   <a class='card' href='{base}/lp/{P.OWNERS}' style='text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px'>
     <div style='font-size:34px'>&#129681;</div>
     <h2 style='margin:0;font-size:22px'>Ho un salone</h2>

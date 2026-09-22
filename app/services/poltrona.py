@@ -230,10 +230,11 @@ def public_card(listing: dict) -> dict:
     if listing.get("chi_cerchi"):
         tags.append(listing["chi_cerchi"][:28])
     price = listing.get("prezzo") or ""
+    per_day = bool(re.search(r"al giorno|/giorno|giornalier", price, re.I))  # some salons price per day, not per month
     m = re.search(r"\d[\d.]*", price)
     return {"photo_url": (listing.get("photos") or [None])[0], "tags": tags[:3], "title": f"{listing.get('salone')} · {listing.get('zona')}",
             "text": " · ".join(x for x in (listing.get("incluso"), listing.get("descrizione")) if x)[:180] or "Chiama la titolare per i dettagli.",
-            "price": (m.group(0) + " €") if m else price[:24], "price_note": "al mese" if m else "",
+            "price": (m.group(0) + " €") if m else price[:24], "price_note": ("al giorno" if per_day else "al mese") if m else "",
             "note": f"Annuncio verificato · chiama {listing.get('titolare') or 'la titolare'}: {listing.get('telefono')}", "id": listing["id"],
             "telefono": listing.get("telefono"), "titolare": listing.get("titolare")}
 
