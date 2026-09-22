@@ -268,7 +268,8 @@ def postazioni(request: Request):
 <p class='muted' style='margin-top:10px'>Ti avvisiamo anche quando escono postazioni nella tua zona. Niente spam.</p></form>
 <div class='in' id='ufok' hidden style='text-align:center'><h2 style='margin:0 0 8px'>Ecco il numero</h2><p style='font-size:22px;font-weight:700' id='ufnum'></p><a class='btn' id='ufcall' href='#'>Chiama ora</a><p class='muted' style='margin-top:10px'>Dille che l'hai vista su Poltrona Libera.</p></div></dialog>
 <script>var U={{}};
-function hit(id,k){{try{{navigator.sendBeacon('{base}/pl/click/'+id+'/'+k)}}catch(e){{}}try{{fbq('track','Contact')}}catch(e){{}}}}
+function sid(){{try{{var k='lps_catalogo',x=sessionStorage.getItem(k);if(!x){{x=Math.random().toString(36).slice(2);sessionStorage.setItem(k,x)}}return x}}catch(e){{return 'na'}}}}
+function hit(id,k){{try{{navigator.sendBeacon('{base}/pl/click/'+id+'/'+k+'?sid='+sid())}}catch(e){{}}try{{fbq('track','Contact')}}catch(e){{}}}}
 function unlock(id,nome,tel,wa){{U={{id:id,nome:nome,tel:tel,wa:wa}};document.getElementById('ufz').textContent=nome?('Postazione di '+nome):'';document.getElementById('uf').hidden=false;document.getElementById('ufok').hidden=true;document.getElementById('dlgu').showModal();try{{fbq('track','Lead')}}catch(e){{}}}}
 function sendUnlock(e){{e.preventDefault();var f=e.target,d=new FormData(f);d.append('listing_id',U.id);fetch('{base}/pl/sblocca',{{method:'POST',body:d}});hit(U.id,'call');
 document.getElementById('ufnum').textContent=U.tel;document.getElementById('ufcall').href='tel:'+U.tel;f.hidden=true;document.getElementById('ufok').hidden=false;return false;}}</script>"""
@@ -290,12 +291,13 @@ async def sblocca(request: Request):
 
 
 @router.post("/click/{listing_id}/{kind}")
-def click(listing_id: str, kind: str, request: Request):
+def click(listing_id: str, kind: str, request: Request, sid: str = ""):
     from app.services import capi
 
-    P.track_call(listing_id, kind)
-    capi.send("Contact", capi.new_event_id(), f"{P.base()}/pl/postazioni", capi.user_data(request), {"content_name": listing_id, "content_category": kind})
-    return {"ok": True}
+    counted = P.track_call(listing_id, kind, request.headers.get("user-agent", ""), sid)
+    if counted:
+        capi.send("Contact", capi.new_event_id(), f"{P.base()}/pl/postazioni", capi.user_data(request), {"content_name": listing_id, "content_category": kind})
+    return {"ok": True, "counted": counted}
 
 
 @router.post("/contatto/{listing_id}")

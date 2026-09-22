@@ -240,13 +240,27 @@ def public_card(listing: dict) -> dict:
             "telefono": listing.get("telefono"), "titolare": listing.get("titolare")}
 
 
-def track_call(listing_id: str, kind: str) -> None:
-    """A tap on 'Chiama' or 'WhatsApp' in the catalogue: the demand signal we measure instead of a paywall."""
+BOTS = ("bot", "crawler", "spider", "curl", "python-requests", "facebookexternalhit", "headlesschrome", "preview", "insights", "monitor", "lighthouse", "pingdom")
+
+
+def track_call(listing_id: str, kind: str, ua: str = "", sid: str = "") -> bool:
+    """A tap on 'Chiama' or 'WhatsApp' in the catalogue: the demand signal we measure instead of a paywall.
+    Counted once per session per listing, never from crawlers (Meta's ad review clicks every button)."""
     from google.cloud.firestore_v1 import Increment
 
-    ref = db.get_db().collection("listings").document(listing_id)
+    if any(b in (ua or "").lower() for b in BOTS):
+        return False
+    client = db.get_db()
+    if sid:  # one tap per session per listing
+        seen = client.collection("listings").document(listing_id).collection("click_sessions").document(f"{sid[:40]}_{kind}")
+        if seen.get().exists:
+            return False
+        seen.set({"at": db.now(), "ua": (ua or "")[:200]})
+    ref = client.collection("listings").document(listing_id)
     if ref.get().exists:
         ref.update({f"clicks.{'whatsapp' if kind == 'wa' else 'call'}": Increment(1), "last_click_at": db.now()})
+        return True
+    return False
 
 
 # ----------------------------------------------------------------------------- reminders
