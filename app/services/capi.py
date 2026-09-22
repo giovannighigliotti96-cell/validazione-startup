@@ -85,20 +85,17 @@ def send(event_name: str, event_id: str, source_url: str, ud: dict, custom: dict
     if custom:
         payload["custom_data"] = custom
 
-    def _go():
-        import json
+    import json
 
-        import httpx
+    import httpx
 
-        try:
-            data = {"access_token": token, "data": json.dumps([payload])}
-            if test_code:
-                data["test_event_code"] = test_code
-            r = httpx.post(f"{API}/{pixel}/events", data=data, timeout=10)
-            j = r.json()
-            if not j.get("events_received"):
-                log.warning("capi %s: %s", event_name, j)
-        except Exception as e:  # noqa: BLE001
-            log.warning("capi %s failed: %s", event_name, e)
-
-    threading.Thread(target=_go, daemon=True).start()
+    try:
+        data = {"access_token": token, "data": json.dumps([payload])}
+        if test_code:
+            data["test_event_code"] = test_code
+        r = httpx.post(f"{API}/{pixel}/events", data=data, timeout=2.5)
+        j = r.json()
+        if not j.get("events_received"):
+            log.warning("capi %s: %s", event_name, j)
+    except Exception as e:  # noqa: BLE001
+        log.warning("capi %s failed: %s", event_name, e)

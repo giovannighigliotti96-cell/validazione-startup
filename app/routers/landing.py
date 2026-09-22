@@ -164,7 +164,8 @@ def landing(cluster_id: str, request: Request, v: str | None = None, ok: int = 0
     from app.services import capi
 
     pv_id = capi.new_event_id()
-    capi.send("PageView", pv_id, str(request.url), capi.user_data(request))
+    if not any(b in ua.lower() for b in ("bot", "crawler", "spider", "facebookexternalhit")):
+        capi.send("PageView", pv_id, str(request.url), capi.user_data(request))
     resp = HTMLResponse(render(c, offer, var, base, signed_up=bool(ok), pv_id=pv_id, ev_id=str(q.get("eid") or "")))
     resp.set_cookie(f"lpv_{cluster_id}", var["key"], max_age=60 * 60 * 24 * 30, samesite="lax")
     return resp
@@ -230,12 +231,10 @@ async def signup(request: Request, cluster_id: str, email: str = Form(...), vari
         return RedirectResponse(f"{_pl.link(draft)}?nuovo={int(is_new)}&eid={eid}", status_code=303)
     if is_new:
         _notify_signup(c, offer, lead)
-        if cluster_id == "poltrona_libera_professioniste":  # find her a chair right away
-            import threading
+        if cluster_id == "poltrona_libera_professioniste":  # find her a chair right away (Cloud Run Job)
+            from app.services import jobs
 
-            from app.services import matching
-
-            threading.Thread(target=matching.match_lead, args=(lead_id, lead), daemon=True).start()
+            jobs.trigger("match_lead", lead_id)
     return RedirectResponse(f"{base}/lp/{cluster_id}?v={variant}&ok=1&eid={eid}", status_code=303)
 
 

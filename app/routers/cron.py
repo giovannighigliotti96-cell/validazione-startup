@@ -4,7 +4,7 @@ Endpoints for cron-job.org (header X-Cron-Token). Suggested schedule:
   POST /cron/funnel   every 1h
   GET  /cron/health   every 15m  (keeps Cloud Run warm-ish; optional)
 """
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, Depends
 
 from app import db
 from app.auth import require_api
@@ -15,19 +15,11 @@ router = APIRouter(prefix="/cron", tags=["cron"], dependencies=[Depends(require_
 
 
 @router.api_route("/scrape", methods=["GET", "POST"], status_code=202)
-def cron_scrape(background: BackgroundTasks, sources: str | None = None):
-    """Scrape all active keyword sets in the background, then evaluate the funnel."""
-    src = sources.split(",") if sources else None
+def cron_scrape(sources: str | None = None):
+    """Scrape all active keyword sets (Cloud Run Job), then evaluate the funnel."""
+    from app.services import jobs
 
-    def job():
-        from app.services import retention
-
-        runner.run_all(None, src, "cron")
-        analysis.run_full_analysis()  # includes funnel.evaluate_all
-        retention.apply()  # privacy policy + Reddit Data API Terms: raw Reddit text purged after 30 days
-
-    background.add_task(job)
-    return {"status": "accepted"}
+    return {"status": "accepted", "job": jobs.trigger("scrape")}
 
 
 @router.api_route("/scrape/sync", methods=["GET", "POST"])
@@ -49,28 +41,11 @@ def cron_digest():
 
 
 @router.api_route("/funnel", methods=["GET", "POST"], status_code=202)
-def cron_funnel(background: BackgroundTasks):
-    """Responds immediately (cron-job.org has a 30s limit); evaluation runs in the background (Cloud Run: CPU always allocated)."""
-    background.add_task(funnel.evaluate_all, True)
+def cron_funnel():
+    """Hourly: funnel evaluation + Poltrona reminders + guide workflow (Cloud Run Job)."""
+    from app.services import jobs
 
-    def _reminders():
-        from app.services import guida, poltrona
-
-        try:
-            n = poltrona.send_reminders()
-            if n:
-                analysis.log.info("poltrona reminders sent: %s", n)
-        except Exception as e:  # noqa: BLE001
-            analysis.log.error("poltrona reminders: %s", e)
-        try:
-            n = guida.run_workflow()
-            if n:
-                analysis.log.info("guida workflow emails sent: %s", n)
-        except Exception as e:  # noqa: BLE001
-            analysis.log.error("guida workflow: %s", e)
-
-    background.add_task(_reminders)
-    return {"status": "accepted", "clusters": db.count(db.PROBLEM_CLUSTERS)}
+    return {"status": "accepted", "job": jobs.trigger("funnel")}
 
 
 @router.api_route("/funnel/sync", methods=["GET", "POST"])
@@ -84,56 +59,31 @@ def health():
 
 
 @router.api_route("/discover", methods=["GET", "POST"], status_code=202)
-def cron_discover(background: BackgroundTasks):
-    """Weekly: why-now scan on every active set, then thesis-guided vertical discovery (GitHub cron skipped these; cron-job.org is reliable)."""
+def cron_discover():
+    from app.services import jobs
 
-    def job():
-        analysis.budget.reset()
-        analysis.log.info("discover: %s", analysis.discover_verticals())  # first: it is the call that matters
-        # why-now only for sets that already have a real cluster (>= 10 people): 2 searches each, shared daily budget
-        strong = {c.get("keyword_set_id") for c in db.list_all(db.PROBLEM_CLUSTERS) if (c.get("distinct_authors") or 0) >= 10}
-        for k in db.list_all(db.KEYWORD_SETS, is_active=True):
-            if k["id"] not in strong:
-                continue
-            try:
-                analysis.scan_why_now(k["id"])
-            except Exception as e:  # noqa: BLE001
-                analysis.log.error("whynow %s: %s", k["name"], e)
-
-    background.add_task(job)
-    return {"status": "accepted"}
+    return {"status": "accepted", "job": jobs.trigger("discover")}
 
 
 @router.api_route("/arbitrage", methods=["GET", "POST"], status_code=202)
-def cron_arbitrage(background: BackgroundTasks):
-    """Weekly: recent US launches -> Italian gap check."""
-    from app.services import arbitrage
+def cron_arbitrage():
+    from app.services import jobs
 
-    def job():
-        analysis.budget.reset()
-        analysis.log.info("arbitrage: %s", arbitrage.run())
-
-    background.add_task(job)
-    return {"status": "accepted"}
+    return {"status": "accepted", "job": jobs.trigger("arbitrage")}
 
 
 @router.api_route("/distressed", methods=["GET", "POST"], status_code=202)
-def cron_distressed(background: BackgroundTasks):
-    """Weekly: CIGS decrees -> distressed companies ranking + news enrichment for the top."""
-    from app.services import distressed
+def cron_distressed():
+    from app.services import jobs
 
-    background.add_task(lambda: analysis.log.info("distressed: %s", distressed.run_weekly()))
-    return {"status": "accepted"}
+    return {"status": "accepted", "job": jobs.trigger("distressed")}
 
 
 @router.api_route("/adlib", methods=["GET", "POST"], status_code=202)
-def cron_adlib(background: BackgroundTasks, max_terms: int = 4, harvest: int = 0):
-    """Hourly, 24/7: classify/snowball/verdicts for the Ad Library discovery. Harvesting (browser) runs on Giovanni's PC
-    (scripts/adlib_local.cmd, hourly task): Facebook rate-limits pagination from datacenter IPs."""
-    from app.services import adlib
+def cron_adlib():
+    from app.services import jobs
 
-    background.add_task(lambda: adlib.run_cycle(max_terms=max_terms, harvest=bool(harvest)))
-    return {"status": "accepted"}
+    return {"status": "accepted", "job": jobs.trigger("adlib")}
 
 
 @router.get("/adlib/debug")
@@ -187,12 +137,10 @@ def adlib_report(limit: int = 80):
 
 
 @router.api_route("/procedures", methods=["GET", "POST"], status_code=202)
-def cron_procedures(background: BackgroundTasks):
-    """Weekly: judicial liquidations per tribunal -> ranking + public teaser for the freshest."""
-    from app.services import procedures
+def cron_procedures():
+    from app.services import jobs
 
-    background.add_task(lambda: analysis.log.info("procedures: %s", procedures.run_weekly()))
-    return {"status": "accepted"}
+    return {"status": "accepted", "job": jobs.trigger("procedures")}
 
 
 @router.api_route("/meta/activate", methods=["GET", "POST"])
@@ -210,6 +158,16 @@ def cron_meta_activate(campaign_id: str):
         for ad in call("GET", f"{a['id']}/ads", tok, fields="id").get("data", []):
             call("POST", ad["id"], tok, status="ACTIVE")
         call("POST", a["id"], tok, status="ACTIVE"); out.append(a["name"])
-    call("POST", campaign_id, tok, status="ACTIVE")
+    import time as _t
+
+    for attempt in range(4):  # Meta returns transient "unexpected error" (code 2) at times: retry instead of failing the one-shot job
+        try:
+            call("POST", campaign_id, tok, status="ACTIVE")
+            break
+        except Exception as e:  # noqa: BLE001
+            if attempt == 3:
+                raise
+            analysis.log.warning("meta activate retry %s: %s", attempt + 1, str(e)[:120])
+            _t.sleep(20)
     analysis.log.info("meta campaign %s activated: %s", campaign_id, out)
     return {"status": "ACTIVE", "campaign_id": campaign_id, "adsets": out}

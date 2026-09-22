@@ -69,7 +69,6 @@ def sales(slug: str, request: Request, annullato: int = 0):
 
     pv_id, vc_id, ic_id = capi.new_event_id(), capi.new_event_id(), capi.new_event_id()
     ud = capi.user_data(request)
-    capi.send("PageView", pv_id, str(request.url), ud)
     capi.send("ViewContent", vc_id, str(request.url), ud, {"content_name": slug, "content_type": "product", "value": G.PRICE_CENTS / 100, "currency": "EUR"})
     fbjs = f"try{{fbq('track','InitiateCheckout',{{content_name:'{slug}',value:{G.PRICE_CENTS / 100},currency:'EUR'}},{{eventID:'{ic_id}'}})}}catch(e){{}}"
     pre = G.prepare_checkout(slug, utm, (request.cookies.get("_fbp") or "", request.cookies.get("_fbc") or ""), (request.headers.get("x-forwarded-for") or "").split(",")[0].strip(), request.headers.get("user-agent") or "") if G.stripe_ready() else None

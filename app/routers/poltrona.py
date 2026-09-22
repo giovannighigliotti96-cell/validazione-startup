@@ -52,7 +52,7 @@ def _pixel_html(event: str, request: Request | None = None, ev_id: str = "", url
     if not event:
         return ""
     pv_id = capi.new_event_id()
-    if request is not None:
+    if request is not None and event == "Lead":
         capi.send("PageView", pv_id, url or str(request.url), capi.user_data(request))
     return _pixel(event, pv_id, ev_id)
 
